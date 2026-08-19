@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://uno-km.github.io/termux-diffusion/</loc>
+    <image:image>
+      <image:loc>https://uno-km.github.io/termux-diffusion/favicon.svg</image:loc>
+      <image:title>Termux-Diffusion Native Engine Logo</image:title>
+      <image:caption>Production On-Device AI Image Generation Engine for Android Termux</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://uno-km.github.io/termux-diffusion/models.html</loc>
+    <image:image>
+      <image:loc>https://uno-km.github.io/termux-diffusion/favicon.svg</image:loc>
+      <image:title>GGUF Quantized Mobile Model Architecture</image:title>
+      <image:caption>4-bit and 8-bit quantized weights for Samsung Galaxy mobile devices</image:caption>
+    </image:image>
+  </url>
+</urlset>

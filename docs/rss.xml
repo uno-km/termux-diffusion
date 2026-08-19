@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Termux-Diffusion: Production On-Device AI Image Generation Engine</title>
+    <link>https://uno-km.github.io/termux-diffusion/</link>
+    <description>Official release updates, technical articles, and on-device tensor computing guides for Termux-Diffusion on Samsung Galaxy and Android Termux ARM64 hardware.</description>
+    <language>en-US</language>
+    <lastBuildDate>Wed, 20 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <atom:link href="https://uno-km.github.io/termux-diffusion/rss.xml" rel="self" type="application/rss+xml"/>
+    
+    <item>
+      <title>Termux-Diffusion v1.0.0 Initial Release: Native Bionic ARM64 Stable Diffusion Pipeline</title>
+      <link>https://uno-km.github.io/termux-diffusion/</link>
+      <guid>https://uno-km.github.io/termux-diffusion/#v1.0.0</guid>
+      <pubDate>Wed, 20 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Termux-Diffusion v1.0.0 delivers production-grade on-device AI image generation for Samsung Galaxy and Android Termux devices with dual Python and Node.js runtime engines, zero PRoot virtualization, and automated Samsung Gallery MediaStore indexing.</description>
+      <content:encoded><![CDATA[
+        <p>Termux-Diffusion v1.0.0 introduces native Android Bionic libc execution for Stable Diffusion models with ARM64 NEON vectorization and GGML quantized weights.</p>
+        <p>Key features include 1-click bootstrap installation, 5 curated mobile presets, automatic CPU WakeLock management, and Samsung RAM Plus (zRAM) safety guards.</p>
+      ]]></content:encoded>
+    </item>
+
+    <item>
+      <title>Benchmarking Stable Diffusion Quantization on Exynos 1380 &amp; Snapdragon 8 Gen 3</title>
+      <link>https://uno-km.github.io/termux-diffusion/models.html</link>
+      <guid>https://uno-km.github.io/termux-diffusion/models.html#benchmarks</guid>
+      <pubDate>Wed, 20 Aug 2026 00:00:00 GMT</pubDate>
+      <description>In-depth analysis of Q4_K vs Q4_0 GGML tensor performance across mobile big.LITTLE core clusters, thermal throttling prevention, and memory utilization.</description>
+    </item>
+  </channel>
+</rss>

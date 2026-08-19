@@ -38,10 +38,12 @@ def get_sidebar(active_page):
     
     sidebar_html += """
             </ul>
-            <h3>AI Agent Protocol</h3>
+            <h3>AI Agent Protocol &amp; Feeds</h3>
             <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Technical Spec)</a></li>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
+                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
+                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
             </ul>
         </nav>"""
     return sidebar_html
@@ -61,6 +63,7 @@ def get_head_meta(title, description):
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
+    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
 
     <!-- Open Graph Metadata -->
     <meta property="og:title" content="{title}">

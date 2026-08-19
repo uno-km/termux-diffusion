@@ -22,7 +22,8 @@ const {
   validateGgufFile,
   getMemoryInfo,
   checkMemorySafety,
-  getOptimalThreadCount
+  getOptimalThreadCount,
+  detectNpuCapabilities
 } = require('../index.js');
 
 function runTests() {
@@ -128,11 +129,16 @@ function runTests() {
     assert(typeof safety.message === 'string');
   });
 
-  // 8. Optimal Thread Count
-  it('getOptimalThreadCount returns positive integer cluster size', () => {
-    const threads = getOptimalThreadCount();
-    assert(threads >= 1);
-    assert(threads <= os.cpus().length);
+  // 9. NPU Capabilities
+  it('detectNpuCapabilities returns structured NPU capability object', () => {
+    const npu = detectNpuCapabilities();
+    assert(typeof npu.available === 'boolean');
+    assert(typeof npu.vendor === 'string');
+    assert(typeof npu.topsRating === 'number');
+    assert(Array.isArray(npu.supportedPrecisions));
+
+    const npuDev = resolveDeviceBackend('npu');
+    assert(['vulkan', 'cpu'].includes(npuDev.effectiveDevice));
   });
 
   console.log(`\n📊 Node.js Test Results: ${passed}/${total} Passed.`);

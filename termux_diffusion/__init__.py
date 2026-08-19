@@ -40,6 +40,12 @@ from .hardware import (
     format_hardware_report,
     resolve_device_backend,
 )
+from .npu import (
+    NPUProfile,
+    NPUVendor,
+    detect_npu_capabilities,
+    get_optimal_heterogeneous_pipeline,
+)
 
 __version__ = "1.1.0"
 __author__ = "uno-km (쌩초보코딩단)"

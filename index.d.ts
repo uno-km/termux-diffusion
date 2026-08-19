@@ -21,6 +21,17 @@ export interface CachedModelInfo {
   is_valid_gguf?: boolean;
 }
 
+export interface NPUProfile {
+  available: boolean;
+  vendor: 'qualcomm_hexagon' | 'samsung_eden' | 'google_edge_tpu' | 'android_nnapi' | 'none';
+  chipsetName: string;
+  driverLibrary: string | null;
+  dspArchitecture: string;
+  topsRating: number;
+  supportedPrecisions: string[];
+  delegateType: string;
+}
+
 export interface HardwareProfile {
   cpuArch: string;
   cpuCores: number;
@@ -34,7 +45,8 @@ export interface HardwareProfile {
   vulkanLibPath: string | null;
   openclAvailable: boolean;
   openclLibPath: string | null;
-  recommendedBackend: 'cpu' | 'vulkan' | 'opencl';
+  npuProfile?: NPUProfile;
+  recommendedBackend: 'cpu' | 'vulkan' | 'opencl' | 'npu' | 'tpu';
   recommendedNgl: number;
   cmakeExtraFlags: string[];
 }
@@ -109,6 +121,7 @@ export function locateSdCli(): string | null;
 export function exportToAndroidGallery(sourcePath: string, destinationName?: string): string;
 export function generate(options: GenerateOptions | string): Promise<GenerationResult>;
 export function detectHardwareProfile(): HardwareProfile;
+export function detectNpuCapabilities(): NPUProfile;
 export function resolveDeviceBackend(requestedDevice?: string): { effectiveDevice: string; nglLayers: number };
 export function getSdCliGpuArgs(device: string, ngl: number): string[];
 export function validateGgufFile(filePath: string): boolean;

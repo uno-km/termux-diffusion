@@ -102,8 +102,8 @@ def generate(
         raise ValueError("Prompt must not be empty.")
 
     device_mode = device.lower().strip()
-    if device_mode not in ("cpu", "gpu", "opencl", "vulkan", "auto"):
-        raise ValueError(f"Invalid device '{device}'. Options: 'cpu', 'gpu', 'opencl', 'vulkan', 'auto'.")
+    if device_mode not in ("cpu", "gpu", "opencl", "vulkan", "npu", "tpu", "auto"):
+        raise ValueError(f"Invalid device '{device}'. Options: 'cpu', 'gpu', 'opencl', 'vulkan', 'npu', 'tpu', 'auto'.")
 
     # Resolve device to actual available backend using hardware probing
     from .hardware import resolve_device_backend, get_sd_cli_gpu_args

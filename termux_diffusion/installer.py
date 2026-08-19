@@ -226,23 +226,29 @@ def run_doctor() -> bool:
         valid_tag = " [GGUF Valid ✅]" if m.get("is_valid_gguf") else " [Header ⚠️]"
         print(f"   ↳ {m['name']} ({m['size_mb']} MB){valid_tag}")
 
-    # 8. Hardware Acceleration (GPU / NPU / Vulkan / OpenCL)
+    # 8. Hardware Acceleration (GPU / NPU / TPU / Vulkan / OpenCL)
     from .hardware import detect_hardware_profile, format_hardware_report
     hw = detect_hardware_profile()
     print(f"8. Hardware Acceleration Profile:")
-    print(f"   SoC: {hw.soc_name}, GPU: {hw.gpu_name}")
-    print(f"   Vulkan: {'Available ✅' if hw.vulkan_available else 'Not Found ⚠️'}")
+    print(f"   SoC: {hw.soc_name}, GPU Architecture: {hw.gpu_name}")
+    print(f"   GPU Vulkan: {'Available ✅' if hw.vulkan_available else 'Not Found ⚠️'}")
     if hw.vulkan_driver:
-        print(f"     ↳ Driver: {hw.vulkan_driver.library_path}")
-    print(f"   OpenCL: {'Available ✅' if hw.opencl_available else 'Not Found ⚠️'}")
+        print(f"     ↳ Vulkan Driver: {hw.vulkan_driver.library_path}")
+    print(f"   GPU OpenCL: {'Available ✅' if hw.opencl_available else 'Not Found ⚠️'}")
     if hw.opencl_driver:
-        print(f"     ↳ Driver: {hw.opencl_driver.library_path}")
-    print(f"   CPU ISA: DotProd={'✅' if hw.has_dotprod else '❌'} "
+        print(f"     ↳ OpenCL Driver: {hw.opencl_driver.library_path}")
+    if hw.npu_profile and hw.npu_profile.available:
+        print(f"   NPU / TPU Acceleration: Available ✅")
+        print(f"     ↳ Architecture: {hw.npu_profile.dsp_architecture} ({hw.npu_profile.tops_rating} TOPS)")
+        print(f"     ↳ Delegate: {hw.npu_profile.delegate_type} ({hw.npu_profile.driver_library})")
+    else:
+        print(f"   NPU / TPU Acceleration: Not Detected ℹ️ (GPU Vulkan & CPU NEON Active)")
+    print(f"   CPU ISA SIMD: DotProd={'✅' if hw.has_dotprod else '❌'} "
           f"FP16={'✅' if hw.has_fp16 else '❌'} "
           f"I8MM={'✅' if hw.has_i8mm else '❌'} "
           f"SVE={'✅' if hw.has_sve else '❌'}")
-    print(f"   Recommended Backend: {hw.recommended_backend.value} "
-          f"(GPU Offload Layers: {hw.recommended_ngl})")
+    print(f"   Recommended Compute Pipeline: {hw.recommended_backend.value.upper()} "
+          f"(Offload Layers: {hw.recommended_ngl})")
 
     print("=" * 65)
     if all_passed:

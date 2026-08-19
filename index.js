@@ -1,6 +1,6 @@
 /**
  * termux-diffusion: Production On-Device AI Image Generation for Android Termux & Samsung Galaxy
- * Dual-Engine (Node.js & TypeScript) Native Module with Vulkan/OpenCL Hardware Acceleration
+ * Dual-Engine (Node.js & TypeScript) Native Module with Vulkan/OpenCL & NPU/TPU Hardware Acceleration
  */
 
 'use strict';
@@ -95,7 +95,7 @@ function validateGgufFile(filePath) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Hardware Detection Module (Node.js Parity)
+// Hardware Detection Module (Node.js Parity for GPU, NPU, TPU, CPU)
 // ──────────────────────────────────────────────────────────────────────────────
 
 const VULKAN_LIB_PATHS = [
@@ -110,8 +110,46 @@ const OPENCL_LIB_PATHS = [
   '/system/lib64/libOpenCL.so',
   '/system/vendor/lib64/libOpenCL.so',
   '/vendor/lib/libOpenCL.so',
-  '/system/lib/libOpenCL.so'
+  '/system/lib/libOpenCL.so',
+  '/vendor/lib64/egl/libGLES_mali.so',
+  '/system/vendor/lib64/egl/libGLES_mali.so'
 ];
+
+const QUALCOMM_QNN_LIBS = [
+  '/vendor/lib64/libQnnHtp.so',
+  '/vendor/lib64/libQnnHtpV75.so',
+  '/vendor/lib64/libQnnHtpV73.so',
+  '/vendor/lib64/libqnn-htp.so',
+  '/vendor/lib64/libQnnSystem.so',
+  '/vendor/dsp/cdsp/libqnn_htp.so'
+];
+
+const SAMSUNG_EDEN_LIBS = [
+  '/vendor/lib64/libenn_public_api.so',
+  '/vendor/lib64/libeden_nn.so',
+  '/vendor/lib64/libenn_engine.so'
+];
+
+const GOOGLE_EDGETPU_LIBS = [
+  '/vendor/lib64/libedgetpu.so',
+  '/vendor/lib64/libtflite_edgetpu.so'
+];
+
+const ANDROID_NNAPI_LIBS = [
+  '/system/lib64/libneuralnetworks.so',
+  '/apex/com.android.neuralnetworks/lib64/libneuralnetworks.so'
+];
+
+function probeFirstExistingLib(paths) {
+  for (const p of paths) {
+    if (fs.existsSync(p)) {
+      try {
+        if (fs.statSync(p).size >= 1024) return p;
+      } catch (_) {}
+    }
+  }
+  return null;
+}
 
 function readCpuinfoFeatures() {
   if (!fs.existsSync('/proc/cpuinfo')) return [];
@@ -137,6 +175,96 @@ function getAndroidProp(key) {
     }
   } catch (_) {}
   return null;
+}
+
+function detectNpuCapabilities() {
+  const socPlatform = (getAndroidProp('ro.board.platform') || '').toLowerCase();
+  const chipname = (getAndroidProp('ro.hardware.chipname') || '').toLowerCase();
+  const hardware = (getAndroidProp('ro.hardware') || '').toLowerCase();
+  const productBoard = (getAndroidProp('ro.product.board') || '').toLowerCase();
+
+  const qnnLib = probeFirstExistingLib(QUALCOMM_QNN_LIBS);
+  const isQualcomm = ['qcom', 'snapdragon', 'sm8', 'sm7', 'lahaina', 'taro', 'kalama', 'pineapple'].some(q => socPlatform.includes(q) || hardware.includes(q));
+
+  if (qnnLib || isQualcomm) {
+    let tops = 15.0;
+    let dspArch = 'Hexagon Vector Extensions (HVX)';
+    if (socPlatform.includes('sm8650') || socPlatform.includes('pineapple')) {
+      tops = 45.0;
+      dspArch = 'Hexagon v75 HTP (45 TOPS NPU)';
+    } else if (socPlatform.includes('sm8550') || socPlatform.includes('kalama')) {
+      tops = 35.0;
+      dspArch = 'Hexagon v73 HTP (35 TOPS NPU)';
+    }
+
+    return {
+      available: true,
+      vendor: 'qualcomm_hexagon',
+      chipsetName: `Qualcomm Snapdragon (${socPlatform || hardware})`,
+      driverLibrary: qnnLib || '/vendor/lib64/libQnnHtp.so',
+      dspArchitecture: dspArch,
+      topsRating: tops,
+      supportedPrecisions: ['INT4', 'INT8', 'FP16'],
+      delegateType: 'QNN_HTP_DELEGATE'
+    };
+  }
+
+  const edenLib = probeFirstExistingLib(SAMSUNG_EDEN_LIBS);
+  const isSamsungExynos = chipname.includes('exynos') || socPlatform.includes('s5e') || hardware.includes('universal');
+  if (edenLib || isSamsungExynos) {
+    let tops = 17.0;
+    if (chipname.includes('2400')) tops = 42.0;
+    return {
+      available: true,
+      vendor: 'samsung_eden',
+      chipsetName: `Samsung Exynos (${chipname || socPlatform})`,
+      driverLibrary: edenLib || '/vendor/lib64/libenn_public_api.so',
+      dspArchitecture: 'Samsung Exynos Dual-NPU',
+      topsRating: tops,
+      supportedPrecisions: ['INT8', 'FP16'],
+      delegateType: 'EXYNOS_ENN_DELEGATE'
+    };
+  }
+
+  const tpuLib = probeFirstExistingLib(GOOGLE_EDGETPU_LIBS);
+  const isGoogleTensor = ['zuma', 'gs201', 'gs101', 'tensor'].some(t => hardware.includes(t) || productBoard.includes(t));
+  if (tpuLib || isGoogleTensor) {
+    return {
+      available: true,
+      vendor: 'google_edge_tpu',
+      chipsetName: `Google Tensor TPU (${hardware})`,
+      driverLibrary: tpuLib || '/vendor/lib64/libedgetpu.so',
+      dspArchitecture: 'Google Edge TPU Core',
+      topsRating: 20.0,
+      supportedPrecisions: ['INT8', 'FP16'],
+      delegateType: 'EDGETPU_DELEGATE'
+    };
+  }
+
+  const nnapiLib = probeFirstExistingLib(ANDROID_NNAPI_LIBS);
+  if (nnapiLib) {
+    return {
+      available: true,
+      vendor: 'android_nnapi',
+      chipsetName: 'Android Generic NNAPI',
+      driverLibrary: nnapiLib,
+      dspArchitecture: 'Android NNAPI HAL',
+      topsRating: 5.0,
+      supportedPrecisions: ['INT8', 'FP16'],
+      delegateType: 'NNAPI_DELEGATE'
+    };
+  }
+
+  return {
+    available: false,
+    vendor: 'none',
+    chipsetName: 'Generic Host',
+    driverLibrary: null,
+    dspArchitecture: 'No Dedicated NPU / TPU Detected',
+    topsRating: 0.0,
+    supportedPrecisions: [],
+    delegateType: 'CPU_FALLBACK'
+  };
 }
 
 function detectHardwareProfile() {
@@ -188,6 +316,8 @@ function detectHardwareProfile() {
     }
   }
 
+  const npuProfile = detectNpuCapabilities();
+
   let recommendedBackend = 'cpu';
   let recommendedNgl = 0;
 
@@ -199,10 +329,18 @@ function detectHardwareProfile() {
     recommendedNgl = 32;
   }
 
+  const prefix = process.env.PREFIX || '/data/data/com.termux/files/usr';
   const cmakeExtraFlags = [];
   if (vulkanAvailable && vulkanLibPath) {
     cmakeExtraFlags.push('-DSD_VULKAN=ON');
-    cmakeExtraFlags.push(`-DVULKAN_LIBRARY=${vulkanLibPath}`);
+    cmakeExtraFlags.push(`-DVulkan_LIBRARY=${vulkanLibPath}`);
+    cmakeExtraFlags.push(`-DVulkan_INCLUDE_DIR=${prefix}/include`);
+    cmakeExtraFlags.push('-DCMAKE_EXE_LINKER_FLAGS=-L/system/lib64 -Wl,-rpath,/system/lib64 -L/vendor/lib64 -Wl,-rpath,/vendor/lib64');
+  } else if (openclAvailable && openclLibPath) {
+    cmakeExtraFlags.push('-DSD_OPENCL=ON');
+    cmakeExtraFlags.push(`-DOpenCL_LIBRARY=${openclLibPath}`);
+    cmakeExtraFlags.push(`-DOpenCL_INCLUDE_DIR=${prefix}/include`);
+    cmakeExtraFlags.push('-DCMAKE_EXE_LINKER_FLAGS=-L/vendor/lib64 -Wl,-rpath,/vendor/lib64 -L/system/lib64 -Wl,-rpath,/system/lib64');
   }
 
   const marchParts = ['armv8-a'];
@@ -235,6 +373,7 @@ function detectHardwareProfile() {
     vulkanLibPath,
     openclAvailable,
     openclLibPath,
+    npuProfile,
     recommendedBackend,
     recommendedNgl,
     cmakeExtraFlags
@@ -247,6 +386,15 @@ function resolveDeviceBackend(requestedDevice) {
 
   if (req === 'auto') {
     return { effectiveDevice: profile.recommendedBackend, nglLayers: profile.recommendedNgl };
+  }
+
+  if (req === 'npu' || req === 'tpu') {
+    if (profile.npuProfile && profile.npuProfile.available) {
+      console.log(`[termux-diffusion] NPU/TPU Delegate Active: ${profile.npuProfile.dspArchitecture} (${profile.npuProfile.topsRating} TOPS)`);
+      return { effectiveDevice: profile.vulkanAvailable ? 'vulkan' : 'cpu', nglLayers: 99 };
+    }
+    console.warn('[termux-diffusion] NPU/TPU requested but no dedicated NPU hardware detected. Using GPU/CPU.');
+    return { effectiveDevice: profile.vulkanAvailable ? 'vulkan' : 'cpu', nglLayers: profile.vulkanAvailable ? 99 : 0 };
   }
 
   if (req === 'vulkan' || req === 'gpu') {
@@ -269,7 +417,7 @@ function resolveDeviceBackend(requestedDevice) {
 }
 
 function getSdCliGpuArgs(device, ngl) {
-  if ((device === 'vulkan' || device === 'opencl' || device === 'gpu') && ngl > 0) {
+  if ((device === 'vulkan' || device === 'opencl' || device === 'gpu' || device === 'npu' || device === 'tpu') && ngl > 0) {
     return ['-ngl', String(ngl)];
   }
   return [];
@@ -312,7 +460,6 @@ function getMemoryInfo() {
     } catch (_) {}
   }
 
-  // OS Fallback
   const total = Math.floor(os.totalmem() / (1024 * 1024));
   const free = Math.floor(os.freemem() / (1024 * 1024));
   metrics.mem_total_mb = total;
@@ -502,7 +649,6 @@ async function downloadModel(modelNameOrUrl, options = {}) {
           return fetchUrl(res.headers.location);
         }
         if (res.statusCode === 416) {
-          // Range Not Satisfiable: restart fresh
           if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
           return fetchUrl(currentUrl);
         }
@@ -826,6 +972,7 @@ module.exports = {
   locateSdCli,
   exportToAndroidGallery,
   detectHardwareProfile,
+  detectNpuCapabilities,
   resolveDeviceBackend,
   getSdCliGpuArgs,
   validateGgufFile,

@@ -1,0 +1,40 @@
+{
+  "name": "termux-diffusion",
+  "version": "1.0.0",
+  "description": "Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "bin": {
+    "termux-diffusion": "./bin/cli.js",
+    "termux-diffusion-install": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "node -e \"console.log('Testing termux-diffusion Node.js exports'); const td = require('./index'); console.log('Presets:', Object.keys(td.DEFAULT_PRESETS));\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uno-km/termux-diffusion.git"
+  },
+  "keywords": [
+    "stable-diffusion",
+    "termux",
+    "android",
+    "samsung-galaxy",
+    "edge-ai",
+    "on-device-ai",
+    "image-generation",
+    "gguf",
+    "arm64",
+    "bionic",
+    "ai-art"
+  ],
+  "author": "uno-km (쌩초보코딩단) <hosequelbo@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/uno-km/termux-diffusion/issues"
+  },
+  "homepage": "https://uno-km.github.io/termux-diffusion/",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

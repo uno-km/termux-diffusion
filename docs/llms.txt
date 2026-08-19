@@ -1,0 +1,26 @@
+# Termux-Diffusion: On-Device AI Image Generation Matrix for AI Agents
+
+> Termux-Diffusion is the production on-device AI image generation framework for Samsung Galaxy & Android Termux without root or PRoot.
+
+## 1-Line Installation
+- Python: `pip install termux-diffusion && termux-diffusion-install`
+- Node.js: `npm install termux-diffusion && npx termux-diffusion install`
+
+## Canonical Python Recipe
+```python
+from termux_diffusion import generate
+result = generate("RAW photo, portrait of developer, photorealistic", model="realistic")
+```
+
+## Canonical Node.js Recipe
+```javascript
+const { generate } = require('termux-diffusion');
+const result = await generate({ prompt: 'cyberpunk cat', model: 'speed' });
+```
+
+## Built-in Presets
+- 'realistic': Realistic Vision V6.0 B1 (Q4_K, 1.62GB) -> Photorealistic portraits
+- 'speed': SD 1.5 Base (Q4_1, 1.59GB) -> Fast drafts
+- 'sdxs': SDXS 512-0.9 (Q4_0, 450MB) -> 2-3 step mobile prototyping
+- 'turbo': SD Turbo (Q4_0, 1.20GB) -> 1-step real-time inference
+- 'anime': DreamShaper 8 (Q4_K, 1.65GB) -> 2D/2.5D illustration

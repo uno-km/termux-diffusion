@@ -1,0 +1,198 @@
+"""Automated C++ core engine provisioning, binary locator, build healer, and doctor diagnostics."""
+
+import logging
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+from .exceptions import ProvisioningError
+from .platform import (
+    TERMUX_PREFIX,
+    check_memory_safety,
+    get_default_cache_dir,
+    get_memory_info,
+    is_android_termux,
+    is_arm64,
+)
+
+logger = logging.getLogger("termux_diffusion.installer")
+
+SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
+
+
+def get_engine_bin_dir() -> Path:
+    """Return directory where compiled termux-diffusion binaries reside."""
+    bin_dir = get_default_cache_dir() / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    return bin_dir
+
+
+def locate_sd_cli() -> Optional[Path]:
+    """Locate the compiled sd-cli executable binary across standard locations."""
+    # 1. Custom cached engine binary
+    cached_bin = get_engine_bin_dir() / "sd-cli"
+    if cached_bin.is_file() and os.access(cached_bin, os.X_OK):
+        return cached_bin.resolve()
+
+    # 2. System PATH
+    for name in ("sd-cli", "sd"):
+        which_path = shutil.which(name)
+        if which_path and os.access(which_path, os.X_OK):
+            return Path(which_path).resolve()
+
+    # 3. Termux prefix bin
+    termux_bin = Path(TERMUX_PREFIX) / "bin" / "sd-cli"
+    if termux_bin.is_file() and os.access(termux_bin, os.X_OK):
+        return termux_bin.resolve()
+
+    # 4. Standard local build workspace
+    home_workspace = Path(os.path.expanduser("~/projects/ai-workspace/stable-diffusion.cpp/build/bin"))
+    for candidate in ("sd-cli", "sd"):
+        p = home_workspace / candidate
+        if p.is_file() and os.access(p, os.X_OK):
+            return p.resolve()
+
+    return None
+
+
+def provision_engine(force: bool = False) -> Path:
+    """Download, update submodules, and compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
+    existing = locate_sd_cli()
+    if existing and not force:
+        logger.info("Found existing native engine binary at: %s", existing)
+        return existing
+
+    print("🚀 [termux-diffusion] Provisioning native Bionic ARM64 Stable Diffusion engine...")
+
+    # Step 1: Ensure required system packages
+    if is_android_termux() and shutil.which("pkg"):
+        print("📦 [termux-diffusion] Checking build toolchains (git, cmake, clang, termux-api)...")
+        try:
+            subprocess.run(
+                ["pkg", "install", "-y", "git", "cmake", "clang", "termux-api", "wget"],
+                capture_output=False,
+                check=False,
+                timeout=180.0
+            )
+        except Exception as exc:
+            logger.warning("pkg install check note: %s", exc)
+
+    # Step 2: Set up build directory
+    build_root = get_default_cache_dir() / "build_src"
+    build_root.mkdir(parents=True, exist_ok=True)
+    repo_dir = build_root / "stable-diffusion.cpp"
+
+    if not repo_dir.exists():
+        print(f"📥 [termux-diffusion] Cloning {SD_CPP_REPO}...")
+        res = subprocess.run(["git", "clone", SD_CPP_REPO, str(repo_dir)], capture_output=True, text=True)
+        if res.returncode != 0:
+            raise ProvisioningError(f"Failed cloning stable-diffusion.cpp repository: {res.stderr}")
+
+    # Step 3: Crucial Submodule Update (Ensures ggml is present)
+    print("🔧 [termux-diffusion] Synchronizing recursive C++ submodules (ggml)...")
+    subprocess.run(
+        ["git", "submodule", "update", "--init", "--recursive"],
+        cwd=str(repo_dir),
+        capture_output=True,
+        check=False
+    )
+
+    # Step 4: CMake & Compilation
+    build_dir = repo_dir / "build"
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    print("⚙️ [termux-diffusion] Configuring CMake build...")
+    cmake_res = subprocess.run(
+        ["cmake", "..", "-DCMAKE_BUILD_TYPE=Release"],
+        cwd=str(build_dir),
+        capture_output=True,
+        text=True
+    )
+    if cmake_res.returncode != 0:
+        raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr}")
+
+    print("🔨 [termux-diffusion] Compiling native Bionic binary with clang (make -j4)...")
+    make_res = subprocess.run(
+        ["make", "-j4"],
+        cwd=str(build_dir),
+        capture_output=False
+    )
+    if make_res.returncode != 0:
+        raise ProvisioningError("Compilation failed. Please run 'termux-diffusion doctor' to diagnose missing headers.")
+
+    # Locate compiled binary
+    compiled_bin = None
+    for candidate in (build_dir / "bin" / "sd-cli", build_dir / "bin" / "sd", build_dir / "sd-cli", build_dir / "sd"):
+        if candidate.is_file():
+            compiled_bin = candidate
+            break
+
+    if not compiled_bin:
+        raise ProvisioningError("Could not locate compiled binary in build directory.")
+
+    # Install into cache bin directory
+    target_bin = get_engine_bin_dir() / "sd-cli"
+    shutil.copy2(compiled_bin, target_bin)
+    target_bin.chmod(0o755)
+
+    print(f"✨ [termux-diffusion] Engine provisioned successfully at: {target_bin}")
+    return target_bin.resolve()
+
+
+def run_doctor() -> bool:
+    """Run comprehensive 7-tier pre-flight diagnostic checks for Samsung Galaxy Termux setup."""
+    print("=" * 65)
+    print("🩺 [termux-diffusion] Pre-flight Diagnostic Doctor")
+    print("=" * 65)
+
+    all_passed = True
+
+    # 1. Platform Check
+    is_termux = is_android_termux()
+    arm_arch = is_arm64()
+    print(f"1. Platform: {'Android Termux ✅' if is_termux else 'Non-Termux Host (Emulation Mode) ℹ️'}")
+    print(f"2. Architecture: {'ARM64 / aarch64 ✅' if arm_arch else f'Host {sys.platform} ({os.name}) ℹ️'}")
+
+    # 3. Memory & RAM Plus
+    mem = get_memory_info()
+    safe, msg = check_memory_safety(required_mb=1200)
+    print(f"3. System Memory: {mem['mem_total_mb']}MB RAM + {mem['swap_total_mb']}MB Swap ({'Safe ✅' if safe else 'Warning ⚠️'})")
+    if not safe:
+        print(f"   ↳ {msg}")
+
+    # 4. Storage & Samsung Gallery
+    storage_ok = os.path.exists(os.path.expanduser("~/storage"))
+    print(f"4. Android Storage Permission: {'Configured ✅' if storage_ok else 'Missing ⚠️ (Run termux-setup-storage)'}")
+
+    # 5. Compiler Toolchain
+    clang_ok = bool(shutil.which("clang") or shutil.which("gcc"))
+    cmake_ok = bool(shutil.which("cmake"))
+    git_ok = bool(shutil.which("git"))
+    print(f"5. Build Tools: clang ({'✅' if clang_ok else '❌'}), cmake ({'✅' if cmake_ok else '❌'}), git ({'✅' if git_ok else '❌'})")
+    if not (clang_ok and cmake_ok and git_ok) and is_termux:
+        all_passed = False
+        print("   ↳ Run: pkg install clang cmake git termux-api -y")
+
+    # 6. Engine Binary
+    engine = locate_sd_cli()
+    print(f"6. Native C++ Engine (sd-cli): {str(engine) + ' ✅' if engine else 'Not Provisioned ❌ (Run termux-diffusion-install)'}")
+    if not engine:
+        all_passed = False
+
+    # 7. Model Cache Status
+    from .hub import list_cached_models
+    cached = list_cached_models()
+    print(f"7. Cached GGUF Models: {len(cached)} model(s) available locally.")
+    for m in cached:
+        print(f"   ↳ {m['name']} ({m['size_mb']} MB)")
+
+    print("=" * 65)
+    if all_passed:
+        print("🎉 All core diagnostics passed! You are ready to generate AI images.")
+    else:
+        print("⚠️ Some diagnostics need attention. Run 'termux-diffusion-install' to resolve.")
+    print("=" * 65)
+    return all_passed

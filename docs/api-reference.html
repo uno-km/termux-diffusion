@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference | Termux-Diffusion</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Logo">
+            <h1>Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag">v1.0.0 (Dual Engine)</span>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary">GitHub Repository</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Overview</h3>
+            <ul>
+                <li><a href="index.html">Home & Architecture</a></li>
+                <li><a href="installation.html">Installation Guide</a></li>
+                <li><a href="models.html">Smart Model Hub & Presets</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+                <li><a href="api-reference.html" class="active">API Reference</a></li>
+            </ul>
+            <h3>AI Specifications</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <h2>API Reference Manual</h2>
+            <p>Comprehensive reference for <code>termux_diffusion</code> (Python) and <code>termux-diffusion</code> (Node.js).</p>
+
+            <h3><code>generate(prompt, model='realistic', ...)</code></h3>
+            <p>Generates an AI image on Samsung Galaxy / Termux using Bionic native C++ diffusion.</p>
+
+            <h3><code>download_model(model_name_or_url, cache_dir=None, force=False)</code></h3>
+            <p>Pre-downloads GGUF model weights from Hugging Face with resume support.</p>
+
+            <h3><code>register_model(name, repo_id, filename, ...)</code></h3>
+            <p>Registers a custom Hugging Face repository model into the preset catalog.</p>
+
+            <h3><code>set_cache_dir(path) / get_cache_dir()</code></h3>
+            <p>Configures custom storage directory for model weights and caches.</p>
+        </main>
+    </div>
+    <footer>
+        <span>&copy; 2026 Termux-Diffusion Project. Released under the MIT License.</span>
+    </footer>
+</body>
+</html>

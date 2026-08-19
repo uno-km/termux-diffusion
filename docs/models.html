@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Model Hub &amp; Presets | Termux-Diffusion</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Logo">
+            <h1>Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag">v1.0.0 (Dual Engine)</span>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary">GitHub Repository</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Overview</h3>
+            <ul>
+                <li><a href="index.html">Home & Architecture</a></li>
+                <li><a href="installation.html">Installation Guide</a></li>
+                <li><a href="models.html" class="active">Smart Model Hub & Presets</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+                <li><a href="api-reference.html">API Reference</a></li>
+            </ul>
+            <h3>AI Specifications</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <h2>Smart Model Hub &amp; GGUF Presets</h2>
+            <p>Termux-Diffusion comes with 5 curated mobile-optimized model presets and modular cache management functions.</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Preset Name</th>
+                        <th>Base Model &amp; Quantization</th>
+                        <th>File Size</th>
+                        <th>Gen Time (A35 CPU)</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong><code>"realistic"</code></strong></td>
+                        <td>Realistic Vision V6.0 B1 (Q4_K)</td>
+                        <td>~1.62 GB</td>
+                        <td>~25 min (10 steps)</td>
+                        <td>Ultra-detailed photorealistic portraits, pores, reflections</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>"speed"</code></strong></td>
+                        <td>Stable Diffusion 1.5 Base (Q4_1)</td>
+                        <td>~1.59 GB</td>
+                        <td>~15 min (10 steps)</td>
+                        <td>General-purpose fast drafting and composition</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>"sdxs"</code></strong></td>
+                        <td>SDXS 512-0.9 Mobile (Q4_0)</td>
+                        <td><strong>~450 MB</strong></td>
+                        <td><strong>~2~3 min (2 steps)</strong></td>
+                        <td>Ultra-lightweight mobile prototyping</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>"turbo"</code></strong></td>
+                        <td>SD Turbo (Q4_0)</td>
+                        <td>~1.20 GB</td>
+                        <td>~3~5 min (1 step)</td>
+                        <td>1-step real-time inference</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>"anime"</code></strong></td>
+                        <td>DreamShaper 8 (Q4_K)</td>
+                        <td>~1.65 GB</td>
+                        <td>~20 min (10 steps)</td>
+                        <td>2D / 2.5D stylized illustration and anime art</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Modular Model Management API (Python)</h3>
+            <pre><code>from termux_diffusion import (
+    set_cache_dir,       # Set custom model storage (e.g. SD card)
+    download_model,      # Pre-download models in background
+    register_model,      # Register custom Hugging Face GGUF models
+    list_cached_models,  # List downloaded models
+    clear_cache          # Clean up storage
+)
+
+# 1. Custom model cache path
+set_cache_dir("~/storage/downloads/ai_models")
+
+# 2. Pre-download preset
+download_model("sdxs")
+
+# 3. Register custom model
+register_model(
+    name="my-waifu",
+    repo_id="second-state/Realistic_Vision_V6.0_B1-GGUF",
+    filename="realisticVisionV60B1_v51HyperVAE-Q4_k.gguf"
+)</code></pre>
+        </main>
+    </div>
+    <footer>
+        <span>&copy; 2026 Termux-Diffusion Project. Released under the MIT License.</span>
+    </footer>
+</body>
+</html>

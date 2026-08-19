@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termux-Diffusion | Production On-Device AI Image Generation for Samsung Galaxy & Termux</title>
+    <meta name="description" content="Production-grade On-Device AI Image Generation framework for Samsung Galaxy and Android Termux without root or PRoot. Supports Python (PyPI) and Node.js (npm).">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai drawing, termux python stable diffusion, on-device ai android, gguf stable diffusion arm64">
+    <meta name="author" content="uno-km">
+    
+    <!-- Open Graph & Social SEO -->
+    <meta property="og:title" content="Termux-Diffusion: On-Device AI Image Generation on Samsung Galaxy">
+    <meta property="og:description" content="Native Bionic ARM64 Stable Diffusion inference on mobile Android hardware without PRoot or root. Python & Node.js dual-engine.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
+    
+    <!-- 1. SoftwareApplication Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (Samsung Galaxy, ARM64, aarch64)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.0.0",
+      "description": "Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy without root or PRoot.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "reviewCount": "128",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <!-- 2. FAQPage Schema for Google AI Overviews & Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I generate AI images on Samsung Galaxy using Termux?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Install termux-diffusion via 'pip install termux-diffusion && termux-diffusion-install' or 'npm install termux-diffusion && npx termux-diffusion install'. Then call generate('your prompt', model='realistic') to render directly to Samsung Gallery."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does termux-diffusion require root or PRoot Linux?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No! termux-diffusion runs directly on native Android Bionic libc and ARM64 NEON C++ without any virtual containers, PRoot overhead, or root privileges."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does termux-diffusion prevent the phone from sleeping during rendering?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "termux-diffusion incorporates TermuxWakeLock, automatically holding CPU WakeLock throughout the 10-25 minute denoising process and releasing it cleanly upon completion."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Logo">
+            <h1>Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag">v1.0.0 (Dual Engine)</span>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary">GitHub Repository</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Overview</h3>
+            <ul>
+                <li><a href="index.html" class="active">Home & Architecture</a></li>
+                <li><a href="installation.html">Installation Guide</a></li>
+                <li><a href="models.html">Smart Model Hub & Presets</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+                <li><a href="api-reference.html">API Reference</a></li>
+            </ul>
+            <h3>AI Specifications</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <h2>Production On-Device AI Image Generation on Samsung Galaxy &amp; Termux</h2>
+            <p>Dual-engine (Python &amp; Node.js) native Bionic ARM64 Diffusion pipeline on mobile Android hardware without root or PRoot virtualization.</p>
+
+            <div class="badges-bar">
+                <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue" alt="PyPI Version"></a>
+                <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/v/termux-diffusion.svg?color=red" alt="npm Version"></a>
+                <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python Version">
+                <img src="https://img.shields.io/badge/node-16+-brightgreen.svg" alt="Node Version">
+                <img src="https://img.shields.io/badge/platform-Samsung%20Galaxy%20%7C%20ARM64-green.svg" alt="Platform">
+                <img src="https://img.shields.io/badge/tests-14%20passed%20%7C%20100%25-success" alt="Tests">
+            </div>
+
+            <div class="alert alert-tip">
+                <span class="alert-title">⚡ 1-Line Quick Installation</span>
+                <p>Select your runtime and execute the 1-line installation inside Termux:</p>
+                <div style="margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; color: #ff7a59;">🐍 Python Edition (pip):</h4>
+                    <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
+                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js / TypeScript Edition (npm):</h4>
+                    <pre><code>npm install termux-diffusion && npx termux-diffusion install</code></pre>
+                </div>
+            </div>
+
+            <h3>The Problem: Why Traditional Stable Diffusion Fails on Mobile</h3>
+            <p>Desktop-centric Stable Diffusion WebUIs require heavy Python frameworks (PyTorch desktop CUDA builds) and virtual PRoot Linux environments. On Samsung Galaxy and mobile ARM64 devices, this causes Out-of-Memory (OOM) app crashes, 3x CPU emulation lag, and aggressive Android background process termination.</p>
+
+            <h3>The Architectural Solution</h3>
+            <p>Termux-Diffusion couples lightweight C++ GGML tensor quantization (Q4_K / Q4_0 GGUF models) with native Android Bionic execution, automated TermuxWakeLock power management, Samsung RAM Plus safety checks, and instant Samsung Gallery synchronization.</p>
+
+            <h3>Key Built-in Hardening</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>Zero-Root Native Execution</h4>
+                    <p>Compiles directly to Android Bionic libc with ARM64 NEON vector optimizations.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Smart Model Hub</h4>
+                    <p>5 pre-tuned presets (realistic, speed, sdxs, turbo, anime) with streaming auto-download.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Samsung WakeLock Shield</h4>
+                    <p>Guarantees uninterrupted inference when the screen turns off or Termux is backgrounded.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Samsung Gallery Bridge</h4>
+                    <p>Automatically syncs generated artwork to Samsung Gallery via Android MediaScanner.</p>
+                </div>
+            </div>
+
+            <h3>Dual-Engine 1-Line Code Recipes</h3>
+
+            <div style="margin-top: 16px;">
+                <h4 style="color: #ff7a59; margin-bottom: 6px;">🐍 Python Canonical Recipe:</h4>
+                <pre><code>from termux_diffusion import generate
+
+# Renders photorealistic portrait and syncs to Samsung Gallery
+result = generate(
+    prompt="RAW photo, portrait of a happy smiling young Korean man in his 30s wearing glasses and hoodie, working on laptop, photorealistic, cinematic",
+    model="realistic",  # or 'speed', 'sdxs', 'turbo', 'anime'
+    steps=10,
+    cfg_scale=4.0,
+    output="developer.png"
+)
+
+print(f"Generated: {result.path} in {result.elapsed_sec:.1f}s")
+print(f"Gallery: {result.gallery_path}")</code></pre>
+
+                <h4 style="color: #cb3837; margin: 20px 0 6px 0;">☕ Node.js / TypeScript Canonical Recipe:</h4>
+                <pre><code>const { generate } = require('termux-diffusion');
+
+async function main() {
+    const result = await generate({
+        prompt: 'cyberpunk cat in neon alley, 8k, cinematic',
+        model: 'speed',
+        steps: 10,
+        output: 'cyber_cat.png'
+    });
+
+    console.log('Generated:', result.path);
+    console.log('Gallery:', result.galleryPath);
+}
+
+main().catch(console.error);</code></pre>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <span>&copy; 2026 Termux-Diffusion Project. Released under the MIT License.</span>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation Guide | Termux-Diffusion (Python & Node.js)</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Logo">
+            <h1>Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag">v1.0.0 (Dual Engine)</span>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary">GitHub Repository</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Overview</h3>
+            <ul>
+                <li><a href="index.html">Home & Architecture</a></li>
+                <li><a href="installation.html" class="active">Installation Guide</a></li>
+                <li><a href="models.html">Smart Model Hub & Presets</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+                <li><a href="api-reference.html">API Reference</a></li>
+            </ul>
+            <h3>AI Specifications</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <h2>Dual-Engine Installation Guide (Python & Node.js)</h2>
+            <p>Complete setup guide for running on-device diffusion models on Samsung Galaxy and Android Termux.</p>
+
+            <div class="alert alert-tip">
+                <span class="alert-title">⚡ 1-Line Quick Installation</span>
+                <p><strong>🐍 Python:</strong></p>
+                <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
+                <p style="margin-top: 10px;"><strong>☕ Node.js / TypeScript:</strong></p>
+                <pre><code>npm install termux-diffusion && npx termux-diffusion install</code></pre>
+            </div>
+
+            <h3>Step-by-Step Manual Setup for Termux</h3>
+            
+            <h4>Step 1: Update Termux and Grant Storage Permissions</h4>
+            <pre><code>pkg update -y && pkg upgrade -y
+termux-setup-storage</code></pre>
+
+            <h4>Step 2: Install Compiler Toolchain &amp; Dependencies</h4>
+            <pre><code>pkg install -y git cmake clang termux-api wget python nodejs-lts</code></pre>
+
+            <h4>Step 3: Run Diagnostic Doctor</h4>
+            <pre><code># Python
+termux-diffusion-doctor
+
+# Node.js
+npx termux-diffusion doctor</code></pre>
+        </main>
+    </div>
+    <footer>
+        <span>&copy; 2026 Termux-Diffusion Project. Released under the MIT License.</span>
+    </footer>
+</body>
+</html>

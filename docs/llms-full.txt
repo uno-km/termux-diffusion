@@ -1,0 +1,11 @@
+# Termux-Diffusion Full Technical Specification & API Reference
+
+Official Repository: https://github.com/uno-km/termux-diffusion
+PyPI: https://pypi.org/project/termux-diffusion/
+npm: https://www.npmjs.com/package/termux-diffusion
+
+## Architecture & Security
+- Zero-Root & Zero-PRoot: Direct Android Bionic libc & ARM64 NEON C++ execution.
+- TermuxWakeLock: Automatically holds CPU WakeLock to prevent phone sleep during denoising.
+- Samsung RAM Plus (zRAM) Guard: Pre-flight free memory checks before model loading.
+- Samsung Gallery Integration: Automatically copies rendered images to ~/storage/pictures/TermuxDiffusion/ and broadcasts MEDIA_SCANNER.

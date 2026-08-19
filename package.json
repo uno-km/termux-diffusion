@@ -8,6 +8,13 @@
     "termux-diffusion": "./bin/cli.js",
     "termux-diffusion-install": "./bin/cli.js"
   },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node -e \"console.log('Testing termux-diffusion Node.js exports'); const td = require('./index'); console.log('Presets:', Object.keys(td.DEFAULT_PRESETS));\""
   },

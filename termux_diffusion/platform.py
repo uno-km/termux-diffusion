@@ -1,5 +1,7 @@
 """Platform inspection, Samsung Galaxy hardware detection, memory checks, and Android OS bridges."""
 
+import ctypes
+import glob
 import logging
 import os
 import platform
@@ -7,7 +9,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger("termux_diffusion.platform")
 
@@ -111,24 +113,98 @@ def _trigger_media_scanner(image_path: Path) -> None:
 
 
 def get_optimal_thread_count() -> int:
-    """Calculate the optimal number of inference threads for Galaxy Exynos / Snapdragon CPUs.
+    """Calculate the optimal number of inference threads for mobile and host CPUs.
     
-    In big.LITTLE architectures (e.g. 4 Performance + 4 Efficiency cores), running on all 8
-    cores causes severe thermal throttling and cache thrashing. Using the performance cluster
-    count (typically 4 threads) yields faster inference and lower heat.
+    In big.LITTLE mobile architectures (e.g., 4 Performance + 4 Efficiency cores),
+    running on all cores causes severe thermal throttling and cache thrashing.
+    We inspect sysfs CPU frequency scaling topologies when available, or dynamically
+    derive cluster sizes.
     """
+    # 1. Try parsing Linux/Android sysfs cpufreq topology
+    try:
+        freq_files = sorted(glob.glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/cpuinfo_max_freq"))
+        if not freq_files:
+            freq_files = sorted(glob.glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_max_freq"))
+
+        if freq_files:
+            freqs: List[int] = []
+            for ff in freq_files:
+                try:
+                    with open(ff, "r", encoding="utf-8") as f:
+                        val = f.read().strip()
+                        if val.isdigit():
+                            freqs.append(int(val))
+                except (OSError, IOError):
+                    pass
+
+            if freqs:
+                max_f = max(freqs)
+                # Count cores operating within 85% of peak frequency (Big / Mid cluster)
+                threshold = int(max_f * 0.85)
+                perf_cores = sum(1 for f in freqs if f >= threshold)
+                if perf_cores > 0:
+                    return perf_cores
+    except Exception as e:
+        logger.debug("Sysfs CPU frequency probing error: %s", e)
+
+    # 2. General fallback based on logical CPU core topology
     total_cores = os.cpu_count() or 4
-    if total_cores >= 8:
-        return 4
-    elif total_cores >= 6:
-        return 4
-    elif total_cores >= 4:
-        return 4
-    return max(1, total_cores)
+    if is_arm64():
+        # Typical ARM mobile: 8 cores = 4 Big + 4 Little (or 1+3+4)
+        if total_cores >= 8:
+            return 4
+        elif total_cores >= 6:
+            return 4
+        elif total_cores >= 4:
+            return 4
+        return max(1, total_cores)
+    else:
+        # Desktop x86_64: Use physical cores heuristic (half of hyperthreaded cores or up to 8)
+        return max(1, min(8, total_cores // 2 if total_cores > 4 else total_cores))
+
+
+def _get_windows_memory_info() -> Optional[Dict[str, int]]:
+    """Retrieve accurate Windows physical RAM and commit limit via GlobalMemoryStatusEx."""
+    try:
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = MEMORYSTATUSEX()
+        stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            mem_total_mb = int(stat.ullTotalPhys // (1024 * 1024))
+            mem_available_mb = int(stat.ullAvailPhys // (1024 * 1024))
+            pagefile_total_mb = int(stat.ullTotalPageFile // (1024 * 1024))
+            pagefile_avail_mb = int(stat.ullAvailPageFile // (1024 * 1024))
+            
+            swap_total_mb = max(0, pagefile_total_mb - mem_total_mb)
+            swap_free_mb = max(0, pagefile_avail_mb - mem_available_mb)
+
+            return {
+                "mem_total_mb": mem_total_mb,
+                "mem_available_mb": mem_available_mb,
+                "swap_total_mb": swap_total_mb,
+                "swap_free_mb": swap_free_mb,
+                "effective_total_mb": mem_total_mb + swap_total_mb,
+                "effective_available_mb": mem_available_mb + swap_free_mb,
+            }
+    except Exception as e:
+        logger.debug("Windows GlobalMemoryStatusEx query failed: %s", e)
+    return None
 
 
 def get_memory_info() -> Dict[str, int]:
-    """Inspect /proc/meminfo to retrieve RAM and Samsung RAM Plus (zRAM swap) metrics in MB."""
+    """Inspect system memory metrics (RAM and swap/zRAM) in MB from genuine OS interfaces."""
     metrics = {
         "mem_total_mb": 0,
         "mem_available_mb": 0,
@@ -137,40 +213,54 @@ def get_memory_info() -> Dict[str, int]:
         "effective_total_mb": 0,
         "effective_available_mb": 0,
     }
-    
-    if not os.path.exists("/proc/meminfo"):
-        # Fallback for mock/test environments
-        metrics["mem_total_mb"] = 6144
-        metrics["mem_available_mb"] = 3072
-        metrics["swap_total_mb"] = 4096
-        metrics["swap_free_mb"] = 4096
-        metrics["effective_total_mb"] = 10240
-        metrics["effective_available_mb"] = 7168
-        return metrics
 
+    # 1. Linux & Android /proc/meminfo (Standard on Termux)
+    if os.path.exists("/proc/meminfo"):
+        try:
+            with open("/proc/meminfo", "r", encoding="utf-8") as f:
+                for line in f:
+                    parts = line.split(":")
+                    if len(parts) == 2:
+                        key = parts[0].strip()
+                        val_str = parts[1].strip().split()[0]
+                        if val_str.isdigit():
+                            val_kb = int(val_str)
+                            val_mb = val_kb // 1024
+                            if key == "MemTotal":
+                                metrics["mem_total_mb"] = val_mb
+                            elif key == "MemAvailable":
+                                metrics["mem_available_mb"] = val_mb
+                            elif key == "SwapTotal":
+                                metrics["swap_total_mb"] = val_mb
+                            elif key == "SwapFree":
+                                metrics["swap_free_mb"] = val_mb
+            metrics["effective_total_mb"] = metrics["mem_total_mb"] + metrics["swap_total_mb"]
+            metrics["effective_available_mb"] = metrics["mem_available_mb"] + metrics["swap_free_mb"]
+            return metrics
+        except Exception as e:
+            logger.debug("Failed reading /proc/meminfo: %s", e)
+
+    # 2. Windows Native Win32 API
+    if sys.platform == "win32":
+        win_mem = _get_windows_memory_info()
+        if win_mem:
+            return win_mem
+
+    # 3. Optional psutil fallback if installed
     try:
-        with open("/proc/meminfo", "r", encoding="utf-8") as f:
-            for line in f:
-                parts = line.split(":")
-                if len(parts) == 2:
-                    key = parts[0].strip()
-                    val_str = parts[1].strip().split()[0]
-                    if val_str.isdigit():
-                        val_kb = int(val_str)
-                        val_mb = val_kb // 1024
-                        if key == "MemTotal":
-                            metrics["mem_total_mb"] = val_mb
-                        elif key == "MemAvailable":
-                            metrics["mem_available_mb"] = val_mb
-                        elif key == "SwapTotal":
-                            metrics["swap_total_mb"] = val_mb
-                        elif key == "SwapFree":
-                            metrics["swap_free_mb"] = val_mb
-    except Exception as e:
-        logger.debug("Failed reading /proc/meminfo: %s", e)
+        import psutil  # type: ignore
+        vmem = psutil.virtual_memory()
+        smem = psutil.swap_memory()
+        metrics["mem_total_mb"] = int(vmem.total // (1024 * 1024))
+        metrics["mem_available_mb"] = int(vmem.available // (1024 * 1024))
+        metrics["swap_total_mb"] = int(smem.total // (1024 * 1024))
+        metrics["swap_free_mb"] = int(smem.free // (1024 * 1024))
+        metrics["effective_total_mb"] = metrics["mem_total_mb"] + metrics["swap_total_mb"]
+        metrics["effective_available_mb"] = metrics["mem_available_mb"] + metrics["swap_free_mb"]
+        return metrics
+    except ImportError:
+        pass
 
-    metrics["effective_total_mb"] = metrics["mem_total_mb"] + metrics["swap_total_mb"]
-    metrics["effective_available_mb"] = metrics["mem_available_mb"] + metrics["swap_free_mb"]
     return metrics
 
 
@@ -178,6 +268,11 @@ def check_memory_safety(required_mb: int = 1500) -> Tuple[bool, str]:
     """Verify if available memory is sufficient for model loading without triggering Android LMK."""
     mem = get_memory_info()
     avail = mem["effective_available_mb"]
+    
+    # If memory info could not be determined at all (0 MB), pass with a note
+    if mem["effective_total_mb"] == 0:
+        return True, "Memory detection unavailable on host OS; bypassing pre-flight guard."
+
     if avail < required_mb:
         return False, (
             f"Available memory ({avail} MB) is below the recommended threshold ({required_mb} MB). "
@@ -201,11 +296,14 @@ class TermuxWakeLock:
         wake_lock_bin = shutil.which("termux-wake-lock")
         if wake_lock_bin:
             try:
-                subprocess.run([wake_lock_bin], capture_output=True, timeout=2.0, check=False)
-                self._acquired = True
-                logger.debug("Acquired Termux CPU WakeLock.")
+                res = subprocess.run([wake_lock_bin], capture_output=True, timeout=2.0, check=False)
+                if res.returncode == 0:
+                    self._acquired = True
+                    logger.debug("Acquired Termux CPU WakeLock.")
+                else:
+                    logger.warning("Failed to acquire Termux WakeLock (exit %d): %s", res.returncode, res.stderr)
             except Exception as e:
-                logger.debug("Failed acquiring WakeLock: %s", e)
+                logger.warning("Exception while acquiring WakeLock: %s", e)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -213,8 +311,11 @@ class TermuxWakeLock:
             wake_unlock_bin = shutil.which("termux-wake-unlock")
             if wake_unlock_bin:
                 try:
-                    subprocess.run([wake_unlock_bin], capture_output=True, timeout=2.0, check=False)
-                    logger.debug("Released Termux CPU WakeLock.")
+                    res = subprocess.run([wake_unlock_bin], capture_output=True, timeout=2.0, check=False)
+                    if res.returncode == 0:
+                        logger.debug("Released Termux CPU WakeLock.")
+                    else:
+                        logger.warning("Failed releasing Termux WakeLock (exit %d): %s", res.returncode, res.stderr)
                 except Exception as e:
-                    logger.debug("Failed releasing WakeLock: %s", e)
+                    logger.warning("Exception while releasing WakeLock: %s", e)
             self._acquired = False

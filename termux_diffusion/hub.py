@@ -1,11 +1,13 @@
-"""Smart Model Hub, preset management, Hugging Face streaming downloader, and local caching."""
+"""Smart Model Hub, preset management, Hugging Face streaming downloader, GGUF validation, and local caching."""
 
+import hashlib
 import json
 import logging
 import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -66,8 +68,46 @@ DEFAULT_PRESETS: Dict[str, Dict] = {
     },
 }
 
+_registry_lock = threading.Lock()
 _custom_registry: Dict[str, Dict] = {}
 _active_cache_dir: Optional[Path] = None
+
+# GGUF Magic bytes: 0x47 0x47 0x55 0x46 in ASCII ("GGUF")
+GGUF_MAGIC = b"GGUF"
+
+
+def validate_gguf_file(file_path: Union[str, Path]) -> bool:
+    """Validate whether the file is a genuine GGUF binary format by inspecting the header magic bytes."""
+    path = Path(os.path.expanduser(str(file_path))).resolve()
+    if not path.is_file():
+        return False
+
+    try:
+        if path.stat().st_size < 4:
+            return False
+        with open(path, "rb") as f:
+            header = f.read(4)
+            return header == GGUF_MAGIC
+    except Exception as e:
+        logger.debug("GGUF header validation error on %s: %s", path, e)
+        return False
+
+
+def verify_file_sha256(file_path: Union[str, Path], expected_sha256: str) -> bool:
+    """Compute and verify SHA256 checksum for a downloaded model file."""
+    path = Path(os.path.expanduser(str(file_path))).resolve()
+    if not path.is_file():
+        return False
+
+    sha256_hash = hashlib.sha256()
+    try:
+        with open(path, "rb") as f:
+            for byte_block in iter(lambda: f.read(1024 * 1024), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest().lower() == expected_sha256.lower().strip()
+    except Exception as e:
+        logger.error("SHA256 verification failed on %s: %s", path, e)
+        return False
 
 
 def set_cache_dir(path: Union[str, Path]) -> Path:
@@ -75,15 +115,17 @@ def set_cache_dir(path: Union[str, Path]) -> Path:
     global _active_cache_dir
     resolved = Path(os.path.expanduser(str(path))).resolve()
     resolved.mkdir(parents=True, exist_ok=True)
-    _active_cache_dir = resolved
-    logger.info("termux-diffusion cache directory set to: %s", _active_cache_dir)
-    return _active_cache_dir
+    with _registry_lock:
+        _active_cache_dir = resolved
+    logger.info("termux-diffusion cache directory set to: %s", resolved)
+    return resolved
 
 
 def get_cache_dir() -> Path:
     """Get active model cache directory."""
-    if _active_cache_dir is not None:
-        return _active_cache_dir
+    with _registry_lock:
+        if _active_cache_dir is not None:
+            return _active_cache_dir
     return get_default_cache_dir() / "models"
 
 
@@ -95,25 +137,29 @@ def register_model(
     description: Optional[str] = None,
     default_steps: int = 10,
     default_cfg: float = 4.0,
+    sha256: Optional[str] = None,
 ) -> None:
     """Register a custom Hugging Face GGUF model into the hub catalog."""
     alias_name = alias or f"{name}.gguf"
-    _custom_registry[name] = {
-        "repo_id": repo_id,
-        "filename": filename,
-        "alias": alias_name,
-        "description": description or f"Custom model '{name}' from {repo_id}",
-        "default_steps": default_steps,
-        "default_cfg": default_cfg,
-    }
+    with _registry_lock:
+        _custom_registry[name] = {
+            "repo_id": repo_id,
+            "filename": filename,
+            "alias": alias_name,
+            "description": description or f"Custom model '{name}' from {repo_id}",
+            "default_steps": default_steps,
+            "default_cfg": default_cfg,
+            "sha256": sha256,
+        }
     logger.info("Registered custom model '%s' -> %s/%s", name, repo_id, filename)
 
 
 def list_presets() -> Dict[str, Dict]:
     """Return dictionary of all available presets (built-in + custom)."""
-    combined = dict(DEFAULT_PRESETS)
-    combined.update(_custom_registry)
-    return combined
+    with _registry_lock:
+        combined = dict(DEFAULT_PRESETS)
+        combined.update(_custom_registry)
+        return combined
 
 
 def is_model_cached(model_name_or_path: str, cache_dir: Optional[Union[str, Path]] = None) -> bool:
@@ -180,8 +226,9 @@ def download_model(
     cache_dir: Optional[Union[str, Path]] = None,
     force: bool = False,
     progress_callback: Optional[Callable[[int, int], None]] = None,
+    expected_sha256: Optional[str] = None,
 ) -> Path:
-    """Download GGUF model weights from Hugging Face or direct HTTP URL with progress display and resume capability."""
+    """Download GGUF model weights from Hugging Face or direct HTTP URL with progress display, resume capability, and checksum check."""
     target_dir = Path(cache_dir).resolve() if cache_dir else get_cache_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -191,6 +238,8 @@ def download_model(
         repo_id = info["repo_id"]
         filename = info["filename"]
         target_filename = info.get("alias", filename)
+        if expected_sha256 is None:
+            expected_sha256 = info.get("sha256")
         download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
     elif model_name_or_url.startswith("http://") or model_name_or_url.startswith("https://"):
         # Direct URL download
@@ -208,10 +257,9 @@ def download_model(
             download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
         elif len(parts) == 2:
             repo_id = f"{parts[0]}/{parts[1]}"
-            # Query Hugging Face API to find the main .gguf file in the repository
             try:
                 api_url = f"https://huggingface.co/api/models/{repo_id}"
-                req = urllib.request.Request(api_url, headers={"User-Agent": "termux-diffusion/1.0.0"})
+                req = urllib.request.Request(api_url, headers={"User-Agent": "termux-diffusion/1.1.0"})
                 with urllib.request.urlopen(req, timeout=10.0) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     siblings = [s.get("rfilename", "") for s in data.get("siblings", [])]
@@ -238,18 +286,21 @@ def download_model(
     logger.info("Downloading '%s' from %s -> %s", model_name_or_url, download_url, final_path)
     print(f"[termux-diffusion] Fetching model '{target_filename}' ({download_url})...")
 
-    # Attempt download with streaming chunk writer and resume support
+    # Attempt download with streaming chunk writer and HTTP Range resume support
     try:
         _stream_download(download_url, temp_path, progress_callback)
         temp_path.rename(final_path)
+
+        # Integrity Check
+        if expected_sha256:
+            print(f"[termux-diffusion] Verifying SHA256 integrity checksum...")
+            if not verify_file_sha256(final_path, expected_sha256):
+                final_path.unlink()
+                raise ModelDownloadError(f"SHA256 checksum mismatch for downloaded model '{target_filename}'")
+
         print(f"[termux-diffusion] Successfully cached model at: {final_path}")
         return final_path
     except Exception as exc:
-        if temp_path.exists():
-            try:
-                temp_path.unlink()
-            except OSError:
-                pass
         raise ModelDownloadError(f"Failed downloading model '{model_name_or_url}' from {download_url}: {exc}") from exc
 
 
@@ -258,16 +309,50 @@ def _stream_download(
     temp_path: Path,
     progress_callback: Optional[Callable[[int, int], None]] = None,
 ) -> None:
-    """Download large binary file via HTTP streaming with real-time terminal progress."""
-    headers = {"User-Agent": "termux-diffusion/1.0.0"}
-    req = urllib.request.Request(url, headers=headers)
+    """Download binary file via HTTP streaming with HTTP Range resume capability and terminal progress."""
+    headers = {"User-Agent": "termux-diffusion/1.1.0"}
+    existing_bytes = 0
 
-    with urllib.request.urlopen(req, timeout=30.0) as resp:
-        total_size = int(resp.headers.get("content-length", 0))
-        downloaded = 0
+    if temp_path.exists():
+        existing_bytes = temp_path.stat().st_size
+        if existing_bytes > 0:
+            headers["Range"] = f"bytes={existing_bytes}-"
+            logger.info("Resuming partial download from byte offset %d for %s", existing_bytes, temp_path.name)
+
+    req = urllib.request.Request(url, headers=headers)
+    is_resumed = False
+
+    try:
+        resp = urllib.request.urlopen(req, timeout=30.0)
+    except urllib.error.HTTPError as e:
+        if e.code == 416:  # Range Not Satisfiable (file may be fully downloaded or invalid range)
+            logger.debug("HTTP 416 Range Not Satisfiable; resetting temp file.")
+            temp_path.unlink(missing_ok=True)
+            existing_bytes = 0
+            req = urllib.request.Request(url, headers={"User-Agent": "termux-diffusion/1.1.0"})
+            resp = urllib.request.urlopen(req, timeout=30.0)
+        else:
+            raise
+
+    with resp:
+        status_code = resp.status if hasattr(resp, "status") else 200
+        content_len = resp.headers.get("content-length")
+        server_total = int(content_len) if content_len and content_len.isdigit() else 0
+
+        if status_code == 206:  # Partial Content
+            is_resumed = True
+            total_size = existing_bytes + server_total
+            file_mode = "ab"
+        else:
+            is_resumed = False
+            total_size = server_total
+            file_mode = "wb"
+            existing_bytes = 0
+
+        downloaded = existing_bytes
         chunk_size = 1024 * 1024  # 1MB chunks
 
-        with open(temp_path, "wb") as f:
+        with open(temp_path, file_mode) as f:
             last_print = time.time()
             while True:
                 chunk = resp.read(chunk_size)
@@ -282,7 +367,7 @@ def _stream_download(
                     pct = (downloaded / total_size) * 100
                     mb_done = downloaded / (1024 * 1024)
                     mb_total = total_size / (1024 * 1024)
-                    print(f"  > Progress: {mb_done:.1f}MB / {mb_total:.1f}MB ({pct:.1f}%)", end="\r", flush=True)
+                    print(f"  > Progress: {mb_done:.1f}MB / {mb_total:.1f}MB ({pct:.1f}%) [Resumed: {'Y' if is_resumed else 'N'}]", end="\r", flush=True)
                     last_print = time.time()
 
             if total_size > 0:
@@ -300,11 +385,13 @@ def list_cached_models(cache_dir: Optional[Union[str, Path]] = None) -> List[Dic
 
     for item in target_dir.glob("*.gguf"):
         size_mb = item.stat().st_size / (1024 * 1024)
+        is_valid = validate_gguf_file(item)
         results.append({
             "name": item.name,
             "path": str(item.resolve()),
             "size_mb": round(size_mb, 2),
             "last_modified": item.stat().st_mtime,
+            "is_valid_gguf": is_valid,
         })
     return results
 

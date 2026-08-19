@@ -48,12 +48,10 @@ def locate_sd_cli() -> Optional[Path]:
     if termux_bin.is_file() and os.access(termux_bin, os.X_OK):
         return termux_bin.resolve()
 
-    # 4. Standard local build workspace
-    home_workspace = Path(os.path.expanduser("~/projects/ai-workspace/stable-diffusion.cpp/build/bin"))
-    for candidate in ("sd-cli", "sd"):
-        p = home_workspace / candidate
-        if p.is_file() and os.access(p, os.X_OK):
-            return p.resolve()
+    # 4. Standard user local binary paths
+    local_bin = Path(os.path.expanduser("~/.local/bin/sd-cli"))
+    if local_bin.is_file() and os.access(local_bin, os.X_OK):
+        return local_bin.resolve()
 
     return None
 
@@ -78,7 +76,25 @@ def provision_engine(force: bool = False) -> Path:
                 timeout=180.0
             )
         except Exception as exc:
-            logger.warning("pkg install check note: %s", exc)
+            logger.warning("pkg install invocation warning: %s", exc)
+
+    # Verify toolchain existence
+    has_compiler = bool(shutil.which("clang") or shutil.which("gcc") or shutil.which("clang++"))
+    has_cmake = bool(shutil.which("cmake"))
+    has_git = bool(shutil.which("git"))
+
+    if not (has_compiler and has_cmake and has_git):
+        missing = []
+        if not has_compiler:
+            missing.append("clang / gcc")
+        if not has_cmake:
+            missing.append("cmake")
+        if not has_git:
+            missing.append("git")
+        raise ProvisioningError(
+            f"Missing required build tools: {', '.join(missing)}. "
+            f"Please run 'pkg install -y clang cmake git termux-api' before provisioning."
+        )
 
     # Step 2: Set up build directory
     build_root = get_default_cache_dir() / "build_src"
@@ -93,12 +109,15 @@ def provision_engine(force: bool = False) -> Path:
 
     # Step 3: Crucial Submodule Update (Ensures ggml is present)
     print("[termux-diffusion] Synchronizing tensor submodules (ggml)...")
-    subprocess.run(
+    sub_res = subprocess.run(
         ["git", "submodule", "update", "--init", "--recursive"],
         cwd=str(repo_dir),
         capture_output=True,
+        text=True,
         check=False
     )
+    if sub_res.returncode != 0:
+        logger.warning("Git submodule sync note: %s", sub_res.stderr)
 
     # Step 4: CMake & Compilation — Use hardware-detected optimal flags
     build_dir = repo_dir / "build"
@@ -160,7 +179,7 @@ def provision_engine(force: bool = False) -> Path:
 
 
 def run_doctor() -> bool:
-    """Run comprehensive 7-tier pre-flight diagnostic checks for Samsung Galaxy Termux setup."""
+    """Run comprehensive 8-tier pre-flight diagnostic checks for Samsung Galaxy Termux setup."""
     print("=" * 65)
     print("🩺 [termux-diffusion] Pre-flight Diagnostic Doctor")
     print("=" * 65)
@@ -185,7 +204,7 @@ def run_doctor() -> bool:
     print(f"4. Android Storage Permission: {'Configured ✅' if storage_ok else 'Missing ⚠️ (Run termux-setup-storage)'}")
 
     # 5. Compiler Toolchain
-    clang_ok = bool(shutil.which("clang") or shutil.which("gcc"))
+    clang_ok = bool(shutil.which("clang") or shutil.which("gcc") or shutil.which("clang++"))
     cmake_ok = bool(shutil.which("cmake"))
     git_ok = bool(shutil.which("git"))
     print(f"5. Build Tools: clang ({'✅' if clang_ok else '❌'}), cmake ({'✅' if cmake_ok else '❌'}), git ({'✅' if git_ok else '❌'})")
@@ -204,7 +223,8 @@ def run_doctor() -> bool:
     cached = list_cached_models()
     print(f"7. Cached GGUF Models: {len(cached)} model(s) available locally.")
     for m in cached:
-        print(f"   ↳ {m['name']} ({m['size_mb']} MB)")
+        valid_tag = " [GGUF Valid ✅]" if m.get("is_valid_gguf") else " [Header ⚠️]"
+        print(f"   ↳ {m['name']} ({m['size_mb']} MB){valid_tag}")
 
     # 8. Hardware Acceleration (GPU / NPU / Vulkan / OpenCL)
     from .hardware import detect_hardware_profile, format_hardware_report

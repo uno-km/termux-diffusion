@@ -1,5 +1,6 @@
-"""Unit tests for termux-diffusion Model Hub and cache manager."""
+"""Unit tests for termux-diffusion Model Hub, GGUF validator, SHA256, and cache manager."""
 
+import hashlib
 import os
 import shutil
 import tempfile
@@ -15,6 +16,8 @@ from termux_diffusion.hub import (
     list_presets,
     register_model,
     set_cache_dir,
+    validate_gguf_file,
+    verify_file_sha256,
 )
 from termux_diffusion.exceptions import ModelNotFoundError
 
@@ -51,30 +54,52 @@ def test_register_custom_model(temp_cache):
         alias="korean_portrait.gguf",
         description="Custom Korean portrait model",
         default_steps=12,
-        default_cfg=4.5
+        default_cfg=4.5,
+        sha256="abcdef1234567890"
     )
     presets = list_presets()
     assert "korean-portrait" in presets
     assert presets["korean-portrait"]["default_steps"] == 12
     assert presets["korean-portrait"]["default_cfg"] == 4.5
+    assert presets["korean-portrait"]["sha256"] == "abcdef1234567890"
 
 
-def test_cached_models_lifecycle(temp_cache):
+def test_gguf_validation_and_cached_models_lifecycle(temp_cache):
     # Initially empty
     assert len(list_cached_models(temp_cache)) == 0
     assert not is_model_cached("realistic", temp_cache)
 
-    # Create dummy gguf file simulating cached model
-    dummy_model = temp_cache / "realistic.gguf"
-    dummy_model.write_bytes(b"GGUF_MOCK_DATA" * 1024)
+    # 1. Create valid GGUF file (first 4 bytes = b'GGUF')
+    valid_model = temp_cache / "realistic.gguf"
+    valid_content = b"GGUF" + b"\x00" * 256
+    valid_model.write_bytes(valid_content)
 
+    assert validate_gguf_file(valid_model) is True
     assert is_model_cached("realistic", temp_cache)
-    cached_list = list_cached_models(temp_cache)
-    assert len(cached_list) == 1
-    assert cached_list[0]["name"] == "realistic.gguf"
 
-    # Test clear_cache
+    # 2. Create invalid model file
+    invalid_model = temp_cache / "corrupted.gguf"
+    invalid_model.write_bytes(b"BAD_HEADER_DATA_123")
+    assert validate_gguf_file(invalid_model) is False
+
+    cached_list = list_cached_models(temp_cache)
+    assert len(cached_list) == 2
+    
+    valid_entry = next(m for m in cached_list if m["name"] == "realistic.gguf")
+    assert valid_entry["is_valid_gguf"] is True
+
+    invalid_entry = next(m for m in cached_list if m["name"] == "corrupted.gguf")
+    assert invalid_entry["is_valid_gguf"] is False
+
+    # 3. SHA256 integrity verification
+    expected_hash = hashlib.sha256(valid_content).hexdigest()
+    assert verify_file_sha256(valid_model, expected_hash) is True
+    assert verify_file_sha256(valid_model, "wrong_hash_12345") is False
+
+    # 4. Clear cache
     removed = clear_cache(temp_cache, "realistic")
     assert removed == 1
     assert not is_model_cached("realistic", temp_cache)
+    assert len(list_cached_models(temp_cache)) == 1  # corrupted still remains
+    clear_cache(temp_cache)
     assert len(list_cached_models(temp_cache)) == 0

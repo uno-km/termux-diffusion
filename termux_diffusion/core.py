@@ -44,6 +44,19 @@ class GenerationResult:
         return f"<GenerationResult path='{self.path}' device='{self.device}' elapsed={self.elapsed_sec:.1f}s>"
 
 
+def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -> None:
+    """Safely terminate and reap child processes to prevent zombie handles."""
+    if proc and proc.poll() is None:
+        try:
+            proc.kill()
+            try:
+                proc.communicate(timeout=timeout)
+            except (subprocess.TimeoutExpired, Exception):
+                pass
+        except Exception as e:
+            logger.warning("Child process cleanup exception: %s", e)
+
+
 def generate(
     prompt: str,
     model: str = "realistic",
@@ -69,7 +82,7 @@ def generate(
         prompt: Detailed text description of the desired image.
         model: Preset keyword ('realistic', 'speed', 'sdxs', 'turbo', 'anime'), custom repo ('org/repo/file.gguf'), direct URL, or path to .gguf file.
         negative_prompt: Negative text guidance describing elements to avoid.
-        device: Computing device ('cpu', 'gpu', 'opencl', 'vulkan'). Default is 'cpu'.
+        device: Computing device ('cpu', 'gpu', 'opencl', 'vulkan', 'auto'). Default is 'cpu'.
         steps: Number of denoising steps (default determined by preset, e.g. 10).
         cfg_scale: Classifier-Free Guidance scale (default determined by preset, e.g. 4.0).
         width: Output image width in pixels (default: 512).
@@ -79,7 +92,7 @@ def generate(
         output: Destination output filename or path.
         export_gallery: Whether to copy image to Samsung Gallery and broadcast media scanner intent.
         wake_lock: Whether to acquire Android CPU WakeLock during generation.
-        low_ram_guard: Whether to verify available memory before starting inference.
+        low_ram_guard: Whether to verify available memory before starting inference. Raises OOMRiskError if RAM is below threshold.
         timeout: Maximum inference timeout in seconds (default: 1800s / 30m).
     
     Returns:
@@ -100,7 +113,8 @@ def generate(
     if low_ram_guard:
         safe, msg = check_memory_safety(required_mb=1000)
         if not safe:
-            logger.warning("Low RAM Warning: %s", msg)
+            logger.error("Low RAM Guard triggered: %s", msg)
+            raise OOMRiskError(msg)
 
     # 2. Resolve Model Path & Preset Hyperparameters (Validates model name first)
     presets = list_presets()
@@ -145,7 +159,7 @@ def generate(
         cmd.extend(["-n", negative_prompt])
     if seed >= 0:
         cmd.extend(["-s", str(seed)])
-    # Append GPU offloading args from hardware detection (not hardcoded)
+    # Append GPU offloading args from hardware detection
     cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
 
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
@@ -180,29 +194,14 @@ def generate(
             if process.returncode != 0:
                 raise TermuxDiffusionError(f"Engine process failed with return code {process.returncode}")
         except KeyboardInterrupt:
-            if process and process.poll() is None:
-                try:
-                    process.kill()
-                    process.wait(timeout=2.0)
-                except Exception:
-                    pass
+            _safe_kill_process(process)
             print("\n[termux-diffusion] Inference interrupted by user. Child processes terminated safely.")
             raise
         except subprocess.TimeoutExpired as exc:
-            if process and process.poll() is None:
-                try:
-                    process.kill()
-                    process.wait(timeout=2.0)
-                except Exception:
-                    pass
+            _safe_kill_process(process)
             raise InferenceTimeoutError(f"Diffusion generation timed out after {timeout} seconds") from exc
         except Exception:
-            if process and process.poll() is None:
-                try:
-                    process.kill()
-                    process.wait(timeout=2.0)
-                except Exception:
-                    pass
+            _safe_kill_process(process)
             raise
 
     elapsed = time.time() - start_time

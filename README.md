@@ -16,13 +16,27 @@
 
 **`termux-diffusion`** is the world's first unified Python & Node.js on-device AI image generation framework tailored specifically for **Samsung Galaxy and Android Termux** devices.
 
-Unlike desktop-centric WebUI ports that force users to install heavy PRoot Linux distributions (like Ubuntu) or suffer from memory leaks and Out-of-Memory (OOM) crashes, `termux-diffusion` runs directly on native **Android Bionic libc (ARM64)** using optimized C++ GGML quantization.
+Unlike desktop-centric WebUI ports that force users to install heavy PRoot Linux distributions (like Ubuntu) or suffer from memory leaks and Out-of-Memory (LMK) crashes, `termux-diffusion` runs directly on native **Android Bionic libc (ARM64)** using optimized C++ GGML tensor quantization.
 
 ---
 
-## ⚡ 1-Line Quick Installation
+## ⚡ 1-Click Zero-Touch Setup (Recommended)
 
-Select your preferred language runtime and run the 1-line command inside Termux:
+Open Termux and run the 1-line bootstrap script for your runtime:
+
+### 🐍 Python 1-Click Bootstrap
+```bash
+curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash
+```
+
+### ☕ Node.js / TypeScript 1-Click Bootstrap
+```bash
+curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash
+```
+
+---
+
+## 📦 Standard Package Installation
 
 ### 🐍 Python (pip)
 ```bash
@@ -31,25 +45,20 @@ pip install termux-diffusion && termux-diffusion-install
 
 ### ☕ Node.js / TypeScript (npm)
 ```bash
-npm install termux-diffusion && npx termux-diffusion install
+npm install -g termux-diffusion && npx termux-diffusion install
 ```
 
 ---
 
 ## 🌟 Key Capabilities & Samsung Galaxy Protections
 
-* **Zero-Root & Zero-PRoot Native Bionic Execution:**  
-  Direct ARM64 NEON C++ inference without virtual Linux containers or root access.
-* **Smart Model Hub (5 Built-in Presets):**  
-  Automatic resumable downloading & caching for photorealistic, speed, and mobile-optimized GGUF models.
-* **Samsung Galaxy Battery & Sleep Defense (`TermuxWakeLock`):**  
-  Automatically holds Android CPU WakeLock during 10~25 minute inference so the OS never suspends generation when the screen turns off.
-* **Low-RAM & OOM Guard (Samsung RAM Plus Integration):**  
-  Pre-flight safety inspection of physical RAM and zRAM swap before model loading.
-* **Samsung Gallery Auto-Synchronization:**  
-  Renders directly to `~/storage/pictures/TermuxDiffusion/` and triggers Android `MEDIA_SCANNER` broadcast so new artwork immediately shows up in your Samsung Gallery app.
-* **big.LITTLE CPU Core Cluster Auto-Tuning:**  
-  Detects Exynos (e.g. 1380, 1480, 2400) and Snapdragon performance clusters, preventing thermal throttling.
+* **Zero-Root & Zero-PRoot Native Bionic Execution:** Direct ARM64 NEON C++ inference without virtual Linux containers or root access.
+* **Smart Model Hub (5 Built-in Presets):** Automatic resumable downloading & caching for photorealistic, speed, and mobile-optimized GGUF models.
+* **Samsung Galaxy Battery & Sleep Defense (`TermuxWakeLock`):** Automatically holds Android CPU WakeLock during 10~25 minute inference so the OS never suspends generation when the screen turns off.
+* **Low-RAM & OOM Guard (Samsung RAM Plus Integration):** Pre-flight safety inspection of physical RAM and zRAM swap before model loading.
+* **Samsung Gallery Auto-Synchronization:** Renders directly to `~/storage/pictures/TermuxDiffusion/` and triggers Android `MEDIA_SCANNER` broadcast so new artwork immediately shows up in your Samsung Gallery app.
+* **big.LITTLE CPU Core Cluster Auto-Tuning:** Detects Exynos (e.g. 1380, 1480, 2400) and Snapdragon performance clusters, preventing thermal throttling.
+* **CPU / GPU Hardware Device Selection:** Flexible switching between CPU inference and GPU (Vulkan/OpenCL) offloading.
 
 ---
 
@@ -70,13 +79,13 @@ npm install termux-diffusion && npx termux-diffusion install
 ### 🐍 Python Recipe
 
 ```python
-import asyncio
-from termux_diffusion import generate, download_model, set_cache_dir
+from termux_diffusion import generate
 
 # 1. Generate Photorealistic Image in 1 Line
 result = generate(
     prompt="RAW photo, portrait of a happy smiling young Korean man in his 30s wearing glasses and hoodie, working on laptop, photorealistic, cinematic",
     model="realistic",  # or 'speed', 'sdxs', 'turbo', 'anime'
+    device="cpu",       # or 'gpu' for Vulkan/OpenCL acceleration
     steps=10,
     cfg_scale=4.0,
     output="developer.png"
@@ -90,12 +99,13 @@ print(f"⏱️ Denoising took: {result.elapsed_sec:.1f}s")
 ### ☕ Node.js / JavaScript Recipe
 
 ```javascript
-const { generate, downloadModel } = require('termux-diffusion');
+const { generate } = require('termux-diffusion');
 
 async function main() {
     const result = await generate({
         prompt: 'cyberpunk cat with neon collar in rainy alley, 8k, photorealistic',
         model: 'speed',
+        device: 'cpu', // or 'gpu'
         steps: 10,
         output: 'cyber_cat.png'
     });
@@ -109,33 +119,31 @@ main().catch(console.error);
 
 ---
 
-## 🛠️ Advanced Model & Cache Management
+## 🎨 Using Custom Models (Hugging Face / Local / URLs)
 
+### 1. Direct Hugging Face Model Identifier
+Pass any repository ID and filename directly. `termux-diffusion` will auto-download, cache, and execute:
 ```python
-from termux_diffusion import (
-    set_cache_dir,       # Set custom model storage (e.g. SD card)
-    download_model,      # Pre-download models in background
-    register_model,      # Register custom Hugging Face GGUF models
-    list_cached_models,  # List downloaded models
-    clear_cache          # Clean up storage
+generate(
+    "1girl, anime masterpiece, vibrant colors",
+    model="second-state/DreamShaper-8-GGUF/dreamshaper-8-Q4_k.gguf"
 )
+```
 
-# Set custom storage directory (e.g. external SD card)
-set_cache_dir("~/storage/external-1/ai_models")
-
-# Pre-download preset
-download_model("sdxs")
-
-# Register custom Hugging Face model
-register_model(
-    name="my-waifu",
-    repo_id="second-state/Realistic_Vision_V6.0_B1-GGUF",
-    filename="realisticVisionV60B1_v51HyperVAE-Q4_k.gguf"
+### 2. Local File on SD Card or Downloads
+```python
+generate(
+    "fantasy landscape",
+    model="~/storage/downloads/my_custom_model.gguf"
 )
+```
 
-# View cached models
-for m in list_cached_models():
-    print(f"{m['name']} ({m['size_mb']} MB)")
+### 3. Register Custom Nickname (`register_model`)
+```python
+from termux_diffusion import register_model, generate
+
+register_model("waifu", repo_id="second-state/DreamShaper-8-GGUF", filename="dreamshaper-8-Q4_k.gguf")
+generate("anime girl in sakura garden", model="waifu")
 ```
 
 ---

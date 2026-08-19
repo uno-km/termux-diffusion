@@ -127,13 +127,24 @@
             </div>
 
             <div class="alert alert-tip">
-                <span class="alert-title">⚡ 1-Line Quick Installation</span>
-                <p>Select your runtime and execute the 1-line installation inside Termux:</p>
+                <span class="alert-title">⚡ 1-Click Zero-Touch Installation (Recommended)</span>
+                <p>Run the 1-line bootstrap script inside Termux (auto-configures storage, packages, compiler, and models):</p>
                 <div style="margin-top: 12px;">
-                    <h4 style="margin: 8px 0 4px 0; color: #ff7a59;">🐍 Python Edition (pip):</h4>
-                    <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
-                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js / TypeScript Edition (npm):</h4>
-                    <pre><code>npm install termux-diffusion && npx termux-diffusion install</code></pre>
+                    <h4 style="margin: 8px 0 4px 0; color: #ff7a59;">🐍 Python 1-Click Setup:</h4>
+                    <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash</code></pre>
+                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js 1-Click Setup:</h4>
+                    <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash</code></pre>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+                <h4 style="margin-top: 0; color: #fff;">📦 Standard Package Installation (pip / npm)</h4>
+                <div style="margin-top: 8px;">
+                    <pre><code># Python (pip)
+pip install termux-diffusion && termux-diffusion-install
+
+# Node.js (npm)
+npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
                 </div>
             </div>
 

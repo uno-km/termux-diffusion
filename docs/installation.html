@@ -90,33 +90,48 @@
     </script>
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
     <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
 </head>
 <body>
     <header>
         <a href="index.html" class="header-brand">
             <img src="favicon.svg" alt="Termux-Diffusion Logo">
-            <h1>Termux-Diffusion</h1>
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
-            <span class="release-tag">v1.0.0 (Dual Engine)</span>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary">GitHub Repository</a>
+            <span class="release-tag" data-i18n="common.releaseTag">v1.0.0 (Dual Engine)</span>
+            <div class="lang-selector-wrapper">
+                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
         </div>
     </header>
 
     <div class="container">
         <nav class="sidebar">
-            <h3>Documentation</h3>
+            <h3 data-i18n="common.nav.overview">Overview</h3>
             <ul>
-                <li><a href="index.html">System Overview & Architecture</a></li>
-                <li><a href="installation.html" class="active">Installation & Scenarios</a></li>
-                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
-                <li><a href="models.html">Model Hub & GGUF Presets</a></li>
-                <li><a href="api-reference.html">100% Full API Reference</a></li>
+                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+                <li><a href="installation.html" class="active" data-i18n="common.nav.installation">Installation Guide</a></li>
+                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
+                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
+                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
+                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
             </ul>
-            <h3>AI Agent Protocol &amp; Feeds</h3>
+            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
             <ul>
                 <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
                 <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
@@ -126,8 +141,8 @@
         </nav>
 
         <main class="content">
-            <h2>Installation &amp; User Scenarios</h2>
-            <p>Step-by-step setup guides tailored for clean installations, rapid drafting, and custom model workflows.</p>
+            <h2 data-i18n="installation.title">Installation &amp; User Scenarios</h2>
+            <p data-i18n="installation.subtitle">Step-by-step setup guides tailored for clean installations, rapid drafting, and custom model workflows.</p>
 
             <div class="alert alert-tip">
                 <span class="alert-title">Scenario 1: Clean Install (아무것도 없는 사람)</span>
@@ -162,12 +177,12 @@ termux-diffusion generate "anime character" -m "second-state/DreamShaper-8-GGUF/
 # Or load from local SD card
 termux-diffusion generate "fantasy castle" -m "~/storage/downloads/my_model.gguf"</code></pre>
 
-            <h3>Pre-flight System Diagnostics</h3>
+            <h3 data-i18n="installation.verifyTitle">Pre-flight System Diagnostics</h3>
             <pre><code>termux-diffusion-doctor</code></pre>
         </main>
     </div>
     <footer>
-        <span>&copy; 2026 Termux-Diffusion Project. Released under the MIT License.</span>
+        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
     </footer>
 </body>
 </html>

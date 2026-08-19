@@ -90,33 +90,48 @@
     </script>
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
     <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
 </head>
 <body>
     <header>
         <a href="index.html" class="header-brand">
             <img src="favicon.svg" alt="Termux-Diffusion Logo">
-            <h1>Termux-Diffusion</h1>
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
-            <span class="release-tag">v1.0.0 (Dual Engine)</span>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary">GitHub Repository</a>
+            <span class="release-tag" data-i18n="common.releaseTag">v1.0.0 (Dual Engine)</span>
+            <div class="lang-selector-wrapper">
+                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
         </div>
     </header>
 
     <div class="container">
         <nav class="sidebar">
-            <h3>Documentation</h3>
+            <h3 data-i18n="common.nav.overview">Overview</h3>
             <ul>
-                <li><a href="index.html" class="active">System Overview & Architecture</a></li>
-                <li><a href="installation.html">Installation & Scenarios</a></li>
-                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
-                <li><a href="models.html">Model Hub & GGUF Presets</a></li>
-                <li><a href="api-reference.html">100% Full API Reference</a></li>
+                <li><a href="index.html" class="active" data-i18n="common.nav.home">Home / Architecture</a></li>
+                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
+                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
+                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
+                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
             </ul>
-            <h3>AI Agent Protocol &amp; Feeds</h3>
+            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
             <ul>
                 <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
                 <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
@@ -126,8 +141,8 @@
         </nav>
 
         <main class="content">
-            <h2>Production On-Device AI Image Generation on Android Termux</h2>
-            <p>A unified dual-engine (Python &amp; Node.js) diffusion framework designed for Samsung Galaxy and Android ARM64 hardware without container virtualization or root privileges.</p>
+            <h2 data-i18n="home.title">Production On-Device AI Image Generation on Android Termux</h2>
+            <p data-i18n="home.subtitle">A unified dual-engine (Python &amp; Node.js) diffusion framework designed for Samsung Galaxy and Android ARM64 hardware without container virtualization or root privileges.</p>
 
             <div class="badges-bar">
                 <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue" alt="PyPI Version"></a>
@@ -139,25 +154,28 @@
             </div>
 
             <div class="alert alert-tip">
-                <span class="alert-title">User Scenario Quick Playbook (사용자 상황별 빠른 시작)</span>
+                <span class="alert-title" data-i18n="home.quickInstallTitle">User Scenario Quick Playbook (사용자 상황별 빠른 시작)</span>
                 <p><strong>1. 아무것도 없는 사람 (Clean Install):</strong></p>
-                <pre><code># Python:
-termux-setup-storage && pkg update -y && pkg install python clang cmake git termux-api wget -y && pip install termux-diffusion && termux-diffusion-install
+                <pre><code># Python (2줄 완성):
+termux-setup-storage
+pkg update -y && pkg install python clang cmake git termux-api wget -y && pip install termux-diffusion && termux-diffusion-install
 
-# Node.js:
-termux-setup-storage && pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y && npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
+# Node.js (2줄 완성):
+termux-setup-storage
+pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y && npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
                 <p style="margin-top: 10px;"><strong>2. 이미 설치된 사람 (CLI 1줄 생성):</strong></p>
                 <pre><code>termux-diffusion generate "RAW photo, developer portrait, cinematic" -m realistic</code></pre>
                 <p style="margin-top: 10px;"><strong>3. 커스텀 모델 / 허깅페이스 모델:</strong></p>
                 <pre><code>termux-diffusion generate "anime girl, vibrant" -m "second-state/DreamShaper-8-GGUF/dreamshaper-8-Q4_k.gguf"</code></pre>
             </div>
 
-            <h3>Architectural Foundation</h3>
-            <p>Desktop-centric Stable Diffusion implementations rely on heavy CUDA libraries and containerized PRoot Linux distributions. On mobile ARM64 hardware, these virtual layers introduce CPU emulation overhead, trigger Android Low Memory Killer (LMK) aborts, and suffer from background thread termination.</p>
+            <h3 data-i18n="home.whyTitle">Architectural Foundation</h3>
+            <p data-i18n="home.whyText">Desktop-centric Stable Diffusion implementations rely on heavy CUDA libraries and containerized PRoot Linux distributions. On mobile ARM64 hardware, these virtual layers introduce CPU emulation overhead, trigger Android Low Memory Killer (LMK) aborts, and suffer from background thread termination.</p>
 
-            <p>Termux-Diffusion couples C++ GGML tensor quantization (Q4_K / Q4_0 GGUF models) with native Android Bionic execution, automated CPU WakeLock power management, Samsung RAM Plus safety validation, and automated MediaScanner gallery indexing.</p>
+            <h3 data-i18n="home.solTitle">The Architectural Breakthrough</h3>
+            <p data-i18n="home.solText">Termux-Diffusion couples C++ GGML tensor quantization (Q4_K / Q4_0 GGUF models) with native Android Bionic execution, automated CPU WakeLock power management, Samsung RAM Plus safety validation, and automated MediaScanner gallery indexing.</p>
 
-            <h3>Core Capabilities</h3>
+            <h3 data-i18n="home.capTitle">Core Capabilities</h3>
             <div class="features-grid">
                 <div class="feature-card">
                     <h4>Zero-Root Bionic Execution</h4>
@@ -177,7 +195,7 @@ termux-setup-storage && pkg update -y && pkg install nodejs-lts clang cmake git 
                 </div>
             </div>
 
-            <h3>Dual-Engine Code Samples</h3>
+            <h3 data-i18n="home.codeExampleTitle">Dual-Engine Code Samples</h3>
 
             <div style="margin-top: 16px;">
                 <h4 style="color: #ff7a59; margin-bottom: 6px;">Python API Example:</h4>
@@ -216,7 +234,7 @@ main().catch(console.error);</code></pre>
         </main>
     </div>
     <footer>
-        <span>&copy; 2026 Termux-Diffusion Project. Released under the MIT License.</span>
+        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
     </footer>
 </body>
 </html>

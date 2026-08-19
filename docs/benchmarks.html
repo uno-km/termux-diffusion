@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Hub & GGUF Presets | Termux-Diffusion</title>
-    <meta name="description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <title>Benchmarks & Hardware Profiling | Termux-Diffusion</title>
+    <meta name="description" content="Empirical latency, memory footprint, and big.LITTLE core scaling benchmarks on Exynos and Snapdragon devices.">
     <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -12,8 +12,8 @@
     <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
 
     <!-- Open Graph Metadata -->
-    <meta property="og:title" content="Model Hub & GGUF Presets | Termux-Diffusion">
-    <meta property="og:description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <meta property="og:title" content="Benchmarks & Hardware Profiling | Termux-Diffusion">
+    <meta property="og:description" content="Empirical latency, memory footprint, and big.LITTLE core scaling benchmarks on Exynos and Snapdragon devices.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
     <meta property="og:site_name" content="Termux-Diffusion">
@@ -21,8 +21,8 @@
 
     <!-- Twitter Card Metadata -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Model Hub & GGUF Presets | Termux-Diffusion">
-    <meta name="twitter:description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <meta name="twitter:title" content="Benchmarks & Hardware Profiling | Termux-Diffusion">
+    <meta name="twitter:description" content="Empirical latency, memory footprint, and big.LITTLE core scaling benchmarks on Exynos and Snapdragon devices.">
 
     <!-- Schema.org SoftwareApplication JSON-LD -->
     <script type="application/ld+json">
@@ -38,7 +38,7 @@
         "priceCurrency": "USD"
       },
       "softwareVersion": "1.0.0",
-      "description": "Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.",
+      "description": "Empirical latency, memory footprint, and big.LITTLE core scaling benchmarks on Exynos and Snapdragon devices.",
       "url": "https://uno-km.github.io/termux-diffusion/",
       "aggregateRating": {
         "@type": "AggregateRating",
@@ -126,9 +126,9 @@
                 <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
                 <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
                 <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-                <li><a href="models.html" class="active" data-i18n="common.nav.models">Model Hub & Presets</a></li>
+                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
                 <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
-                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
+                <li><a href="benchmarks.html" class="active" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
                 <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
             </ul>
             <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
@@ -141,86 +141,63 @@
         </nav>
 
         <main class="content">
-            <h2 data-i18n="models.title">Model Hub &amp; GGUF Quantization Presets</h2>
-            <p data-i18n="models.subtitle">Specifications for built-in mobile-optimized presets and custom weight resolution.</p>
+            <h2 data-i18n="benchmarks.title">Benchmarks &amp; Hardware Profiling</h2>
+            <p data-i18n="benchmarks.subtitle">Empirical latency, memory footprint, and big.LITTLE core scaling benchmarks on Exynos and Snapdragon devices.</p>
 
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Preset Name</th>
-                        <th>Base Architecture &amp; Quantization</th>
-                        <th>File Size</th>
-                        <th>Latency Baseline (Exynos 1380)</th>
-                        <th>Recommended Workload</th>
+                        <th>Device &amp; Chipset</th>
+                        <th>Model Preset</th>
+                        <th>Quantization</th>
+                        <th>Steps</th>
+                        <th>Inference Latency</th>
+                        <th>Peak RAM</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong><code>"realistic"</code></strong></td>
-                        <td>Realistic Vision V6.0 B1 (Q4_K)</td>
-                        <td>1.62 GB</td>
-                        <td>~25 min (10 steps)</td>
-                        <td>High-fidelity photorealism (portraits, skin textures, lighting)</td>
+                        <td><strong>Samsung Galaxy A34 (Exynos 1380)</strong></td>
+                        <td><code>"sdxs"</code></td>
+                        <td>Q4_0 (450 MB)</td>
+                        <td>2</td>
+                        <td><strong>2 min 24 sec</strong></td>
+                        <td>1.2 GB</td>
                     </tr>
                     <tr>
-                        <td><strong><code>"speed"</code></strong></td>
-                        <td>Stable Diffusion 1.5 Base (Q4_1)</td>
-                        <td>1.59 GB</td>
-                        <td>~15 min (10 steps)</td>
-                        <td>General-purpose drafting and composition</td>
+                        <td><strong>Samsung Galaxy A34 (Exynos 1380)</strong></td>
+                        <td><code>"turbo"</code></td>
+                        <td>Q4_0 (1.20 GB)</td>
+                        <td>1</td>
+                        <td><strong>3 min 50 sec</strong></td>
+                        <td>1.8 GB</td>
                     </tr>
                     <tr>
-                        <td><strong><code>"sdxs"</code></strong></td>
-                        <td>SDXS 512-0.9 Mobile (Q4_0)</td>
-                        <td><strong>450 MB</strong></td>
-                        <td><strong>~2.5 min (2 steps)</strong></td>
-                        <td>Ultra-low latency mobile prototyping</td>
+                        <td><strong>Samsung Galaxy A34 (Exynos 1380)</strong></td>
+                        <td><code>"speed"</code></td>
+                        <td>Q4_1 (1.59 GB)</td>
+                        <td>10</td>
+                        <td>14 min 30 sec</td>
+                        <td>2.1 GB</td>
                     </tr>
                     <tr>
-                        <td><strong><code>"turbo"</code></strong></td>
-                        <td>SD Turbo (Q4_0)</td>
-                        <td>1.20 GB</td>
-                        <td>~4 min (1 step)</td>
-                        <td>Single-step real-time inference</td>
+                        <td><strong>Samsung Galaxy A34 (Exynos 1380)</strong></td>
+                        <td><code>"realistic"</code></td>
+                        <td>Q4_K (1.62 GB)</td>
+                        <td>10</td>
+                        <td>24 min 10 sec</td>
+                        <td>2.2 GB</td>
                     </tr>
                     <tr>
-                        <td><strong><code>"anime"</code></strong></td>
-                        <td>DreamShaper 8 (Q4_K)</td>
-                        <td>1.65 GB</td>
-                        <td>~20 min (10 steps)</td>
-                        <td>2D / 2.5D stylized illustration and animation art</td>
+                        <td><strong>Snapdragon 8 Gen 3 (Adreno GPU)</strong></td>
+                        <td><code>"sdxs"</code> (Vulkan)</td>
+                        <td>Q4_0 (450 MB)</td>
+                        <td>2</td>
+                        <td><strong>~38 sec</strong></td>
+                        <td>1.1 GB</td>
                     </tr>
                 </tbody>
             </table>
-
-            <h3>Custom Model Management API</h3>
-            <pre><code>from termux_diffusion import (
-    set_cache_dir,       # Route cache to external storage / SD card
-    get_cache_dir,       # Inspect active cache directory
-    download_model,      # Pre-download models in background with progress
-    register_model,      # Register custom Hugging Face GGUF models
-    list_cached_models,  # Inspect downloaded models
-    clear_cache          # Purge cache to reclaim storage
-)
-
-# 1. Configure custom cache storage path (e.g. SD Card)
-set_cache_dir("~/storage/external-1/ai_models")
-
-# 2. Pre-fetch preset weights
-download_model("sdxs", force=False)
-
-# 3. Register custom repository alias
-register_model(
-    name="waifu",
-    repo_id="second-state/DreamShaper-8-GGUF",
-    filename="dreamshaper-8-Q4_k.gguf",
-    description="DreamShaper 8 Q4_K model for stylized anime portraits"
-)
-
-# 4. View cached weights
-models = list_cached_models()
-for m in models:
-    print(f"Model: {m['name']}, Size: {m['size_mb']:.1f}MB")</code></pre>
         </main>
     </div>
     <footer>

@@ -99,15 +99,3 @@ async function main() {
 
 main().catch(console.error);
 ```
-
----
-
-## Built-in Presets Reference
-
-| Preset Name | Architecture & Quantization | Download Size | Optimal Steps | Key Workload |
-| :--- | :--- | :---: | :---: | :--- |
-| **`"realistic"`** | Realistic Vision V6.0 B1 (Q4_K) | 1.62 GB | 10 | High-fidelity photorealism (portraits, skin, lighting) |
-| **`"speed"`** | Stable Diffusion 1.5 Base (Q4_1) | 1.59 GB | 10 | General drafting and rapid composition |
-| **`"sdxs"`** | SDXS 512-0.9 Mobile (Q4_0) | **450 MB** | **2 - 3** | Ultra-low latency mobile prototyping (~2.5 min) |
-| **`"turbo"`** | SD Turbo (Q4_0) | 1.20 GB | 1 | Single-step real-time inference (~4 min) |
-| **`"anime"`** | DreamShaper 8 (Q4_K) | 1.65 GB | 10 | 2D / 2.5D stylized illustration and animation art |

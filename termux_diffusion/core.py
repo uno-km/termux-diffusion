@@ -90,7 +90,11 @@ def generate(
 
     device_mode = device.lower().strip()
     if device_mode not in ("cpu", "gpu", "opencl", "vulkan", "auto"):
-        raise ValueError(f"Invalid device '{device}'. Options: 'cpu', 'gpu', 'opencl', 'vulkan'.")
+        raise ValueError(f"Invalid device '{device}'. Options: 'cpu', 'gpu', 'opencl', 'vulkan', 'auto'.")
+
+    # Resolve device to actual available backend using hardware probing
+    from .hardware import resolve_device_backend, get_sd_cli_gpu_args
+    effective_device, ngl_layers = resolve_device_backend(device_mode)
 
     # 1. Pre-flight Memory Safety Guard
     if low_ram_guard:
@@ -141,8 +145,8 @@ def generate(
         cmd.extend(["-n", negative_prompt])
     if seed >= 0:
         cmd.extend(["-s", str(seed)])
-    if device_mode in ("gpu", "opencl", "vulkan"):
-        cmd.extend(["-ngl", "32"])
+    # Append GPU offloading args from hardware detection (not hardcoded)
+    cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
 
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
     print(f"[termux-diffusion] Processing inference with model='{model}' (steps={steps}, threads={threads}, device={device_mode})...")

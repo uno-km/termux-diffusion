@@ -100,19 +100,28 @@ def provision_engine(force: bool = False) -> Path:
         check=False
     )
 
-    # Step 4: CMake & Compilation
+    # Step 4: CMake & Compilation — Use hardware-detected optimal flags
     build_dir = repo_dir / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    print("[termux-diffusion] Configuring CMake build with ARM64 optimizations...")
+    from .hardware import detect_hardware_profile, format_hardware_report
+    hw_profile = detect_hardware_profile()
+    print(f"[termux-diffusion] Detected SoC: {hw_profile.soc_name}, GPU: {hw_profile.gpu_name}")
+    print(f"[termux-diffusion] Vulkan: {'Available' if hw_profile.vulkan_available else 'Not Found'}, "
+          f"OpenCL: {'Available' if hw_profile.opencl_available else 'Not Found'}")
+    print(f"[termux-diffusion] CPU Extensions: DotProd={'Y' if hw_profile.has_dotprod else 'N'} "
+          f"FP16={'Y' if hw_profile.has_fp16 else 'N'} I8MM={'Y' if hw_profile.has_i8mm else 'N'}")
+    print(f"[termux-diffusion] Recommended backend: {hw_profile.recommended_backend.value}")
+
+    print("[termux-diffusion] Configuring CMake build with device-optimized flags...")
     cmake_cmd = [
         "cmake", "..",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DSD_BUILD_EXAMPLES=ON",
         "-DGGML_OPENMP=OFF",
-        "-DCMAKE_C_FLAGS=-O3 -D_GNU_SOURCE",
-        "-DCMAKE_CXX_FLAGS=-O3 -D_GNU_SOURCE"
     ]
+    # Append hardware-specific flags (Vulkan, DotProd, FP16, etc.)
+    cmake_cmd.extend(hw_profile.cmake_extra_flags)
     cmake_res = subprocess.run(
         cmake_cmd,
         cwd=str(build_dir),
@@ -197,10 +206,28 @@ def run_doctor() -> bool:
     for m in cached:
         print(f"   ↳ {m['name']} ({m['size_mb']} MB)")
 
+    # 8. Hardware Acceleration (GPU / NPU / Vulkan / OpenCL)
+    from .hardware import detect_hardware_profile, format_hardware_report
+    hw = detect_hardware_profile()
+    print(f"8. Hardware Acceleration Profile:")
+    print(f"   SoC: {hw.soc_name}, GPU: {hw.gpu_name}")
+    print(f"   Vulkan: {'Available ✅' if hw.vulkan_available else 'Not Found ⚠️'}")
+    if hw.vulkan_driver:
+        print(f"     ↳ Driver: {hw.vulkan_driver.library_path}")
+    print(f"   OpenCL: {'Available ✅' if hw.opencl_available else 'Not Found ⚠️'}")
+    if hw.opencl_driver:
+        print(f"     ↳ Driver: {hw.opencl_driver.library_path}")
+    print(f"   CPU ISA: DotProd={'✅' if hw.has_dotprod else '❌'} "
+          f"FP16={'✅' if hw.has_fp16 else '❌'} "
+          f"I8MM={'✅' if hw.has_i8mm else '❌'} "
+          f"SVE={'✅' if hw.has_sve else '❌'}")
+    print(f"   Recommended Backend: {hw.recommended_backend.value} "
+          f"(GPU Offload Layers: {hw.recommended_ngl})")
+
     print("=" * 65)
     if all_passed:
-        print("🎉 All core diagnostics passed! You are ready to generate AI images.")
+        print("All core diagnostics passed. System is ready for AI image generation.")
     else:
-        print("⚠️ Some diagnostics need attention. Run 'termux-diffusion-install' to resolve.")
+        print("Some diagnostics need attention. Run 'termux-diffusion-install' to resolve.")
     print("=" * 65)
     return all_passed

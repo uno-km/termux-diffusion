@@ -33,8 +33,15 @@ from .platform import (
     is_android_termux,
     is_arm64,
 )
+from .hardware import (
+    ComputeBackend,
+    HardwareProfile,
+    detect_hardware_profile,
+    format_hardware_report,
+    resolve_device_backend,
+)
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "uno-km (쌩초보코딩단)"
 __license__ = "MIT"
 

@@ -305,17 +305,25 @@ def _build_cmake_flags(profile: HardwareProfile) -> List[str]:
     
     Why these specific flags:
     - -DSD_VULKAN=ON: Enables ggml-vulkan compute backend in stable-diffusion.cpp
-    - VULKAN_LIBRARY: Points to the actual device driver .so
+    - Vulkan_LIBRARY & rpath: Points to Android Bionic /system/lib64/libvulkan.so and sets runtime rpath
     - -march=armv8.2-a+dotprod+fp16: Unlocks SDOT/UDOT 4-way SIMD which gives
       ~2x speedup on quantized INT4/INT8 tensor operations (same as what
       llama.cpp uses for Q4_K performance on ARM)
     - -DGGML_OPENMP=OFF: Termux doesn't ship libomp by default
     """
     flags = []
+    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
     
     if profile.vulkan_available and profile.vulkan_driver:
         flags.append("-DSD_VULKAN=ON")
-        flags.append(f"-DVULKAN_LIBRARY={profile.vulkan_driver.library_path}")
+        flags.append(f"-DVulkan_LIBRARY={profile.vulkan_driver.library_path}")
+        flags.append(f"-DVulkan_INCLUDE_DIR={prefix}/include")
+        flags.append("-DCMAKE_EXE_LINKER_FLAGS=-L/system/lib64 -Wl,-rpath,/system/lib64 -L/vendor/lib64 -Wl,-rpath,/vendor/lib64")
+    elif profile.opencl_available and profile.opencl_driver:
+        flags.append("-DSD_OPENCL=ON")
+        flags.append(f"-DOpenCL_LIBRARY={profile.opencl_driver.library_path}")
+        flags.append(f"-DOpenCL_INCLUDE_DIR={prefix}/include")
+        flags.append("-DCMAKE_EXE_LINKER_FLAGS=-L/vendor/lib64 -Wl,-rpath,/vendor/lib64 -L/system/lib64 -Wl,-rpath,/system/lib64")
     
     # CPU ISA optimization flags
     march_parts = ["armv8-a"]  # Base
@@ -405,10 +413,8 @@ def get_sd_cli_gpu_args(device: str, ngl: int) -> List[str]:
     """Build the sd-cli command-line arguments for GPU offloading.
     
     These are the actual CLI args that stable-diffusion.cpp accepts:
-    - For Vulkan: --gpu-layers N (offload N transformer layers to GPU)
+    - For Vulkan: -ngl N (offload N transformer layers to GPU)
     - For CPU: no extra args needed
-    
-    Reference: https://github.com/leejet/stable-diffusion.cpp#usage
     """
     args = []
     if device in ("vulkan", "opencl", "gpu") and ngl > 0:
@@ -421,22 +427,23 @@ def format_hardware_report(profile: HardwareProfile) -> str:
     lines = [
         "=== Hardware Acceleration Profile ===",
         f"SoC: {profile.soc_name}",
-        f"GPU: {profile.gpu_name}",
-        f"CPU: {profile.cpu_arch} ({profile.cpu_cores} cores)",
-        f"ARM Extensions: DotProd={'Y' if profile.has_dotprod else 'N'} "
-        f"FP16={'Y' if profile.has_fp16 else 'N'} "
-        f"I8MM={'Y' if profile.has_i8mm else 'N'} "
-        f"SVE={'Y' if profile.has_sve else 'N'}",
-        f"Vulkan: {'Available' if profile.vulkan_available else 'Not Found'}",
+        f"GPU Architecture: {profile.gpu_name}",
+        f"CPU Architecture: {profile.cpu_arch} ({profile.cpu_cores} cores)",
+        f"ARM SIMD Extensions: DotProd={'✅' if profile.has_dotprod else '❌'} "
+        f"FP16={'✅' if profile.has_fp16 else '❌'} "
+        f"I8MM={'✅' if profile.has_i8mm else '❌'} "
+        f"SVE={'✅' if profile.has_sve else '❌'}",
+        f"GPU Vulkan: {'Available ✅' if profile.vulkan_available else 'Not Found ⚠️'}",
     ]
     if profile.vulkan_driver:
-        lines.append(f"  Driver: {profile.vulkan_driver.library_path}")
-    lines.append(f"OpenCL: {'Available' if profile.opencl_available else 'Not Found'}")
+        lines.append(f"  ↳ Vulkan Lib: {profile.vulkan_driver.library_path}")
+    lines.append(f"GPU OpenCL: {'Available ✅' if profile.opencl_available else 'Not Found ⚠️'}")
     if profile.opencl_driver:
-        lines.append(f"  Driver: {profile.opencl_driver.library_path}")
-    lines.append(f"Recommended Backend: {profile.recommended_backend.value}")
-    lines.append(f"GPU Offload Layers: {profile.recommended_ngl}")
+        lines.append(f"  ↳ OpenCL Lib: {profile.opencl_driver.library_path}")
+    lines.append(f"NPU / TPU (Hexagon/Tensor): ⚠️ Not supported by GGML C++ engine (Roadmap: QNN/LiteRT)")
+    lines.append(f"Recommended Compute Backend: {profile.recommended_backend.value}")
+    lines.append(f"Recommended GPU Offload Layers: {profile.recommended_ngl}")
     if profile.cmake_extra_flags:
-        lines.append(f"CMake Flags: {' '.join(profile.cmake_extra_flags)}")
+        lines.append(f"CMake Build Flags: {' '.join(profile.cmake_extra_flags)}")
     lines.append("=" * 40)
     return "\n".join(lines)

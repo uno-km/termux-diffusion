@@ -104,9 +104,17 @@ def provision_engine(force: bool = False) -> Path:
     build_dir = repo_dir / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    print("⚙️ [termux-diffusion] Configuring CMake build...")
+    print("⚙️ [termux-diffusion] Configuring CMake build with ARM64 optimizations...")
+    cmake_cmd = [
+        "cmake", "..",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DSD_BUILD_EXAMPLES=ON",
+        "-DGGML_OPENMP=OFF",
+        "-DCMAKE_C_FLAGS=-O3 -D_GNU_SOURCE",
+        "-DCMAKE_CXX_FLAGS=-O3 -D_GNU_SOURCE"
+    ]
     cmake_res = subprocess.run(
-        ["cmake", "..", "-DCMAKE_BUILD_TYPE=Release"],
+        cmake_cmd,
         cwd=str(build_dir),
         capture_output=True,
         text=True

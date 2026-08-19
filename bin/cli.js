@@ -62,8 +62,15 @@ function runInstall() {
   const buildDir = path.join(repoDir, 'build');
   if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
 
-  console.log('⚙️ Configuring CMake build...');
-  spawnSync('cmake', ['..', '-DCMAKE_BUILD_TYPE=Release'], { cwd: buildDir, stdio: 'inherit' });
+  console.log('⚙️ Configuring CMake build with ARM64 optimizations...');
+  spawnSync('cmake', [
+    '..',
+    '-DCMAKE_BUILD_TYPE=Release',
+    '-DSD_BUILD_EXAMPLES=ON',
+    '-DGGML_OPENMP=OFF',
+    '-DCMAKE_C_FLAGS=-O3 -D_GNU_SOURCE',
+    '-DCMAKE_CXX_FLAGS=-O3 -D_GNU_SOURCE'
+  ], { cwd: buildDir, stdio: 'inherit' });
 
   console.log('🔨 Compiling native Bionic binary with clang (make -j4)...');
   spawnSync('make', ['-j4'], { cwd: buildDir, stdio: 'inherit' });

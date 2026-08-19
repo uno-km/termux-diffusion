@@ -142,6 +142,7 @@ def generate(
 
     # 6. Execute with WakeLock protection
     with TermuxWakeLock(enabled=wake_lock):
+        process = None
         try:
             process = subprocess.Popen(
                 cmd,
@@ -153,20 +154,43 @@ def generate(
             )
 
             # Stream real-time progress to terminal
-            for line in process.stdout:
-                line_str = line.strip()
-                if line_str:
-                    if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
-                        print(f"  ⚡ {line_str}")
-                    else:
-                        logger.debug("sd-cli: %s", line_str)
+            if process.stdout:
+                for line in process.stdout:
+                    line_str = line.strip()
+                    if line_str:
+                        if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
+                            print(f"  ⚡ {line_str}")
+                        else:
+                            logger.debug("sd-cli: %s", line_str)
 
             process.wait(timeout=timeout)
             if process.returncode != 0:
                 raise TermuxDiffusionError(f"Engine process failed with return code {process.returncode}")
+        except KeyboardInterrupt:
+            if process and process.poll() is None:
+                try:
+                    process.kill()
+                    process.wait(timeout=2.0)
+                except Exception:
+                    pass
+            print("\n🛑 [termux-diffusion] Inference interrupted by user. Cleaned up child processes.")
+            raise
         except subprocess.TimeoutExpired as exc:
-            process.kill()
+            if process and process.poll() is None:
+                try:
+                    process.kill()
+                    process.wait(timeout=2.0)
+                except Exception:
+                    pass
             raise InferenceTimeoutError(f"Diffusion generation timed out after {timeout} seconds") from exc
+        except Exception:
+            if process and process.poll() is None:
+                try:
+                    process.kill()
+                    process.wait(timeout=2.0)
+                except Exception:
+                    pass
+            raise
 
     elapsed = time.time() - start_time
 

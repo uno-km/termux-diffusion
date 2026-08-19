@@ -180,45 +180,59 @@ index_html = f"""<!DOCTYPE html>
             <p data-i18n="home.subtitle">A unified dual-engine (Python &amp; Node.js) diffusion framework designed for Samsung Galaxy and Android ARM64 hardware without container virtualization or root privileges.</p>
 
             <div class="badges-bar">
-                <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue" alt="PyPI Version"></a>
-                <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/v/termux-diffusion.svg?color=red" alt="npm Version"></a>
+                <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/badge/pypi-v1.0.0-blue.svg" alt="PyPI Version"></a>
+                <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/badge/npm-v1.0.0-red.svg" alt="npm Version"></a>
                 <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python Version">
                 <img src="https://img.shields.io/badge/node-16+-brightgreen.svg" alt="Node Version">
                 <img src="https://img.shields.io/badge/platform-Samsung%20Galaxy%20%7C%20ARM64-green.svg" alt="Platform">
                 <img src="https://img.shields.io/badge/tests-15%20passed%20%7C%20100%25-success" alt="Tests">
             </div>
 
-            <div class="alert alert-tip">
-                <span class="alert-title" data-i18n="home.quickInstallTitle">User Scenario Quick Playbook (사용자 상황별 빠른 시작)</span>
-                <p><strong>1. 아무것도 없는 사람 (Clean Install):</strong></p>
-                <pre><code># Python (2줄 완성):
-termux-setup-storage
-pkg update -y && pkg install python clang cmake git termux-api wget -y && pip install termux-diffusion && termux-diffusion-install
-
-# Node.js (2줄 완성):
-termux-setup-storage
-pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y && npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
-                <p style="margin-top: 10px;"><strong>2. 이미 설치된 사람 (CLI 1줄 생성):</strong></p>
-                <pre><code>termux-diffusion generate "RAW photo, developer portrait, cinematic" -m realistic</code></pre>
-                <p style="margin-top: 10px;"><strong>3. 커스텀 모델 / 허깅페이스 모델:</strong></p>
-                <pre><code>termux-diffusion generate "anime girl, vibrant" -m "second-state/DreamShaper-8-GGUF/dreamshaper-8-Q4_k.gguf"</code></pre>
+            <!-- 1. 초고속 설치 (Installation First) -->
+            <div class="alert alert-tip" style="margin-top: 20px;">
+                <span class="alert-title" data-i18n="home.quickInstallTitle">⚡ 1. 1-Line Quick Installation (초고속 설치)</span>
+                <p data-i18n="home.quickInstallDesc">Select your runtime and run the 1-line installation in Termux:</p>
+                <div style="margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; color: #0055cc;">🐍 Python (PyPI):</h4>
+                    <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
+                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js / TypeScript (npm):</h4>
+                    <pre><code>npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
+                </div>
             </div>
 
-            <h3 data-i18n="home.whyTitle">Architectural Foundation</h3>
-            <p data-i18n="home.whyText">Desktop-centric Stable Diffusion implementations rely on heavy CUDA libraries and containerized PRoot Linux distributions. On mobile ARM64 hardware, these virtual layers introduce CPU emulation overhead, trigger Android Low Memory Killer (LMK) aborts, and suffer from background thread termination.</p>
+            <!-- 2. 즉시 실행 & 생성 방법 (Execution Next) -->
+            <div class="card" style="margin-bottom: 24px;">
+                <h3 style="margin-top: 0; color: var(--primary-color);">🎨 2. Quick Execution (즉시 실행 및 이미지 생성)</h3>
+                
+                <h4 style="margin: 12px 0 6px 0;">Option A: CLI 1줄 터미널 생성 (No Code)</h4>
+                <pre><code>termux-diffusion generate "RAW photo, portrait of developer, photorealistic" -m realistic</code></pre>
 
-            <h3 data-i18n="home.solTitle">The Architectural Breakthrough</h3>
-            <p data-i18n="home.solText">Termux-Diffusion couples C++ GGML tensor quantization (Q4_K / Q4_0 GGUF models) with native Android Bionic execution, automated CPU WakeLock power management, Samsung RAM Plus safety validation, and automated MediaScanner gallery indexing.</p>
+                <h4 style="margin: 18px 0 6px 0;">Option B: Python SDK Code</h4>
+                <pre><code>from termux_diffusion import generate
 
-            <h3 data-i18n="home.capTitle">Core Capabilities</h3>
+result = generate("cyberpunk cat with neon collar in rainy alley", model="speed")
+print(f"Artifact: {{result.path}} (Gallery: {{result.gallery_path}})")</code></pre>
+
+                <h4 style="margin: 18px 0 6px 0;">Option C: Node.js SDK Code</h4>
+                <pre><code>const {{ generate }} = require('termux-diffusion');
+
+async function main() {{
+    const result = await generate({{ prompt: 'cyberpunk cat in neon alley', model: 'speed' }});
+    console.log(`Saved: ${{result.path}}`);
+}}
+main();</code></pre>
+            </div>
+
+            <!-- 3. 핵심 기술 특장점 (Core Capabilities) -->
+            <h3 data-i18n="home.capTitle">3. Core Capabilities (핵심 기술 역량)</h3>
             <div class="features-grid">
                 <div class="feature-card">
                     <h4>Zero-Root Bionic Execution</h4>
-                    <p>Compiles directly against Android Bionic libc with ARM64 NEON vector optimizations.</p>
+                    <p>Compiles directly against Android Bionic libc with ARM64 NEON vector optimizations without PRoot bloat.</p>
                 </div>
                 <div class="feature-card">
                     <h4>Smart Model Hub</h4>
-                    <p>5 built-in presets (realistic, speed, sdxs, turbo, anime) with streaming auto-download and resume.</p>
+                    <p>5 built-in presets (realistic, speed, sdxs, turbo, anime) with automatic streaming and cache resume.</p>
                 </div>
                 <div class="feature-card">
                     <h4>Power &amp; Sleep Shield</h4>
@@ -226,45 +240,48 @@ pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y && np
                 </div>
                 <div class="feature-card">
                     <h4>Samsung MediaStore Bridge</h4>
-                    <p>Persists outputs to ~/storage/pictures/TermuxDiffusion/ and triggers MediaScanner broadcast.</p>
+                    <p>Persists outputs to ~/storage/pictures/TermuxDiffusion/ and triggers MediaScanner broadcast for Samsung Gallery.</p>
                 </div>
             </div>
 
-            <h3 data-i18n="home.codeExampleTitle">Dual-Engine Code Samples</h3>
-
-            <div style="margin-top: 16px;">
-                <h4 style="color: #ff7a59; margin-bottom: 6px;">Python API Example:</h4>
-                <pre><code>from termux_diffusion import generate
-
-result = generate(
-    prompt="RAW photo, portrait of a happy smiling young Korean man in his 30s wearing glasses and hoodie, working on laptop, photorealistic, cinematic",
-    model="realistic",
-    device="cpu",
-    steps=10,
-    cfg_scale=4.0,
-    output="developer.png"
-)
-
-print(f"Artifact: {{result.path}} (Elapsed: {{result.elapsed_sec:.2f}}s)")
-print(f"MediaStore: {{result.gallery_path}}")</code></pre>
-
-                <h4 style="color: #cb3837; margin: 20px 0 6px 0;">Node.js / TypeScript API Example:</h4>
-                <pre><code>const {{ generate }} = require('termux-diffusion');
-
-async function main() {{
-    const result = await generate({{
-        prompt: 'cyberpunk cat in neon alley, 8k, cinematic',
-        model: 'speed',
-        device: 'cpu',
-        steps: 10,
-        output: 'cyber_cat.png'
-    }});
-
-    console.log(`Artifact: ${{result.path}}`);
-    console.log(`MediaStore: ${{result.galleryPath}}`);
-}}
-
-main().catch(console.error);</code></pre>
+            <!-- 4. 상세 매뉴얼 및 서브페이지 이동 안내 (Deep Documentation Navigation Cards) -->
+            <h3 style="margin-top: 32px;">4. Detailed Documentation &amp; Manuals (상세 매뉴얼 바로가기)</h3>
+            <div class="features-grid">
+                <a href="installation.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">📖 Installation Guide</h4>
+                        <p>상황별 1/2/3단계 설치 안내 (새 폰, 이미 설치된 유저, 커스텀 모델).</p>
+                    </div>
+                </a>
+                <a href="quickstart.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">⚡ Quickstart &amp; Recipes</h4>
+                        <p>실사 포토리얼리즘, 초저지연 모바일 프로토타이핑, GPU 가속 레시피.</p>
+                    </div>
+                </a>
+                <a href="models.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">🎨 Model Hub &amp; Presets</h4>
+                        <p>5대 모바일 GGUF 프리셋, 모델 별명 등록 및 SD카드 스토리지 라우팅.</p>
+                    </div>
+                </a>
+                <a href="api-reference.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">🔬 100% Full API Reference</h4>
+                        <p>15개 파라미터 전수 명세표, zRAM 메모리 검사, CLI 명령어 매트릭스.</p>
+                    </div>
+                </a>
+                <a href="benchmarks.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">📊 Benchmarks &amp; Profiling</h4>
+                        <p>Exynos 1380 및 Snapdragon 8 Gen 3 칩셋별 실측 지연 시간 벤치마크.</p>
+                    </div>
+                </a>
+                <a href="versions.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">📜 Version Archive</h4>
+                        <p>v1.0.0 Genesis 릴리즈 노트 및 아카이브.</p>
+                    </div>
             </div>
         </main>
     </div>

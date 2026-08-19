@@ -300,6 +300,61 @@ function exportToAndroidGallery(sourcePath, destinationName) {
   return destPath;
 }
 
+function provisionEngine(force = false) {
+  const existing = locateSdCli();
+  if (existing && !force) return existing;
+
+  console.log('🚀 [termux-diffusion] Running automated provisioner for native Bionic C++ engine...');
+  const isTermux = isAndroidTermux();
+  if (isTermux) {
+    console.log('📦 Checking required packages via pkg (clang, cmake, git, termux-api)...');
+    try {
+      spawnSync('pkg', ['install', '-y', 'clang', 'cmake', 'git', 'termux-api', 'wget'], { stdio: 'inherit' });
+    } catch (_) {}
+  }
+
+  const buildRoot = path.join(os.homedir(), '.cache', 'termux-diffusion', 'build_src');
+  if (!fs.existsSync(buildRoot)) fs.mkdirSync(buildRoot, { recursive: true });
+  const repoDir = path.join(buildRoot, 'stable-diffusion.cpp');
+
+  if (!fs.existsSync(repoDir)) {
+    console.log('📥 Cloning stable-diffusion.cpp repository...');
+    spawnSync('git', ['clone', 'https://github.com/leejet/stable-diffusion.cpp', repoDir], { stdio: 'inherit' });
+  }
+
+  console.log('🔧 Synchronizing submodules (ggml)...');
+  spawnSync('git', ['submodule', 'update', '--init', '--recursive'], { cwd: repoDir, stdio: 'inherit' });
+
+  const buildDir = path.join(repoDir, 'build');
+  if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
+
+  console.log('⚙️ Configuring CMake build with ARM64 optimizations...');
+  spawnSync('cmake', [
+    '..',
+    '-DCMAKE_BUILD_TYPE=Release',
+    '-DSD_BUILD_EXAMPLES=ON',
+    '-DGGML_OPENMP=OFF',
+    '-DCMAKE_C_FLAGS=-O3 -D_GNU_SOURCE',
+    '-DCMAKE_CXX_FLAGS=-O3 -D_GNU_SOURCE'
+  ], { cwd: buildDir, stdio: 'inherit' });
+
+  console.log('🔨 Compiling native Bionic binary with clang (make -j4)...');
+  spawnSync('make', ['-j4'], { cwd: buildDir, stdio: 'inherit' });
+
+  const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
+  if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
+  const compiled = path.join(buildDir, 'bin', 'sd-cli');
+  const target = path.join(binDir, 'sd-cli');
+
+  if (fs.existsSync(compiled)) {
+    fs.copyFileSync(compiled, target);
+    fs.chmodSync(target, 0o755);
+    console.log(`✨ [termux-diffusion] Engine provisioned successfully at: ${target}`);
+    return target;
+  }
+  throw new Error('Could not find compiled sd-cli binary in build directory.');
+}
+
 async function generate(options) {
   if (typeof options === 'string') {
     options = { prompt: options };
@@ -323,10 +378,11 @@ async function generate(options) {
   const cfgScale = options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0);
 
   const modelPath = await resolveModelPath(model);
-  const sdCli = locateSdCli();
+  let sdCli = locateSdCli();
 
   if (!sdCli) {
-    throw new Error('sd-cli engine binary not found. Please run: npx termux-diffusion install');
+    console.log('🚀 [termux-diffusion] sd-cli binary not found in standard paths. Attempting auto-provisioning...');
+    sdCli = provisionEngine();
   }
 
   const timestamp = Math.floor(Date.now() / 1000);

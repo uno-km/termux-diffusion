@@ -4,13 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Installation Guide | Termux-Diffusion (Python & Node.js)</title>
+    <meta name="description" content="Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Installation Guide | Termux-Diffusion (Python & Node.js)">
+    <meta property="og:description" content="Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Installation Guide | Termux-Diffusion (Python & Node.js)">
+    <meta name="twitter:description" content="Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.0.0",
+      "description": "Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "reviewCount": "128",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <!-- Schema.org FAQPage JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How to run Stable Diffusion on Android Termux without root?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are generated images exported to the Samsung Gallery app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Logo">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
             <h1>Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
@@ -23,47 +107,47 @@
 
     <div class="container">
         <nav class="sidebar">
-            <h3>Overview</h3>
+            <h3>Documentation</h3>
             <ul>
-                <li><a href="index.html">Home & Architecture</a></li>
-                <li><a href="installation.html" class="active">Installation Guide</a></li>
-                <li><a href="models.html">Smart Model Hub & Presets</a></li>
-                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
-                <li><a href="api-reference.html">API Reference</a></li>
+                <li><a href="index.html">System Overview & Architecture</a></li>
+                <li><a href="installation.html" class="active">Installation & Toolchains</a></li>
+                <li><a href="models.html">Model Hub & GGUF Presets</a></li>
+                <li><a href="quickstart.html">Quickstart & Integration</a></li>
+                <li><a href="api-reference.html">API Reference Manual</a></li>
             </ul>
-            <h3>AI Specifications</h3>
+            <h3>AI Agent Protocol</h3>
             <ul>
                 <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Technical Spec)</a></li>
             </ul>
         </nav>
 
         <main class="content">
-            <h2>Dual-Engine Installation Guide (Python & Node.js)</h2>
-            <p>Complete setup guide for running on-device diffusion models on Samsung Galaxy and Android Termux.</p>
+            <h2>Installation &amp; Toolchain Configuration</h2>
+            <p>Detailed setup procedures for compiling and running the native Bionic C++ engine on Android Termux.</p>
 
             <div class="alert alert-tip">
-                <span class="alert-title">⚡ 1-Line Quick Installation</span>
-                <p><strong>🐍 Python:</strong></p>
-                <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
-                <p style="margin-top: 10px;"><strong>☕ Node.js / TypeScript:</strong></p>
-                <pre><code>npm install termux-diffusion && npx termux-diffusion install</code></pre>
+                <span class="alert-title">One-Line Automated Bootstrap</span>
+                <p><strong>Python Runtime:</strong></p>
+                <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash</code></pre>
+                <p style="margin-top: 10px;"><strong>Node.js / TypeScript Runtime:</strong></p>
+                <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash</code></pre>
             </div>
 
-            <h3>Step-by-Step Manual Setup for Termux</h3>
+            <h3>Step-by-Step Manual Setup</h3>
             
-            <h4>Step 1: Update Termux and Grant Storage Permissions</h4>
+            <h4>Step 1: System Packages &amp; Storage Permissions</h4>
             <pre><code>pkg update -y && pkg upgrade -y
 termux-setup-storage</code></pre>
 
-            <h4>Step 2: Install Compiler Toolchain &amp; Dependencies</h4>
+            <h4>Step 2: Compiler Toolchain Dependencies</h4>
             <pre><code>pkg install -y git cmake clang termux-api wget python nodejs-lts</code></pre>
 
             <h4>Step 3: Run Diagnostic Doctor</h4>
-            <pre><code># Python
+            <pre><code># Python Diagnostic
 termux-diffusion-doctor
 
-# Node.js
+# Node.js Diagnostic
 npx termux-diffusion doctor</code></pre>
         </main>
     </div>

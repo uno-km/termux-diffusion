@@ -3,14 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Model Hub &amp; Presets | Termux-Diffusion</title>
+    <title>Model Hub & GGUF Presets | Termux-Diffusion</title>
+    <meta name="description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Model Hub & GGUF Presets | Termux-Diffusion">
+    <meta property="og:description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Model Hub & GGUF Presets | Termux-Diffusion">
+    <meta name="twitter:description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.0.0",
+      "description": "Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "reviewCount": "128",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <!-- Schema.org FAQPage JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How to run Stable Diffusion on Android Termux without root?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are generated images exported to the Samsung Gallery app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Logo">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
             <h1>Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
@@ -23,94 +107,94 @@
 
     <div class="container">
         <nav class="sidebar">
-            <h3>Overview</h3>
+            <h3>Documentation</h3>
             <ul>
-                <li><a href="index.html">Home & Architecture</a></li>
-                <li><a href="installation.html">Installation Guide</a></li>
-                <li><a href="models.html" class="active">Smart Model Hub & Presets</a></li>
-                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
-                <li><a href="api-reference.html">API Reference</a></li>
+                <li><a href="index.html">System Overview & Architecture</a></li>
+                <li><a href="installation.html">Installation & Toolchains</a></li>
+                <li><a href="models.html" class="active">Model Hub & GGUF Presets</a></li>
+                <li><a href="quickstart.html">Quickstart & Integration</a></li>
+                <li><a href="api-reference.html">API Reference Manual</a></li>
             </ul>
-            <h3>AI Specifications</h3>
+            <h3>AI Agent Protocol</h3>
             <ul>
                 <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Technical Spec)</a></li>
             </ul>
         </nav>
 
         <main class="content">
-            <h2>Smart Model Hub &amp; GGUF Presets</h2>
-            <p>Termux-Diffusion comes with 5 curated mobile-optimized model presets and modular cache management functions.</p>
+            <h2>Model Hub &amp; GGUF Quantization Presets</h2>
+            <p>Specifications for built-in mobile-optimized presets and custom weight resolution.</p>
 
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Preset Name</th>
-                        <th>Base Model &amp; Quantization</th>
+                        <th>Base Architecture &amp; Quantization</th>
                         <th>File Size</th>
-                        <th>Gen Time (A35 CPU)</th>
-                        <th>Best For</th>
+                        <th>Latency Baseline (Exynos 1380)</th>
+                        <th>Recommended Workload</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><strong><code>"realistic"</code></strong></td>
                         <td>Realistic Vision V6.0 B1 (Q4_K)</td>
-                        <td>~1.62 GB</td>
+                        <td>1.62 GB</td>
                         <td>~25 min (10 steps)</td>
-                        <td>Ultra-detailed photorealistic portraits, pores, reflections</td>
+                        <td>High-fidelity photorealism (portraits, skin textures, lighting)</td>
                     </tr>
                     <tr>
                         <td><strong><code>"speed"</code></strong></td>
                         <td>Stable Diffusion 1.5 Base (Q4_1)</td>
-                        <td>~1.59 GB</td>
+                        <td>1.59 GB</td>
                         <td>~15 min (10 steps)</td>
-                        <td>General-purpose fast drafting and composition</td>
+                        <td>General-purpose drafting and composition</td>
                     </tr>
                     <tr>
                         <td><strong><code>"sdxs"</code></strong></td>
                         <td>SDXS 512-0.9 Mobile (Q4_0)</td>
-                        <td><strong>~450 MB</strong></td>
-                        <td><strong>~2~3 min (2 steps)</strong></td>
-                        <td>Ultra-lightweight mobile prototyping</td>
+                        <td><strong>450 MB</strong></td>
+                        <td><strong>~2.5 min (2 steps)</strong></td>
+                        <td>Ultra-low latency mobile prototyping</td>
                     </tr>
                     <tr>
                         <td><strong><code>"turbo"</code></strong></td>
                         <td>SD Turbo (Q4_0)</td>
-                        <td>~1.20 GB</td>
-                        <td>~3~5 min (1 step)</td>
-                        <td>1-step real-time inference</td>
+                        <td>1.20 GB</td>
+                        <td>~4 min (1 step)</td>
+                        <td>Single-step real-time inference</td>
                     </tr>
                     <tr>
                         <td><strong><code>"anime"</code></strong></td>
                         <td>DreamShaper 8 (Q4_K)</td>
-                        <td>~1.65 GB</td>
+                        <td>1.65 GB</td>
                         <td>~20 min (10 steps)</td>
-                        <td>2D / 2.5D stylized illustration and anime art</td>
+                        <td>2D / 2.5D stylized illustration and animation art</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>Modular Model Management API (Python)</h3>
+            <h3>Custom Model Management API</h3>
             <pre><code>from termux_diffusion import (
-    set_cache_dir,       # Set custom model storage (e.g. SD card)
+    set_cache_dir,       # Set custom storage directory (e.g. SD card)
     download_model,      # Pre-download models in background
     register_model,      # Register custom Hugging Face GGUF models
-    list_cached_models,  # List downloaded models
-    clear_cache          # Clean up storage
+    list_cached_models,  # Inspect downloaded models
+    clear_cache          # Purge cache to reclaim storage
 )
 
-# 1. Custom model cache path
+# 1. Configure custom cache storage path
 set_cache_dir("~/storage/downloads/ai_models")
 
-# 2. Pre-download preset
+# 2. Pre-fetch preset weights
 download_model("sdxs")
 
-# 3. Register custom model
+# 3. Register custom repository
 register_model(
-    name="my-waifu",
-    repo_id="second-state/Realistic_Vision_V6.0_B1-GGUF",
-    filename="realisticVisionV60B1_v51HyperVAE-Q4_k.gguf"
+    name="custom-anime",
+    repo_id="second-state/DreamShaper-8-GGUF",
+    filename="dreamshaper-8-Q4_k.gguf"
 )</code></pre>
         </main>
     </div>

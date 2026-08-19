@@ -65,11 +65,11 @@ def provision_engine(force: bool = False) -> Path:
         logger.info("Found existing native engine binary at: %s", existing)
         return existing
 
-    print("🚀 [termux-diffusion] Provisioning native Bionic ARM64 Stable Diffusion engine...")
+    print("[termux-diffusion] Initializing native ARM64 Bionic engine provisioning...")
 
     # Step 1: Ensure required system packages
     if is_android_termux() and shutil.which("pkg"):
-        print("📦 [termux-diffusion] Checking build toolchains (git, cmake, clang, termux-api)...")
+        print("[termux-diffusion] Checking build toolchains (git, cmake, clang, termux-api)...")
         try:
             subprocess.run(
                 ["pkg", "install", "-y", "git", "cmake", "clang", "termux-api", "wget"],
@@ -86,13 +86,13 @@ def provision_engine(force: bool = False) -> Path:
     repo_dir = build_root / "stable-diffusion.cpp"
 
     if not repo_dir.exists():
-        print(f"📥 [termux-diffusion] Cloning {SD_CPP_REPO}...")
+        print(f"[termux-diffusion] Cloning {SD_CPP_REPO}...")
         res = subprocess.run(["git", "clone", SD_CPP_REPO, str(repo_dir)], capture_output=True, text=True)
         if res.returncode != 0:
             raise ProvisioningError(f"Failed cloning stable-diffusion.cpp repository: {res.stderr}")
 
     # Step 3: Crucial Submodule Update (Ensures ggml is present)
-    print("🔧 [termux-diffusion] Synchronizing recursive C++ submodules (ggml)...")
+    print("[termux-diffusion] Synchronizing tensor submodules (ggml)...")
     subprocess.run(
         ["git", "submodule", "update", "--init", "--recursive"],
         cwd=str(repo_dir),
@@ -104,7 +104,7 @@ def provision_engine(force: bool = False) -> Path:
     build_dir = repo_dir / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    print("⚙️ [termux-diffusion] Configuring CMake build with ARM64 optimizations...")
+    print("[termux-diffusion] Configuring CMake build with ARM64 optimizations...")
     cmake_cmd = [
         "cmake", "..",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -122,7 +122,7 @@ def provision_engine(force: bool = False) -> Path:
     if cmake_res.returncode != 0:
         raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr}")
 
-    print("🔨 [termux-diffusion] Compiling native Bionic binary with clang (make -j4)...")
+    print("[termux-diffusion] Compiling native Bionic binary with clang (make -j4)...")
     make_res = subprocess.run(
         ["make", "-j4"],
         cwd=str(build_dir),
@@ -146,7 +146,7 @@ def provision_engine(force: bool = False) -> Path:
     shutil.copy2(compiled_bin, target_bin)
     target_bin.chmod(0o755)
 
-    print(f"✨ [termux-diffusion] Engine provisioned successfully at: {target_bin}")
+    print(f"[termux-diffusion] Engine provisioned successfully at: {target_bin}")
     return target_bin.resolve()
 
 

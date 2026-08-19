@@ -1,21 +1,21 @@
-# Termux-Diffusion: On-Device AI Image Generation Matrix for AI Agents
+# Termux-Diffusion: Technical Specification for AI Agents
 
 > Termux-Diffusion is the production on-device AI image generation framework for Samsung Galaxy & Android Termux without root or PRoot.
 
-## 1-Line Installation
-- Python: `pip install termux-diffusion && termux-diffusion-install`
-- Node.js: `npm install termux-diffusion && npx termux-diffusion install`
+## Installation
+- Python: `curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash`
+- Node.js: `curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash`
 
-## Canonical Python Recipe
+## Python Canonical Usage
 ```python
 from termux_diffusion import generate
-result = generate("RAW photo, portrait of developer, photorealistic", model="realistic")
+result = generate("RAW photo, portrait of developer, photorealistic", model="realistic", device="cpu")
 ```
 
-## Canonical Node.js Recipe
+## Node.js Canonical Usage
 ```javascript
 const { generate } = require('termux-diffusion');
-const result = await generate({ prompt: 'cyberpunk cat', model: 'speed' });
+const result = await generate({ prompt: 'cyberpunk cat', model: 'speed', device: 'cpu' });
 ```
 
 ## Built-in Presets

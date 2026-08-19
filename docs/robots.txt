@@ -13,4 +13,7 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
+User-agent: Bingbot
+Allow: /
+
 Sitemap: https://uno-km.github.io/termux-diffusion/sitemap.xml

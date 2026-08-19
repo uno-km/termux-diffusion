@@ -12,7 +12,33 @@ license = { text = "MIT" }
 authors = [
     { name = "uno-km (쌩초보코딩단)", email = "hosequelbo@gmail.com" }
 ]
-keywords = ["stable-diffusion", "termux", "android", "samsung-galaxy", "edge-ai", "on-device-ai", "image-generation", "gguf", "arm64"]
+keywords = [
+    "stable-diffusion",
+    "diffusion",
+    "termux",
+    "android",
+    "samsung-galaxy",
+    "edge-ai",
+    "on-device-ai",
+    "image-generation",
+    "gguf",
+    "arm64",
+    "bionic-libc",
+    "snapdragon",
+    "exynos",
+    "text-to-image",
+    "txt2img",
+    "mobile-ai",
+    "quantization",
+    "generative-ai",
+    "vulkan",
+    "opencl",
+    "offline-ai",
+    "private-ai",
+    "ai-art",
+    "comfyui-alternative",
+    "webui-alternative"
+]
 dynamic = ["classifiers"]
 
 [project.urls]

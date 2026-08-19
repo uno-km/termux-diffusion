@@ -1,7 +1,7 @@
-# 🎨 termux-diffusion
+# Termux-Diffusion
 
-> **Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy**  
-> *Dual-Engine (Python & Node.js / TypeScript) Native Bionic ARM64 Diffusion Pipeline*
+**Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy**  
+*Dual-Engine Architecture (Python & Node.js / TypeScript) with Native Bionic ARM64 Tensor Acceleration*
 
 [![PyPI Version](https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue)](https://pypi.org/project/termux-diffusion/)
 [![npm Version](https://img.shields.io/npm/v/termux-diffusion.svg?color=red)](https://www.npmjs.com/package/termux-diffusion)
@@ -12,91 +12,92 @@
 
 ---
 
-## 💡 Overview
+## 1. System Overview
 
-**`termux-diffusion`** is the world's first unified Python & Node.js on-device AI image generation framework tailored specifically for **Samsung Galaxy and Android Termux** devices.
+`termux-diffusion` is an enterprise-grade, on-device AI text-to-image synthesis pipeline designed specifically for Android Termux environments and Samsung Galaxy hardware.
 
-Unlike desktop-centric WebUI ports that force users to install heavy PRoot Linux distributions (like Ubuntu) or suffer from memory leaks and Out-of-Memory (LMK) crashes, `termux-diffusion` runs directly on native **Android Bionic libc (ARM64)** using optimized C++ GGML tensor quantization.
+Unlike desktop-centric WebUI ports that require heavy containerization (e.g., PRoot Linux / Ubuntu) or suffer from memory exhaustion under the Android Low Memory Killer (LMK), `termux-diffusion` executes directly against native Android Bionic `libc` with ARM64 NEON SIMD vectorization and GGML quantized tensor weights.
 
 ---
 
-## ⚡ 1-Click Zero-Touch Setup (Recommended)
+## 2. Automated Bootstrap & Installation
 
-Open Termux and run the 1-line bootstrap script for your runtime:
+### Option A: One-Line Zero-Touch Bootstrap (Recommended)
 
-### 🐍 Python 1-Click Bootstrap
+Run the platform bootstrap script in Termux to automatically verify toolchains, storage permissions, and native engine binaries:
+
+#### Python Runtime
 ```bash
 curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash
 ```
 
-### ☕ Node.js / TypeScript 1-Click Bootstrap
+#### Node.js / TypeScript Runtime
 ```bash
 curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash
 ```
 
 ---
 
-## 📦 Standard Package Installation
+### Option B: Package Manager Installation
 
-### 🐍 Python (pip)
+#### Python (PyPI)
 ```bash
 pip install termux-diffusion && termux-diffusion-install
 ```
 
-### ☕ Node.js / TypeScript (npm)
+#### Node.js (npm)
 ```bash
 npm install -g termux-diffusion && npx termux-diffusion install
 ```
 
 ---
 
-## 🌟 Key Capabilities & Samsung Galaxy Protections
+## 3. Core Architectural Capabilities
 
-* **Zero-Root & Zero-PRoot Native Bionic Execution:** Direct ARM64 NEON C++ inference without virtual Linux containers or root access.
-* **Smart Model Hub (5 Built-in Presets):** Automatic resumable downloading & caching for photorealistic, speed, and mobile-optimized GGUF models.
-* **Samsung Galaxy Battery & Sleep Defense (`TermuxWakeLock`):** Automatically holds Android CPU WakeLock during 10~25 minute inference so the OS never suspends generation when the screen turns off.
-* **Low-RAM & OOM Guard (Samsung RAM Plus Integration):** Pre-flight safety inspection of physical RAM and zRAM swap before model loading.
-* **Samsung Gallery Auto-Synchronization:** Renders directly to `~/storage/pictures/TermuxDiffusion/` and triggers Android `MEDIA_SCANNER` broadcast so new artwork immediately shows up in your Samsung Gallery app.
-* **big.LITTLE CPU Core Cluster Auto-Tuning:** Detects Exynos (e.g. 1380, 1480, 2400) and Snapdragon performance clusters, preventing thermal throttling.
-* **CPU / GPU Hardware Device Selection:** Flexible switching between CPU inference and GPU (Vulkan/OpenCL) offloading.
+* **Zero-PRoot Native Bionic Execution:** Executes natively on ARM64 without container overhead, achieving maximum memory efficiency.
+* **Integrated Model Hub:** Built-in streaming downloader with automatic checksum verification and cache persistence.
+* **Power & WakeLock Management (`TermuxWakeLock`):** Automatically holds Android CPU WakeLock during inference, preventing kernel suspension when the screen turns off.
+* **Low-Memory & LMK Guard:** Inspects physical memory and Android zRAM (Samsung RAM Plus) before allocating tensor weight buffers.
+* **Samsung Gallery Integration:** Automatically persists generated outputs to `~/storage/pictures/TermuxDiffusion/` and triggers `android.intent.action.MEDIA_SCANNER_SCAN_FILE` for instant indexing in Samsung Gallery.
+* **big.LITTLE Core Affinity Tuning:** Auto-detects Exynos (e.g., 1380, 1480, 2400) and Snapdragon cluster topologies to maintain high sustained clock rates without thermal throttling.
+* **Hardware Compute Selection:** Explicit compute backend targeting via `device="cpu"` or `device="gpu"`.
 
 ---
 
-## 📦 Built-in Model Hub Presets
+## 4. Built-in Model Hub Presets
 
-| Preset | Model & Quantization | Size | Generation Time (A35 CPU) | Best For |
+| Preset | Model & Quantization | Size | Latency Baseline (Exynos 1380) | Recommended Workload |
 | :--- | :--- | :---: | :---: | :--- |
-| **`"realistic"`** | Realistic Vision V6.0 B1 (Q4_K) | ~1.62 GB | ~25 min (10 steps) | Extreme photorealism (skin pores, lighting reflections, hair) |
-| **`"speed"`** | Stable Diffusion 1.5 Base (Q4_1) | ~1.59 GB | ~15 min (10 steps) | General-purpose fast drafting and composition |
-| **`"sdxs"`** | SDXS 512-0.9 Mobile (Q4_0) | **~450 MB** | **~2~3 min (2 steps)** | Ultra-lightweight mobile prototyping |
-| **`"turbo"`** | SD Turbo (Q4_0) | ~1.20 GB | ~3~5 min (1 step) | 1-step real-time inference |
-| **`"anime"`** | DreamShaper 8 (Q4_K) | ~1.65 GB | ~20 min (10 steps) | 2D / 2.5D stylized illustration and anime |
+| **`"realistic"`** | Realistic Vision V6.0 B1 (Q4_K) | 1.62 GB | ~25 min (10 steps) | High-fidelity photorealism (portraits, skin textures, lighting) |
+| **`"speed"`** | Stable Diffusion 1.5 Base (Q4_1) | 1.59 GB | ~15 min (10 steps) | General-purpose drafting and composition |
+| **`"sdxs"`** | SDXS 512-0.9 Mobile (Q4_0) | **450 MB** | **~2.5 min (2 steps)** | Ultra-low latency mobile prototyping |
+| **`"turbo"`** | SD Turbo (Q4_0) | 1.20 GB | ~4 min (1 step) | Single-step real-time inference |
+| **`"anime"`** | DreamShaper 8 (Q4_K) | 1.65 GB | ~20 min (10 steps) | 2D / 2.5D stylized illustration and animation art |
 
 ---
 
-## 🚀 Quickstart Recipes
+## 5. Usage & Integration
 
-### 🐍 Python Recipe
+### Python API
 
 ```python
 from termux_diffusion import generate
 
-# 1. Generate Photorealistic Image in 1 Line
 result = generate(
     prompt="RAW photo, portrait of a happy smiling young Korean man in his 30s wearing glasses and hoodie, working on laptop, photorealistic, cinematic",
-    model="realistic",  # or 'speed', 'sdxs', 'turbo', 'anime'
-    device="cpu",       # or 'gpu' for Vulkan/OpenCL acceleration
+    model="realistic",
+    device="cpu",
     steps=10,
     cfg_scale=4.0,
     output="developer.png"
 )
 
-print(f"✅ Image saved: {result.path}")
-print(f"📱 Samsung Gallery: {result.gallery_path}")
-print(f"⏱️ Denoising took: {result.elapsed_sec:.1f}s")
+print(f"Output Path: {result.path}")
+print(f"Android MediaStore: {result.gallery_path}")
+print(f"Elapsed Time: {result.elapsed_sec:.2f}s")
 ```
 
-### ☕ Node.js / JavaScript Recipe
+### Node.js / TypeScript API
 
 ```javascript
 const { generate } = require('termux-diffusion');
@@ -105,13 +106,13 @@ async function main() {
     const result = await generate({
         prompt: 'cyberpunk cat with neon collar in rainy alley, 8k, photorealistic',
         model: 'speed',
-        device: 'cpu', // or 'gpu'
+        device: 'cpu',
         steps: 10,
         output: 'cyber_cat.png'
     });
 
-    console.log('✅ Generated image:', result.path);
-    console.log('📱 Samsung Gallery:', result.galleryPath);
+    console.log(`Output Path: ${result.path}`);
+    console.log(`Android MediaStore: ${result.galleryPath}`);
 }
 
 main().catch(console.error);
@@ -119,10 +120,10 @@ main().catch(console.error);
 
 ---
 
-## 🎨 Using Custom Models (Hugging Face / Local / URLs)
+## 6. Custom Models & Hugging Face Resolution
 
-### 1. Direct Hugging Face Model Identifier
-Pass any repository ID and filename directly. `termux-diffusion` will auto-download, cache, and execute:
+### 1. Direct Hugging Face Repository Identifier
+Pass any repository ID and `.gguf` filename. The framework resolves, streams, caches, and executes the weights:
 ```python
 generate(
     "1girl, anime masterpiece, vibrant colors",
@@ -130,27 +131,27 @@ generate(
 )
 ```
 
-### 2. Local File on SD Card or Downloads
+### 2. Local File Reference
 ```python
 generate(
-    "fantasy landscape",
-    model="~/storage/downloads/my_custom_model.gguf"
+    "fantasy landscape at sunrise",
+    model="~/storage/downloads/custom_model.gguf"
 )
 ```
 
-### 3. Register Custom Nickname (`register_model`)
+### 3. Alias Registration (`register_model`)
 ```python
 from termux_diffusion import register_model, generate
 
 register_model("waifu", repo_id="second-state/DreamShaper-8-GGUF", filename="dreamshaper-8-Q4_k.gguf")
-generate("anime girl in sakura garden", model="waifu")
+generate("anime portrait", model="waifu")
 ```
 
 ---
 
-## 🩺 Diagnostic Doctor
+## 7. Pre-flight Diagnostic Tool
 
-Run pre-flight diagnostics anytime to verify hardware, memory, build tools, and engine status:
+Verify system packages, architecture, available memory, and native engine status:
 
 ```bash
 # Python
@@ -162,6 +163,6 @@ npx termux-diffusion doctor
 
 ---
 
-## 📄 License
+## 8. License
 
-Released under the **MIT License**. Maintained with ❤️ by **uno-km (쌩초보코딩단)**.
+Released under the **MIT License**. Maintained by **uno-km**.

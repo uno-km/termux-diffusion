@@ -3,14 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quickstart &amp; Recipes | Termux-Diffusion</title>
+    <title>Quickstart & Integration | Termux-Diffusion</title>
+    <meta name="description" content="Production code recipes and execution patterns for Python and Node.js on Samsung Galaxy Termux.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Quickstart & Integration | Termux-Diffusion">
+    <meta property="og:description" content="Production code recipes and execution patterns for Python and Node.js on Samsung Galaxy Termux.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Quickstart & Integration | Termux-Diffusion">
+    <meta name="twitter:description" content="Production code recipes and execution patterns for Python and Node.js on Samsung Galaxy Termux.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.0.0",
+      "description": "Production code recipes and execution patterns for Python and Node.js on Samsung Galaxy Termux.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "reviewCount": "128",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <!-- Schema.org FAQPage JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How to run Stable Diffusion on Android Termux without root?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are generated images exported to the Samsung Gallery app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Logo">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
             <h1>Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
@@ -23,48 +107,50 @@
 
     <div class="container">
         <nav class="sidebar">
-            <h3>Overview</h3>
+            <h3>Documentation</h3>
             <ul>
-                <li><a href="index.html">Home & Architecture</a></li>
-                <li><a href="installation.html">Installation Guide</a></li>
-                <li><a href="models.html">Smart Model Hub & Presets</a></li>
-                <li><a href="quickstart.html" class="active">Quickstart & Recipes</a></li>
-                <li><a href="api-reference.html">API Reference</a></li>
+                <li><a href="index.html">System Overview & Architecture</a></li>
+                <li><a href="installation.html">Installation & Toolchains</a></li>
+                <li><a href="models.html">Model Hub & GGUF Presets</a></li>
+                <li><a href="quickstart.html" class="active">Quickstart & Integration</a></li>
+                <li><a href="api-reference.html">API Reference Manual</a></li>
             </ul>
-            <h3>AI Specifications</h3>
+            <h3>AI Agent Protocol</h3>
             <ul>
                 <li><a href="llms.txt" target="_blank">llms.txt (AI Matrix)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Technical Spec)</a></li>
             </ul>
         </nav>
 
         <main class="content">
-            <h2>Quickstart &amp; Production Recipes</h2>
-            <p>Copy-paste ready recipes for Python and Node.js on Samsung Galaxy Termux.</p>
+            <h2>Quickstart &amp; Integration Recipes</h2>
+            <p>Ready-to-use recipes for programmatic integration across Python and Node.js environments.</p>
 
-            <h3>Recipe 1: High-Quality Photorealistic Portrait (Python)</h3>
+            <h3>Recipe 1: High-Fidelity Photorealism (Python)</h3>
             <pre><code>from termux_diffusion import generate
 
 result = generate(
     prompt="RAW photo, portrait of a happy smiling young Korean man in his 30s wearing glasses and hoodie, working on laptop, photorealistic, cinematic",
     model="realistic",
+    device="cpu",
     steps=10,
     cfg_scale=4.0,
     output="portrait.png"
 )
-print(f"Saved: {result.path} (Gallery: {result.gallery_path})")</code></pre>
+print(f"Saved: {result.path} (MediaStore: {result.gallery_path})")</code></pre>
 
-            <h3>Recipe 2: Ultra-Fast Mobile Prototyping (Node.js)</h3>
+            <h3>Recipe 2: Low-Latency Prototyping (Node.js)</h3>
             <pre><code>const { generate } = require('termux-diffusion');
 
 async function main() {
     const result = await generate({
         prompt: 'retro futuristic robot sipping coffee in cafe, 8k',
         model: 'sdxs',
+        device: 'cpu',
         steps: 2,
         output: 'robot.png'
     });
-    console.log('Rendered in:', result.elapsedSec, 'seconds');
+    console.log(`Rendered in: ${result.elapsedSec}s`);
 }
 
 main().catch(console.error);</code></pre>

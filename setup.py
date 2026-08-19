@@ -24,8 +24,13 @@ setup(
         "Bug Tracker": "https://github.com/uno-km/termux-diffusion/issues",
         "Source": "https://github.com/uno-km/termux-diffusion",
     },
-    license="MIT",
-    keywords=["stable-diffusion", "termux", "android", "samsung-galaxy", "edge-ai", "on-device-ai", "image-generation", "gguf", "arm64"],
+    keywords=[
+        "stable-diffusion", "diffusion", "termux", "android", "samsung-galaxy",
+        "edge-ai", "on-device-ai", "image-generation", "gguf", "arm64",
+        "bionic-libc", "snapdragon", "exynos", "text-to-image", "txt2img",
+        "mobile-ai", "quantization", "generative-ai", "vulkan", "opencl",
+        "offline-ai", "private-ai", "ai-art", "comfyui-alternative", "webui-alternative"
+    ],
     packages=find_packages(),
     package_data={
         "termux_diffusion": ["py.typed"],

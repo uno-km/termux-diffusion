@@ -145,7 +145,7 @@ def generate(
         cmd.extend(["-ngl", "32"])
 
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
-    print(f"🎨 [termux-diffusion] Rendering with '{model}' ({steps} steps, {threads} threads)...")
+    print(f"[termux-diffusion] Processing inference with model='{model}' (steps={steps}, threads={threads}, device={device_mode})...")
 
     start_time = time.time()
 
@@ -168,7 +168,7 @@ def generate(
                     line_str = line.strip()
                     if line_str:
                         if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
-                            print(f"  ⚡ {line_str}")
+                            print(f"  > {line_str}")
                         else:
                             logger.debug("sd-cli: %s", line_str)
 
@@ -182,7 +182,7 @@ def generate(
                     process.wait(timeout=2.0)
                 except Exception:
                     pass
-            print("\n🛑 [termux-diffusion] Inference interrupted by user. Cleaned up child processes.")
+            print("\n[termux-diffusion] Inference interrupted by user. Child processes terminated safely.")
             raise
         except subprocess.TimeoutExpired as exc:
             if process and process.poll() is None:
@@ -214,9 +214,9 @@ def generate(
         except Exception as e:
             logger.warning("Could not export to Android gallery: %s", e)
 
-    print(f"✨ [termux-diffusion] Image generated in {elapsed:.1f}s -> {out_path}")
+    print(f"[termux-diffusion] Artifact generated in {elapsed:.2f}s -> {out_path}")
     if gallery_path:
-        print(f"📱 [Samsung Gallery] Synchronized to: {gallery_path}")
+        print(f"[termux-diffusion] Synchronized to Android MediaStore: {gallery_path}")
 
     return GenerationResult(
         path=out_path,

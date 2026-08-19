@@ -236,13 +236,13 @@ def download_model(
 
     temp_path = target_dir / f"{target_filename}.part"
     logger.info("Downloading '%s' from %s -> %s", model_name_or_url, download_url, final_path)
-    print(f"📥 [termux-diffusion] Downloading model '{target_filename}' ({download_url})...")
+    print(f"[termux-diffusion] Fetching model '{target_filename}' ({download_url})...")
 
     # Attempt download with streaming chunk writer and resume support
     try:
         _stream_download(download_url, temp_path, progress_callback)
         temp_path.rename(final_path)
-        print(f"✅ [termux-diffusion] Model downloaded & cached at: {final_path}")
+        print(f"[termux-diffusion] Successfully cached model at: {final_path}")
         return final_path
     except Exception as exc:
         if temp_path.exists():
@@ -278,15 +278,15 @@ def _stream_download(
 
                 if progress_callback:
                     progress_callback(downloaded, total_size)
+                elif total_size > 0 and (time.time() - last_print > 0.5):
+                    pct = (downloaded / total_size) * 100
+                    mb_done = downloaded / (1024 * 1024)
+                    mb_total = total_size / (1024 * 1024)
+                    print(f"  > Progress: {mb_done:.1f}MB / {mb_total:.1f}MB ({pct:.1f}%)", end="\r", flush=True)
+                    last_print = time.time()
 
-                now = time.time()
-                if now - last_print > 1.0 or downloaded == total_size:
-                    last_print = now
-                    if total_size > 0:
-                        pct = (downloaded / total_size) * 100.0
-                        mb_done = downloaded / (1024 * 1024)
-                        mb_total = total_size / (1024 * 1024)
-                        print(f"  ⏳ Progress: {mb_done:.1f}MB / {mb_total:.1f}MB ({pct:.1f}%)", end="\r", flush=True)
+            if total_size > 0:
+                print(f"  > Progress: {total_size / (1024*1024):.1f}MB / {total_size / (1024*1024):.1f}MB (100.0%)")
 
     print()  # newline after completion
 

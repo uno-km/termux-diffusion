@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Reference Manual | Termux-Diffusion</title>
-    <meta name="description" content="Complete API reference manual for termux_diffusion (Python) and termux-diffusion (Node.js).">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <title>100% Full API Reference Manual | Termux-Diffusion</title>
+    <meta name="description" content="Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
     <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
 
     <!-- Open Graph Metadata -->
-    <meta property="og:title" content="API Reference Manual | Termux-Diffusion">
-    <meta property="og:description" content="Complete API reference manual for termux_diffusion (Python) and termux-diffusion (Node.js).">
+    <meta property="og:title" content="100% Full API Reference Manual | Termux-Diffusion">
+    <meta property="og:description" content="Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
     <meta property="og:site_name" content="Termux-Diffusion">
@@ -21,8 +21,8 @@
 
     <!-- Twitter Card Metadata -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="API Reference Manual | Termux-Diffusion">
-    <meta name="twitter:description" content="Complete API reference manual for termux_diffusion (Python) and termux-diffusion (Node.js).">
+    <meta name="twitter:title" content="100% Full API Reference Manual | Termux-Diffusion">
+    <meta name="twitter:description" content="Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.">
 
     <!-- Schema.org SoftwareApplication JSON-LD -->
     <script type="application/ld+json">
@@ -38,7 +38,7 @@
         "priceCurrency": "USD"
       },
       "softwareVersion": "1.0.0",
-      "description": "Complete API reference manual for termux_diffusion (Python) and termux-diffusion (Node.js).",
+      "description": "Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.",
       "url": "https://uno-km.github.io/termux-diffusion/",
       "aggregateRating": {
         "@type": "AggregateRating",
@@ -111,10 +111,10 @@
             <h3>Documentation</h3>
             <ul>
                 <li><a href="index.html">System Overview & Architecture</a></li>
-                <li><a href="installation.html">Installation & Toolchains</a></li>
+                <li><a href="installation.html">Installation & Scenarios</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
                 <li><a href="models.html">Model Hub & GGUF Presets</a></li>
-                <li><a href="quickstart.html">Quickstart & Integration</a></li>
-                <li><a href="api-reference.html" class="active">API Reference Manual</a></li>
+                <li><a href="api-reference.html" class="active">100% Full API Reference</a></li>
             </ul>
             <h3>AI Agent Protocol &amp; Feeds</h3>
             <ul>
@@ -126,20 +126,167 @@
         </nav>
 
         <main class="content">
-            <h2>API Reference Manual</h2>
-            <p>Public interface specification for <code>termux_diffusion</code> (Python) and <code>termux-diffusion</code> (Node.js).</p>
+            <h2>100% Full API Reference Manual</h2>
+            <p>Comprehensive public interface specification for <code>termux_diffusion</code> (Python) and <code>termux-diffusion</code> (Node.js).</p>
 
-            <h3><code>generate(prompt, model='realistic', device='cpu', ...)</code></h3>
-            <p>Executes native Bionic C++ diffusion inference with process isolation, WakeLock management, and gallery export.</p>
+            <h3>1. <code>generate(...)</code> — Main Image Generation Function</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>prompt</code></td>
+                        <td><code>str</code></td>
+                        <td><em>(Required)</em></td>
+                        <td>Text description of the desired visual image.</td>
+                    </tr>
+                    <tr>
+                        <td><code>negative_prompt</code></td>
+                        <td><code>str | None</code></td>
+                        <td><code>None</code></td>
+                        <td>Unwanted visual traits (e.g. <code>"blurry, bad anatomy, deformed"</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>model</code></td>
+                        <td><code>str</code></td>
+                        <td><code>"realistic"</code></td>
+                        <td>Preset name (<code>"realistic"</code>, <code>"speed"</code>, <code>"sdxs"</code>, <code>"turbo"</code>, <code>"anime"</code>), HuggingFace repo/file, or local <code>.gguf</code> path.</td>
+                    </tr>
+                    <tr>
+                        <td><code>device</code></td>
+                        <td><code>str</code></td>
+                        <td><code>"cpu"</code></td>
+                        <td>Compute target: <code>"cpu"</code>, <code>"gpu"</code>, <code>"opencl"</code>, or <code>"vulkan"</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>output</code></td>
+                        <td><code>str | Path | None</code></td>
+                        <td><code>None</code></td>
+                        <td>Destination output image file path (e.g. <code>"output.png"</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>width</code></td>
+                        <td><code>int</code></td>
+                        <td><code>512</code></td>
+                        <td>Image width in pixels (must be a multiple of 64).</td>
+                    </tr>
+                    <tr>
+                        <td><code>height</code></td>
+                        <td><code>int</code></td>
+                        <td><code>512</code></td>
+                        <td>Image height in pixels (must be a multiple of 64).</td>
+                    </tr>
+                    <tr>
+                        <td><code>steps</code></td>
+                        <td><code>int</code></td>
+                        <td><code>10</code></td>
+                        <td>Number of denoising diffusion steps (optimal: 10 for Q4_K, 2 for sdxs, 1 for turbo).</td>
+                    </tr>
+                    <tr>
+                        <td><code>cfg_scale</code></td>
+                        <td><code>float</code></td>
+                        <td><code>4.0</code></td>
+                        <td>Classifier-Free Guidance scale (optimal: 4.0 for quantized weights).</td>
+                    </tr>
+                    <tr>
+                        <td><code>seed</code></td>
+                        <td><code>int</code></td>
+                        <td><code>-1</code></td>
+                        <td>Random number generator seed (-1 for randomized seed).</td>
+                    </tr>
+                    <tr>
+                        <td><code>threads</code></td>
+                        <td><code>int | None</code></td>
+                        <td><code>None</code></td>
+                        <td>CPU cores allocation (defaults to <code>max(1, cpu_count - 2)</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>wake_lock</code></td>
+                        <td><code>bool</code></td>
+                        <td><code>True</code></td>
+                        <td>Holds Android CPU WakeLock during generation to prevent screen-off suspension.</td>
+                    </tr>
+                    <tr>
+                        <td><code>export_gallery</code></td>
+                        <td><code>bool</code></td>
+                        <td><code>True</code></td>
+                        <td>Copies to <code>~/storage/pictures/TermuxDiffusion/</code> and broadcasts MediaScanner.</td>
+                    </tr>
+                    <tr>
+                        <td><code>timeout</code></td>
+                        <td><code>float</code></td>
+                        <td><code>3600.0</code></td>
+                        <td>Max allowed execution timeout in seconds.</td>
+                    </tr>
+                </tbody>
+            </table>
 
-            <h3><code>download_model(model_name_or_url, cache_dir=None, force=False)</code></h3>
-            <p>Streams GGUF model weights from Hugging Face or direct HTTP URLs with chunked resume capability.</p>
+            <h3>2. Model &amp; Cache Management Functions</h3>
+            <ul>
+                <li><strong><code>download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)</code></strong>: Streams GGUF weights with chunked resume.</li>
+                <li><strong><code>register_model(name, repo_id=None, filename=None, url=None, description=None)</code></strong>: Registers a custom alias for Hugging Face or URL models.</li>
+                <li><strong><code>list_cached_models(cache_dir=None)</code></strong>: Returns a list of dictionaries with cached model names, sizes, and file paths.</li>
+                <li><strong><code>clear_cache(cache_dir=None)</code></strong>: Removes cached weights to reclaim storage.</li>
+                <li><strong><code>set_cache_dir(path)</code> / <code>get_cache_dir()</code></strong>: Configures custom storage paths (e.g. external SD cards).</li>
+            </ul>
 
-            <h3><code>register_model(name, repo_id, filename, ...)</code></h3>
-            <p>Registers a custom Hugging Face model repository into the active preset catalog.</p>
+            <h3>3. Platform &amp; Hardware Diagnostics</h3>
+            <ul>
+                <li><strong><code>get_memory_info()</code></strong>: Inspects total RAM, free RAM, available RAM, and swap (Samsung RAM Plus).</li>
+                <li><strong><code>get_optimal_thread_count()</code></strong>: Calculates optimal thread affinity considering big.LITTLE core topologies.</li>
+                <li><strong><code>run_doctor()</code></strong>: Runs a 6-phase pre-flight diagnostic health check.</li>
+                <li><strong><code>export_to_android_gallery(image_path)</code></strong>: Manually exports any image into Samsung Gallery and triggers MediaScanner.</li>
+                <li><strong><code>TermuxWakeLock(enabled=True)</code></strong>: Context manager to hold CPU WakeLock.</li>
+            </ul>
 
-            <h3><code>set_cache_dir(path) / get_cache_dir()</code></h3>
-            <p>Configures custom storage directory for model weights and intermediate artifacts.</p>
+            <h3>4. Full CLI Command Matrix</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Command</th>
+                        <th>Arguments</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>termux-diffusion generate</code></td>
+                        <td><code>"&lt;prompt&gt;" [-m model] [--device cpu|gpu] [--steps N] [--cfg N] [-o file.png] [-W 512] [-H 512] [-t threads] [-s seed] [--no-wakelock] [--no-gallery]</code></td>
+                        <td>Executes diffusion inference with custom options.</td>
+                    </tr>
+                    <tr>
+                        <td><code>termux-diffusion download</code></td>
+                        <td><code>&lt;model_name&gt;</code></td>
+                        <td>Pre-downloads and caches model weights.</td>
+                    </tr>
+                    <tr>
+                        <td><code>termux-diffusion models</code></td>
+                        <td><em>(None)</em></td>
+                        <td>Displays catalog of available presets and cached models.</td>
+                    </tr>
+                    <tr>
+                        <td><code>termux-diffusion doctor</code></td>
+                        <td><em>(None)</em></td>
+                        <td>Runs automated 6-phase pre-flight diagnostic health check.</td>
+                    </tr>
+                    <tr>
+                        <td><code>termux-diffusion install</code></td>
+                        <td><code>[--force]</code></td>
+                        <td>Compiles native ARM64 Bionic engine binary.</td>
+                    </tr>
+                    <tr>
+                        <td><code>termux-diffusion clear</code></td>
+                        <td><em>(None)</em></td>
+                        <td>Clears cached weights to free storage.</td>
+                    </tr>
+                </tbody>
+            </table>
         </main>
     </div>
     <footer>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Termux-Diffusion: Production On-Device AI Image Generation for Android Termux & Samsung Galaxy</title>
     <meta name="description" content="Production-grade On-Device AI Image Generation framework for Samsung Galaxy and Android Termux without root or PRoot. Dual-engine Python and Node.js support.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
@@ -111,10 +111,10 @@
             <h3>Documentation</h3>
             <ul>
                 <li><a href="index.html" class="active">System Overview & Architecture</a></li>
-                <li><a href="installation.html">Installation & Toolchains</a></li>
+                <li><a href="installation.html">Installation & Scenarios</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
                 <li><a href="models.html">Model Hub & GGUF Presets</a></li>
-                <li><a href="quickstart.html">Quickstart & Integration</a></li>
-                <li><a href="api-reference.html">API Reference Manual</a></li>
+                <li><a href="api-reference.html">100% Full API Reference</a></li>
             </ul>
             <h3>AI Agent Protocol &amp; Feeds</h3>
             <ul>
@@ -139,25 +139,17 @@
             </div>
 
             <div class="alert alert-tip">
-                <span class="alert-title">One-Line Automated Bootstrap (Recommended)</span>
-                <p>Run the bootstrap script inside Termux to verify toolchains, storage permissions, and compile the native engine:</p>
-                <div style="margin-top: 12px;">
-                    <h4 style="margin: 8px 0 4px 0; color: #ff7a59;">Python Runtime:</h4>
-                    <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash</code></pre>
-                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">Node.js / TypeScript Runtime:</h4>
-                    <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash</code></pre>
-                </div>
-            </div>
+                <span class="alert-title">User Scenario Quick Playbook (사용자 상황별 빠른 시작)</span>
+                <p><strong>1. 아무것도 없는 사람 (Clean Install):</strong></p>
+                <pre><code># Python:
+termux-setup-storage && pkg update -y && pkg install python clang cmake git termux-api wget -y && pip install termux-diffusion && termux-diffusion-install
 
-            <div class="card" style="margin-bottom: 24px;">
-                <h4 style="margin-top: 0; color: #fff;">Standard Package Manager Installation</h4>
-                <div style="margin-top: 8px;">
-                    <pre><code># Python (PyPI)
-pip install termux-diffusion && termux-diffusion-install
-
-# Node.js (npm)
-npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
-                </div>
+# Node.js:
+termux-setup-storage && pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y && npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
+                <p style="margin-top: 10px;"><strong>2. 이미 설치된 사람 (CLI 1줄 생성):</strong></p>
+                <pre><code>termux-diffusion generate "RAW photo, developer portrait, cinematic" -m realistic</code></pre>
+                <p style="margin-top: 10px;"><strong>3. 커스텀 모델 / 허깅페이스 모델:</strong></p>
+                <pre><code>termux-diffusion generate "anime girl, vibrant" -m "second-state/DreamShaper-8-GGUF/dreamshaper-8-Q4_k.gguf"</code></pre>
             </div>
 
             <h3>Architectural Foundation</h3>

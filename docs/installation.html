@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installation Guide | Termux-Diffusion (Python & Node.js)</title>
-    <meta name="description" content="Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <title>Installation & User Scenarios | Termux-Diffusion</title>
+    <meta name="description" content="Complete installation guide, user scenarios (clean install, CLI generation, custom models), and toolchain setup.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
     <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
 
     <!-- Open Graph Metadata -->
-    <meta property="og:title" content="Installation Guide | Termux-Diffusion (Python & Node.js)">
-    <meta property="og:description" content="Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.">
+    <meta property="og:title" content="Installation & User Scenarios | Termux-Diffusion">
+    <meta property="og:description" content="Complete installation guide, user scenarios (clean install, CLI generation, custom models), and toolchain setup.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
     <meta property="og:site_name" content="Termux-Diffusion">
@@ -21,8 +21,8 @@
 
     <!-- Twitter Card Metadata -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Installation Guide | Termux-Diffusion (Python & Node.js)">
-    <meta name="twitter:description" content="Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.">
+    <meta name="twitter:title" content="Installation & User Scenarios | Termux-Diffusion">
+    <meta name="twitter:description" content="Complete installation guide, user scenarios (clean install, CLI generation, custom models), and toolchain setup.">
 
     <!-- Schema.org SoftwareApplication JSON-LD -->
     <script type="application/ld+json">
@@ -38,7 +38,7 @@
         "priceCurrency": "USD"
       },
       "softwareVersion": "1.0.0",
-      "description": "Complete installation guide and toolchain setup for running on-device Stable Diffusion on Android Termux and Samsung Galaxy.",
+      "description": "Complete installation guide, user scenarios (clean install, CLI generation, custom models), and toolchain setup.",
       "url": "https://uno-km.github.io/termux-diffusion/",
       "aggregateRating": {
         "@type": "AggregateRating",
@@ -111,10 +111,10 @@
             <h3>Documentation</h3>
             <ul>
                 <li><a href="index.html">System Overview & Architecture</a></li>
-                <li><a href="installation.html" class="active">Installation & Toolchains</a></li>
+                <li><a href="installation.html" class="active">Installation & Scenarios</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
                 <li><a href="models.html">Model Hub & GGUF Presets</a></li>
-                <li><a href="quickstart.html">Quickstart & Integration</a></li>
-                <li><a href="api-reference.html">API Reference Manual</a></li>
+                <li><a href="api-reference.html">100% Full API Reference</a></li>
             </ul>
             <h3>AI Agent Protocol &amp; Feeds</h3>
             <ul>
@@ -126,32 +126,44 @@
         </nav>
 
         <main class="content">
-            <h2>Installation &amp; Toolchain Configuration</h2>
-            <p>Detailed setup procedures for compiling and running the native Bionic C++ engine on Android Termux.</p>
+            <h2>Installation &amp; User Scenarios</h2>
+            <p>Step-by-step setup guides tailored for clean installations, rapid drafting, and custom model workflows.</p>
 
             <div class="alert alert-tip">
-                <span class="alert-title">One-Line Automated Bootstrap</span>
+                <span class="alert-title">Scenario 1: Clean Install (아무것도 없는 사람)</span>
                 <p><strong>Python Runtime:</strong></p>
-                <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash</code></pre>
-                <p style="margin-top: 10px;"><strong>Node.js / TypeScript Runtime:</strong></p>
-                <pre><code>curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install-node.sh | bash</code></pre>
+                <pre><code># 1. Grant Storage Access (Tap Allow on Android prompt)
+termux-setup-storage
+
+# 2. Install Packages & Provision Native Engine
+pkg update -y && pkg install python clang cmake git termux-api wget -y
+pip install termux-diffusion && termux-diffusion-install</code></pre>
+                <p style="margin-top: 12px;"><strong>Node.js / TypeScript Runtime:</strong></p>
+                <pre><code># 1. Grant Storage Access
+termux-setup-storage
+
+# 2. Install Packages & Provision Native Engine
+pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y
+npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
             </div>
 
-            <h3>Step-by-Step Manual Setup</h3>
-            
-            <h4>Step 1: System Packages &amp; Storage Permissions</h4>
-            <pre><code>pkg update -y && pkg upgrade -y
-termux-setup-storage</code></pre>
+            <h3>Scenario 2: Already Installed (이미 설치된 사람)</h3>
+            <p>Run 1-line generation immediately via CLI without writing script files:</p>
+            <pre><code># Python CLI
+termux-diffusion generate "RAW photo, portrait of developer, photorealistic" -m realistic
 
-            <h4>Step 2: Compiler Toolchain Dependencies</h4>
-            <pre><code>pkg install -y git cmake clang termux-api wget python nodejs-lts</code></pre>
+# Node.js CLI
+npx termux-diffusion generate "RAW photo, portrait of developer, photorealistic" -m realistic</code></pre>
 
-            <h4>Step 3: Run Diagnostic Doctor</h4>
-            <pre><code># Python Diagnostic
-termux-diffusion-doctor
+            <h3>Scenario 3: Custom Models &amp; External Weights</h3>
+            <pre><code># Download from Hugging Face directly
+termux-diffusion generate "anime character" -m "second-state/DreamShaper-8-GGUF/dreamshaper-8-Q4_k.gguf"
 
-# Node.js Diagnostic
-npx termux-diffusion doctor</code></pre>
+# Or load from local SD card
+termux-diffusion generate "fantasy castle" -m "~/storage/downloads/my_model.gguf"</code></pre>
+
+            <h3>Pre-flight System Diagnostics</h3>
+            <pre><code>termux-diffusion-doctor</code></pre>
         </main>
     </div>
     <footer>

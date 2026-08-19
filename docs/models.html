@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Model Hub & GGUF Presets | Termux-Diffusion</title>
     <meta name="description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
@@ -111,10 +111,10 @@
             <h3>Documentation</h3>
             <ul>
                 <li><a href="index.html">System Overview & Architecture</a></li>
-                <li><a href="installation.html">Installation & Toolchains</a></li>
+                <li><a href="installation.html">Installation & Scenarios</a></li>
+                <li><a href="quickstart.html">Quickstart & Recipes</a></li>
                 <li><a href="models.html" class="active">Model Hub & GGUF Presets</a></li>
-                <li><a href="quickstart.html">Quickstart & Integration</a></li>
-                <li><a href="api-reference.html">API Reference Manual</a></li>
+                <li><a href="api-reference.html">100% Full API Reference</a></li>
             </ul>
             <h3>AI Agent Protocol &amp; Feeds</h3>
             <ul>
@@ -180,25 +180,32 @@
 
             <h3>Custom Model Management API</h3>
             <pre><code>from termux_diffusion import (
-    set_cache_dir,       # Set custom storage directory (e.g. SD card)
-    download_model,      # Pre-download models in background
+    set_cache_dir,       # Route cache to external storage / SD card
+    get_cache_dir,       # Inspect active cache directory
+    download_model,      # Pre-download models in background with progress
     register_model,      # Register custom Hugging Face GGUF models
     list_cached_models,  # Inspect downloaded models
     clear_cache          # Purge cache to reclaim storage
 )
 
-# 1. Configure custom cache storage path
-set_cache_dir("~/storage/downloads/ai_models")
+# 1. Configure custom cache storage path (e.g. SD Card)
+set_cache_dir("~/storage/external-1/ai_models")
 
 # 2. Pre-fetch preset weights
-download_model("sdxs")
+download_model("sdxs", force=False)
 
-# 3. Register custom repository
+# 3. Register custom repository alias
 register_model(
-    name="custom-anime",
+    name="waifu",
     repo_id="second-state/DreamShaper-8-GGUF",
-    filename="dreamshaper-8-Q4_k.gguf"
-)</code></pre>
+    filename="dreamshaper-8-Q4_k.gguf",
+    description="DreamShaper 8 Q4_K model for stylized anime portraits"
+)
+
+# 4. View cached weights
+models = list_cached_models()
+for m in models:
+    print(f"Model: {m['name']}, Size: {m['size_mb']:.1f}MB")</code></pre>
         </main>
     </div>
     <footer>

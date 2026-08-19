@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quickstart & Integration | Termux-Diffusion</title>
     <meta name="description" content="Production code recipes and execution patterns for Python and Node.js on Samsung Galaxy Termux.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
@@ -111,10 +111,10 @@
             <h3>Documentation</h3>
             <ul>
                 <li><a href="index.html">System Overview & Architecture</a></li>
-                <li><a href="installation.html">Installation & Toolchains</a></li>
+                <li><a href="installation.html">Installation & Scenarios</a></li>
+                <li><a href="quickstart.html" class="active">Quickstart & Recipes</a></li>
                 <li><a href="models.html">Model Hub & GGUF Presets</a></li>
-                <li><a href="quickstart.html" class="active">Quickstart & Integration</a></li>
-                <li><a href="api-reference.html">API Reference Manual</a></li>
+                <li><a href="api-reference.html">100% Full API Reference</a></li>
             </ul>
             <h3>AI Agent Protocol &amp; Feeds</h3>
             <ul>
@@ -134,13 +134,16 @@
 
 result = generate(
     prompt="RAW photo, portrait of a happy smiling young Korean man in his 30s wearing glasses and hoodie, working on laptop, photorealistic, cinematic",
+    negative_prompt="blurry, bad anatomy, deformed, distorted",
     model="realistic",
     device="cpu",
     steps=10,
     cfg_scale=4.0,
     output="portrait.png"
 )
-print(f"Saved: {result.path} (MediaStore: {result.gallery_path})")</code></pre>
+print(f"Artifact: {result.path}")
+print(f"Samsung Gallery: {result.gallery_path}")
+print(f"Latency: {result.elapsed_sec:.2f}s")</code></pre>
 
             <h3>Recipe 2: Low-Latency Prototyping (Node.js)</h3>
             <pre><code>const { generate } = require('termux-diffusion');
@@ -154,9 +157,14 @@ async function main() {
         output: 'robot.png'
     });
     console.log(`Rendered in: ${result.elapsedSec}s`);
+    console.log(`Gallery: ${result.galleryPath}`);
 }
 
 main().catch(console.error);</code></pre>
+
+            <h3>Recipe 3: GPU Hardware Compute Targeting</h3>
+            <pre><code># Offload compute to mobile GPU (Adreno / Samsung Xclipse)
+generate("speedy sports car in city", model="speed", device="gpu")</code></pre>
         </main>
     </div>
     <footer>

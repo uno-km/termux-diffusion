@@ -163,6 +163,14 @@ npx termux-diffusion doctor
 
 ---
 
-## 8. License
+## 8. The AMEVA Mobile AI & Automation Ecosystem
+
+* **📱 [Termux-Playwright](https://github.com/uno-km/termux-playwright-demo)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [📖 Official Docs](https://uno-km.github.io/termux-playwright-demo/)): Production headless Chromium browser automation for Android Termux.
+  * **Python:** `pip install termux-playwright && termux-playwright-install`
+  * **Node.js:** `npm install termux-playwright && npx termux-playwright install`
+
+---
+
+## 9. License
 
 Released under the **MIT License**. Maintained by **uno-km**.

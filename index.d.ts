@@ -22,6 +22,7 @@ export interface CachedModelInfo {
 export interface GenerateOptions {
   prompt: string;
   model?: 'realistic' | 'speed' | 'sdxs' | 'turbo' | 'anime' | string;
+  device?: 'cpu' | 'gpu' | 'opencl' | 'vulkan' | string;
   negativePrompt?: string;
   steps?: number;
   cfgScale?: number;
@@ -39,6 +40,7 @@ export interface GenerationResult {
   galleryPath: string | null;
   prompt: string;
   model: string;
+  device?: string;
   steps: number;
   cfgScale: number;
   elapsedSec: number;

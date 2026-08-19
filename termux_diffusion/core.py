@@ -32,6 +32,7 @@ class GenerationResult:
     prompt: str
     negative_prompt: Optional[str]
     model: str
+    device: str
     steps: int
     cfg_scale: float
     width: int
@@ -40,7 +41,7 @@ class GenerationResult:
     elapsed_sec: float
 
     def __str__(self) -> str:
-        return f"<GenerationResult path='{self.path}' elapsed={self.elapsed_sec:.1f}s>"
+        return f"<GenerationResult path='{self.path}' device='{self.device}' elapsed={self.elapsed_sec:.1f}s>"
 
 
 def generate(
@@ -49,6 +50,7 @@ def generate(
     negative_prompt: Optional[str] = (
         "woman, girl, cartoon, anime, 3d render, plastic, illustration, b&w, lowres, blur, deformed hands, extra fingers, messy face, horror"
     ),
+    device: str = "cpu",
     steps: Optional[int] = None,
     cfg_scale: Optional[float] = None,
     width: int = 512,
@@ -65,8 +67,9 @@ def generate(
     
     Args:
         prompt: Detailed text description of the desired image.
-        model: Preset keyword ('realistic', 'speed', 'sdxs', 'turbo', 'anime') or path to .gguf file.
+        model: Preset keyword ('realistic', 'speed', 'sdxs', 'turbo', 'anime'), custom repo ('org/repo/file.gguf'), direct URL, or path to .gguf file.
         negative_prompt: Negative text guidance describing elements to avoid.
+        device: Computing device ('cpu', 'gpu', 'opencl', 'vulkan'). Default is 'cpu'.
         steps: Number of denoising steps (default determined by preset, e.g. 10).
         cfg_scale: Classifier-Free Guidance scale (default determined by preset, e.g. 4.0).
         width: Output image width in pixels (default: 512).
@@ -84,6 +87,10 @@ def generate(
     """
     if not prompt or not prompt.strip():
         raise ValueError("Prompt must not be empty.")
+
+    device_mode = device.lower().strip()
+    if device_mode not in ("cpu", "gpu", "opencl", "vulkan", "auto"):
+        raise ValueError(f"Invalid device '{device}'. Options: 'cpu', 'gpu', 'opencl', 'vulkan'.")
 
     # 1. Pre-flight Memory Safety Guard
     if low_ram_guard:
@@ -134,6 +141,8 @@ def generate(
         cmd.extend(["-n", negative_prompt])
     if seed >= 0:
         cmd.extend(["-s", str(seed)])
+    if device_mode in ("gpu", "opencl", "vulkan"):
+        cmd.extend(["-ngl", "32"])
 
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
     print(f"🎨 [termux-diffusion] Rendering with '{model}' ({steps} steps, {threads} threads)...")
@@ -215,6 +224,7 @@ def generate(
         prompt=prompt,
         negative_prompt=negative_prompt,
         model=model,
+        device=device_mode,
         steps=steps,
         cfg_scale=cfg_scale,
         width=width,

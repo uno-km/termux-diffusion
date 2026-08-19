@@ -19,3 +19,9 @@ def test_empty_prompt_validation():
 def test_invalid_model_preset_raises():
     with pytest.raises(ModelNotFoundError):
         generate("prompt", model="non_existent_preset_xyz_123")
+
+
+def test_invalid_device_raises():
+    with pytest.raises(ValueError, match="Invalid device"):
+        generate("prompt", model="realistic", device="invalid_device_quantum")
+

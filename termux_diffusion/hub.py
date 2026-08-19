@@ -164,9 +164,14 @@ def resolve_model_path(model_name_or_path: str, cache_dir: Optional[Union[str, P
         # Automatically download preset if not cached
         return download_model(model_name_or_path, cache_dir=target_dir)
 
+    # Direct URL or custom HuggingFace repo identifier
+    if model_name_or_path.startswith("http://") or model_name_or_path.startswith("https://") or ("/" in model_name_or_path and not Path(model_name_or_path).is_file()):
+        return download_model(model_name_or_path, cache_dir=target_dir)
+
     raise ModelNotFoundError(
         f"Model '{model_name_or_path}' could not be resolved. "
-        f"Available presets: {list(presets.keys())} or specify an existing .gguf file path."
+        f"Available presets: {list(presets.keys())}, or specify a custom repo ('org/repo/file.gguf'), "
+        f"a direct URL ('https://.../model.gguf'), or an existing local .gguf file path."
     )
 
 
@@ -176,7 +181,7 @@ def download_model(
     force: bool = False,
     progress_callback: Optional[Callable[[int, int], None]] = None,
 ) -> Path:
-    """Download GGUF model weights from Hugging Face with progress display and resume capability."""
+    """Download GGUF model weights from Hugging Face or direct HTTP URL with progress display and resume capability."""
     target_dir = Path(cache_dir).resolve() if cache_dir else get_cache_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -186,30 +191,52 @@ def download_model(
         repo_id = info["repo_id"]
         filename = info["filename"]
         target_filename = info.get("alias", filename)
-    else:
-        # Custom repo or direct HF URL
-        if "/" in model_name_or_url and not model_name_or_url.startswith("http"):
-            parts = model_name_or_url.split("/")
-            if len(parts) == 3:  # org/repo/file.gguf
-                repo_id = f"{parts[0]}/{parts[1]}"
-                filename = parts[2]
-                target_filename = filename
-            else:
-                raise ModelNotFoundError(f"Invalid model reference: '{model_name_or_url}'")
+        download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
+    elif model_name_or_url.startswith("http://") or model_name_or_url.startswith("https://"):
+        # Direct URL download
+        download_url = model_name_or_url
+        target_filename = model_name_or_url.split("?")[0].rstrip("/").split("/")[-1]
+        if not target_filename.endswith(".gguf"):
+            target_filename += ".gguf"
+    elif "/" in model_name_or_url:
+        # Custom HuggingFace repo identifier (e.g. org/repo/file.gguf)
+        parts = model_name_or_url.split("/")
+        if len(parts) == 3:
+            repo_id = f"{parts[0]}/{parts[1]}"
+            filename = parts[2]
+            target_filename = filename
+            download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
+        elif len(parts) == 2:
+            repo_id = f"{parts[0]}/{parts[1]}"
+            # Query Hugging Face API to find the main .gguf file in the repository
+            try:
+                api_url = f"https://huggingface.co/api/models/{repo_id}"
+                req = urllib.request.Request(api_url, headers={"User-Agent": "termux-diffusion/1.0.0"})
+                with urllib.request.urlopen(req, timeout=10.0) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    siblings = [s.get("rfilename", "") for s in data.get("siblings", [])]
+                    gguf_files = [f for f in siblings if f.endswith(".gguf")]
+                    if gguf_files:
+                        filename = gguf_files[0]
+                        target_filename = filename
+                        download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
+                    else:
+                        raise ModelNotFoundError(f"No .gguf file found in repository '{repo_id}'")
+            except Exception as e:
+                raise ModelNotFoundError(f"Could not inspect Hugging Face repo '{repo_id}': {e}") from e
         else:
-            raise ModelNotFoundError(f"Unknown model preset: '{model_name_or_url}'. Available: {list(presets.keys())}")
+            raise ModelNotFoundError(f"Invalid model reference: '{model_name_or_url}'")
+    else:
+        raise ModelNotFoundError(f"Unknown model preset: '{model_name_or_url}'. Available: {list(presets.keys())}")
 
     final_path = target_dir / target_filename
     if final_path.is_file() and not force:
         logger.info("Model '%s' already cached at: %s", model_name_or_url, final_path)
         return final_path
 
-    # Construct Hugging Face direct resolve URL
-    download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
     temp_path = target_dir / f"{target_filename}.part"
-
     logger.info("Downloading '%s' from %s -> %s", model_name_or_url, download_url, final_path)
-    print(f"📥 [termux-diffusion] Downloading model '{model_name_or_url}' ({download_url})...")
+    print(f"📥 [termux-diffusion] Downloading model '{target_filename}' ({download_url})...")
 
     # Attempt download with streaming chunk writer and resume support
     try:

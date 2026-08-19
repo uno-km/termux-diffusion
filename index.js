@@ -163,13 +163,24 @@ async function downloadModel(modelNameOrUrl, options = {}) {
   if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
   const presets = listPresets();
-  let repoId, filename, targetFilename;
+  let downloadUrl, targetFilename;
 
   if (presets[modelNameOrUrl]) {
     const info = presets[modelNameOrUrl];
-    repoId = info.repo_id;
-    filename = info.filename;
-    targetFilename = info.alias || filename;
+    targetFilename = info.alias || info.filename;
+    downloadUrl = `https://huggingface.co/${info.repo_id}/resolve/main/${info.filename}`;
+  } else if (modelNameOrUrl.startsWith('http://') || modelNameOrUrl.startsWith('https://')) {
+    downloadUrl = modelNameOrUrl;
+    targetFilename = modelNameOrUrl.split('?')[0].replace(/\/+$/, '').split('/').pop();
+    if (!targetFilename.endsWith('.gguf')) targetFilename += '.gguf';
+  } else if (modelNameOrUrl.includes('/')) {
+    const parts = modelNameOrUrl.split('/');
+    if (parts.length === 3) {
+      targetFilename = parts[2];
+      downloadUrl = `https://huggingface.co/${parts[0]}/${parts[1]}/resolve/main/${parts[2]}`;
+    } else {
+      throw new Error(`Custom model reference should be 'org/repo/file.gguf' or a direct URL.`);
+    }
   } else {
     throw new Error(`Unknown model preset: '${modelNameOrUrl}'. Available: ${Object.keys(presets).join(', ')}`);
   }
@@ -179,10 +190,8 @@ async function downloadModel(modelNameOrUrl, options = {}) {
     return finalPath;
   }
 
-  const downloadUrl = `https://huggingface.co/${repoId}/resolve/main/${filename}`;
   const tempPath = path.join(targetDir, `${targetFilename}.part`);
-
-  console.log(`📥 [termux-diffusion] Downloading model '${modelNameOrUrl}' (${downloadUrl})...`);
+  console.log(`📥 [termux-diffusion] Downloading model '${targetFilename}' (${downloadUrl})...`);
 
   await new Promise((resolve, reject) => {
     function fetchUrl(currentUrl) {
@@ -245,6 +254,10 @@ async function resolveModelPath(modelNameOrPath, cacheDir) {
     return await downloadModel(modelNameOrPath, { cacheDir: targetDir });
   }
 
+  if (modelNameOrPath.startsWith('http://') || modelNameOrPath.startsWith('https://') || modelNameOrPath.includes('/')) {
+    return await downloadModel(modelNameOrPath, { cacheDir: targetDir });
+  }
+
   throw new Error(`Could not resolve model '${modelNameOrPath}'`);
 }
 
@@ -297,6 +310,7 @@ async function generate(options) {
 
   const prompt = options.prompt;
   const model = options.model || 'realistic';
+  const device = (options.device || 'cpu').toLowerCase().trim();
   const negativePrompt = options.negativePrompt || 'woman, girl, cartoon, anime, 3d render, plastic, illustration, b&w, lowres, blur, deformed hands, extra fingers, messy face, horror';
   const width = options.width || 512;
   const height = options.height || 512;
@@ -334,8 +348,11 @@ async function generate(options) {
   ];
   if (negativePrompt) cmdArgs.push('-n', negativePrompt);
   if (seed >= 0) cmdArgs.push('-s', String(seed));
+  if (device === 'gpu' || device === 'opencl' || device === 'vulkan') {
+    cmdArgs.push('-ngl', '32');
+  }
 
-  console.log(`🎨 [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads)...`);
+  console.log(`🎨 [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, device: ${device})...`);
   const startTime = Date.now();
 
   // Acquire WakeLock

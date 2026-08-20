@@ -51,7 +51,7 @@ async function runTests() {
     assert(DEFAULT_PRESETS.realistic, 'realistic model preset missing');
     assert(DEFAULT_PRESETS.speed, 'speed model preset missing');
     assert(DEFAULT_PRESETS.sdxs, 'sdxs model preset missing');
-    assert.strictEqual(DEFAULT_PRESETS.sdxs.size_mb, 450);
+    assert.strictEqual(DEFAULT_PRESETS.sdxs.size_mb, 651);
   });
 
   // 2. Custom Model Registration

@@ -38,7 +38,7 @@ def test_default_presets_exist():
     assert "turbo" in presets
     assert "anime" in presets
     assert presets["realistic"]["size_mb"] > 1000
-    assert presets["sdxs"]["size_mb"] == 450
+    assert presets["sdxs"]["size_mb"] == 651
 
 
 def test_set_and_get_cache_dir(temp_cache):

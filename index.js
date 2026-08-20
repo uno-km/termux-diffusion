@@ -17,8 +17,8 @@ const DEFAULT_PRESETS = {
     repo_id: 'second-state/Realistic_Vision_V6.0_B1-GGUF',
     filename: 'realisticVisionV60B1_v51HyperVAE-Q4_k.gguf',
     alias: 'realistic.gguf',
-    description: 'Realistic Vision V6.0 B1 (Q4_K) - Ultra-detailed photorealistic portraits',
-    size_mb: 1620,
+    description: 'Realistic Vision V6.0 B1 (Q4_K) - Ultra-detailed photorealistic portraits & scenes',
+    size_mb: 1547,
     default_steps: 10,
     default_cfg: 4.0
   },
@@ -27,36 +27,36 @@ const DEFAULT_PRESETS = {
     filename: 'stable-diffusion-v1-5-Q4_1.gguf',
     alias: 'lightning.gguf',
     description: 'Stable Diffusion 1.5 (Q4_1) - Fast general-purpose base model',
-    size_mb: 1590,
+    size_mb: 1682,
     default_steps: 10,
     default_cfg: 4.0
   },
   sdxs: {
-    repo_id: 'gpustack/SDXS-512-0.9-GGUF',
-    filename: 'sdxs-512-0.9-Q4_0.gguf',
+    repo_id: 'concedo/sdxs-512-tinySDdistilled-GGUF',
+    filename: 'sdxs-512-tinySDdistilled_Q8_0.gguf',
     alias: 'sdxs.gguf',
-    description: 'SDXS 512-0.9 (Q4_0) - Ultra-lightweight mobile-optimized 2-3 step model (~450MB)',
-    size_mb: 450,
+    description: 'SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight mobile-optimized model (~650MB)',
+    size_mb: 651,
     default_steps: 2,
     default_cfg: 2.0
   },
   turbo: {
-    repo_id: 'second-state/SD-Turbo-GGUF',
-    filename: 'sd-turbo-Q4_0.gguf',
+    repo_id: 'second-state/stable-diffusion-v1-5-GGUF',
+    filename: 'stable-diffusion-v1-5-pruned-emaonly-Q4_0.gguf',
     alias: 'turbo.gguf',
-    description: 'SD Turbo (Q4_0) - Real-time 1-step inference model',
-    size_mb: 1200,
-    default_steps: 1,
-    default_cfg: 1.5
+    description: 'Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency lightweight base model',
+    size_mb: 1494,
+    default_steps: 8,
+    default_cfg: 3.0
   },
   anime: {
-    repo_id: 'second-state/DreamShaper-8-GGUF',
-    filename: 'dreamshaper-8-Q4_k.gguf',
+    repo_id: 'haven-ai-companion/dreamshaper8-lcm-gguf',
+    filename: 'DreamShaper8_LCM_q4_0.gguf',
     alias: 'anime.gguf',
-    description: 'DreamShaper 8 (Q4_K) - Stylized anime & 2.5D illustration art',
-    size_mb: 1650,
-    default_steps: 10,
-    default_cfg: 4.5
+    description: 'DreamShaper 8 LCM (Q4_0) - Stylized anime & 2.5D fast illustration art',
+    size_mb: 1550,
+    default_steps: 6,
+    default_cfg: 2.0
   }
 };
 
@@ -620,13 +620,13 @@ function setCacheDir(customPath) {
 
 function registerModel(name, options) {
   customRegistry[name] = {
-    repo_id: options.repo_id || options.repoId,
-    filename: options.filename,
-    alias: options.alias || `${name}.gguf`,
-    description: options.description || `Custom model ${name}`,
-    default_steps: options.steps || options.default_steps || 10,
-    default_cfg: options.cfg || options.default_cfg || 4.0,
-    sha256: options.sha256 || null
+    repo_id: String(options.repo_id || options.repoId || ''),
+    filename: String(options.filename || ''),
+    alias: String(options.alias || `${name}.gguf`),
+    description: String(options.description || `Custom model ${name}`),
+    default_steps: Number(options.steps || options.default_steps || 10),
+    default_cfg: Number(options.cfg || options.default_cfg || 4.0),
+    sha256: options.sha256 ? String(options.sha256) : null
   };
 }
 

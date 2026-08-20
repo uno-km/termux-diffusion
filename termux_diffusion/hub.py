@@ -28,7 +28,7 @@ DEFAULT_PRESETS = MappingProxyType({
         "filename": "realisticVisionV60B1_v51HyperVAE-Q4_k.gguf",
         "alias": "realistic.gguf",
         "description": "Realistic Vision V6.0 B1 (Q4_K) - Ultra-detailed photorealistic portraits & scenes",
-        "size_mb": 1620,
+        "size_mb": 1547,
         "default_steps": 10,
         "default_cfg": 4.0,
     },
@@ -37,36 +37,36 @@ DEFAULT_PRESETS = MappingProxyType({
         "filename": "stable-diffusion-v1-5-Q4_1.gguf",
         "alias": "lightning.gguf",
         "description": "Stable Diffusion 1.5 (Q4_1) - Fast general-purpose base model",
-        "size_mb": 1590,
+        "size_mb": 1682,
         "default_steps": 10,
         "default_cfg": 4.0,
     },
     "sdxs": {
-        "repo_id": "gpustack/SDXS-512-0.9-GGUF",
-        "filename": "sdxs-512-0.9-Q4_0.gguf",
+        "repo_id": "concedo/sdxs-512-tinySDdistilled-GGUF",
+        "filename": "sdxs-512-tinySDdistilled_Q8_0.gguf",
         "alias": "sdxs.gguf",
-        "description": "SDXS 512-0.9 (Q4_0) - Ultra-lightweight mobile-optimized 2-3 step model (~450MB)",
-        "size_mb": 450,
+        "description": "SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight mobile-optimized model (~650MB)",
+        "size_mb": 651,
         "default_steps": 2,
         "default_cfg": 2.0,
     },
     "turbo": {
-        "repo_id": "second-state/SD-Turbo-GGUF",
-        "filename": "sd-turbo-Q4_0.gguf",
+        "repo_id": "second-state/stable-diffusion-v1-5-GGUF",
+        "filename": "stable-diffusion-v1-5-pruned-emaonly-Q4_0.gguf",
         "alias": "turbo.gguf",
-        "description": "SD Turbo (Q4_0) - Real-time 1-step inference model",
-        "size_mb": 1200,
-        "default_steps": 1,
-        "default_cfg": 1.5,
+        "description": "Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency lightweight base model",
+        "size_mb": 1494,
+        "default_steps": 8,
+        "default_cfg": 3.0,
     },
     "anime": {
-        "repo_id": "second-state/DreamShaper-8-GGUF",
-        "filename": "dreamshaper-8-Q4_k.gguf",
+        "repo_id": "haven-ai-companion/dreamshaper8-lcm-gguf",
+        "filename": "DreamShaper8_LCM_q4_0.gguf",
         "alias": "anime.gguf",
-        "description": "DreamShaper 8 (Q4_K) - Stylized anime & 2.5D illustration art",
-        "size_mb": 1650,
-        "default_steps": 10,
-        "default_cfg": 4.5,
+        "description": "DreamShaper 8 LCM (Q4_0) - Stylized anime & 2.5D fast illustration art",
+        "size_mb": 1550,
+        "default_steps": 6,
+        "default_cfg": 2.0,
     },
 })
 
@@ -148,11 +148,11 @@ def register_model(
     sha256: Optional[str] = None,
 ) -> None:
     """Register a custom Hugging Face GGUF model into the hub catalog."""
-    alias_name = alias or f"{name}.gguf"
+    alias_name = str(alias) if alias else f"{name}.gguf"
     with _registry_lock:
         _custom_registry[name] = {
-            "repo_id": repo_id,
-            "filename": filename,
+            "repo_id": str(repo_id),
+            "filename": str(filename),
             "alias": alias_name,
             "description": description or f"Custom model '{name}' from {repo_id}",
             "default_steps": default_steps,
@@ -244,8 +244,8 @@ def download_model(
     if model_name_or_url in presets:
         info = presets[model_name_or_url]
         repo_id = info["repo_id"]
-        filename = info["filename"]
-        target_filename = info.get("alias", filename)
+        filename = str(info["filename"])
+        target_filename = str(info.get("alias") or filename)
         if expected_sha256 is None:
             expected_sha256 = info.get("sha256")
         download_url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"

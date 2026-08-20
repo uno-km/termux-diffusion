@@ -144,18 +144,31 @@ def test_generate_mock_timeout_expired(tmp_path):
 
 
 def test_safe_kill_process():
-    """Verify _safe_kill_process handles None, dead, and running processes without raising."""
+    """Verify _safe_kill_process handles None, dead, graceful, and unresponsive processes."""
     _safe_kill_process(None)
 
+    # 1. Dead process -> nothing called
     mock_dead = MagicMock()
     mock_dead.poll.return_value = 0
     _safe_kill_process(mock_dead)
+    mock_dead.terminate.assert_not_called()
     mock_dead.kill.assert_not_called()
 
-    mock_running = MagicMock()
-    mock_running.poll.return_value = None
-    _safe_kill_process(mock_running)
-    mock_running.kill.assert_called_once()
+    # 2. Graceful termination on SIGTERM
+    mock_graceful = MagicMock()
+    mock_graceful.poll.return_value = None
+    mock_graceful.wait.return_value = None
+    _safe_kill_process(mock_graceful)
+    mock_graceful.terminate.assert_called_once()
+    mock_graceful.kill.assert_not_called()
+
+    # 3. Unresponsive process escalating to SIGKILL
+    mock_unresponsive = MagicMock()
+    mock_unresponsive.poll.return_value = None
+    mock_unresponsive.wait.side_effect = [subprocess.TimeoutExpired(cmd="sd-cli", timeout=2.0), None]
+    _safe_kill_process(mock_unresponsive)
+    mock_unresponsive.terminate.assert_called_once()
+    mock_unresponsive.kill.assert_called_once()
 
 
 @pytest.mark.asyncio

@@ -45,16 +45,36 @@ class GenerationResult:
 
 
 def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -> None:
-    """Safely terminate and reap child processes to prevent zombie handles."""
-    if proc and proc.poll() is None:
+    """Safely terminate and reap child processes to prevent zombie handles and battery drain."""
+    if proc is None or proc.poll() is not None:
+        return
+
+    pid = getattr(proc, "pid", None)
+    logger.warning("Initiating child process termination (PID: %s)...", pid)
+
+    try:
+        # Step 1: Attempt graceful SIGTERM
+        proc.terminate()
         try:
-            proc.kill()
-            try:
-                proc.communicate(timeout=timeout)
-            except (subprocess.TimeoutExpired, Exception):
-                pass
-        except Exception as e:
-            logger.warning("Child process cleanup exception: %s", e)
+            proc.wait(timeout=timeout)
+            logger.debug("Child process (PID: %s) gracefully exited on SIGTERM.", pid)
+            return
+        except subprocess.TimeoutExpired:
+            logger.warning(
+                "Child process (PID: %s) did not exit within %.1fs, escalating to SIGKILL...",
+                pid,
+                timeout,
+            )
+
+        # Step 2: Forceful SIGKILL if still alive
+        proc.kill()
+        try:
+            proc.wait(timeout=2.0)
+            logger.debug("Child process (PID: %s) forcefully terminated and reaped.", pid)
+        except subprocess.TimeoutExpired:
+            logger.error("Child process (PID: %s) could not be reaped after SIGKILL.", pid)
+    except Exception as exc:
+        logger.error("Error during child process termination (PID: %s): %s", pid, exc)
 
 
 DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT = "lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"

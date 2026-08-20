@@ -970,6 +970,33 @@ async function generate(options) {
     }
   }
 
+  function safeKillProcess(proc, timeoutMs = 2000) {
+    if (!proc || proc.killed || proc.exitCode !== null) return;
+    const pid = proc.pid;
+    console.warn(`[termux-diffusion] Initiating child process termination (PID: ${pid})...`);
+
+    try {
+      // Step 1: Attempt graceful SIGTERM
+      proc.kill('SIGTERM');
+
+      // Step 2: Escalate to SIGKILL if still running
+      const forceKillTimer = setTimeout(() => {
+        if (proc.exitCode === null && !proc.killed) {
+          console.warn(`[termux-diffusion] Child process (PID: ${pid}) did not exit within ${timeoutMs}ms, escalating to SIGKILL...`);
+          try {
+            proc.kill('SIGKILL');
+          } catch (err) {
+            console.error(`[termux-diffusion] Error sending SIGKILL to PID ${pid}:`, err.message);
+          }
+        }
+      }, timeoutMs);
+
+      if (forceKillTimer.unref) forceKillTimer.unref();
+    } catch (err) {
+      console.error(`[termux-diffusion] Error during child process termination (PID: ${pid}):`, err.message);
+    }
+  }
+
   try {
     await new Promise((resolve, reject) => {
       const proc = spawn(sdCli, cmdArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -980,13 +1007,22 @@ async function generate(options) {
         }
       });
 
+      const onSigInt = () => {
+        safeKillProcess(proc);
+        process.exit(130);
+      };
+      process.once('SIGINT', onSigInt);
+      process.once('SIGTERM', onSigInt);
+
       const timer = setTimeout(() => {
-        try { proc.kill('SIGKILL'); } catch (_) {}
+        safeKillProcess(proc);
         reject(new Error(`Inference timed out after ${timeout}ms`));
       }, timeout);
 
       proc.on('close', (code) => {
         clearTimeout(timer);
+        process.removeListener('SIGINT', onSigInt);
+        process.removeListener('SIGTERM', onSigInt);
         if (code === 0 && fs.existsSync(outPath)) {
           resolve();
         } else {
@@ -995,6 +1031,8 @@ async function generate(options) {
       });
       proc.on('error', (err) => {
         clearTimeout(timer);
+        process.removeListener('SIGINT', onSigInt);
+        process.removeListener('SIGTERM', onSigInt);
         reject(err);
       });
     });

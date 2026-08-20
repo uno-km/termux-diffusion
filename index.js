@@ -967,15 +967,22 @@ async function generate(options) {
 
   const presets = listPresets();
   const steps = options.steps || (presets[model] ? presets[model].default_steps : 10);
-  const cfgScale = options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0);
-
-  const modelPath = await resolveModelPath(model);
+  // Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
   let sdCli = locateSdCli();
 
   if (!sdCli) {
-    console.log('[Start] [termux-diffusion] sd-cli binary not found in standard paths. Attempting auto-provisioning...');
-    sdCli = provisionEngine();
+    if (options.autoProvision) {
+      console.log('[Start] [termux-diffusion] sd-cli binary not found in standard paths. Attempting auto-provisioning as requested...');
+      sdCli = provisionEngine();
+    } else {
+      throw new Error(
+        "[termux-diffusion] Native 'sd-cli' binary not found on this system. " +
+        "Please run 'npx termux-diffusion install' via CLI or pass '{ autoProvision: true }' to generate()."
+      );
+    }
   }
+
+  const modelPath = await resolveModelPath(model);
 
   const timestamp = Math.floor(Date.now() / 1000);
   const outPath = options.output ? path.resolve(options.output) : path.join(getGalaxyGalleryDir(), `ai_gen_${timestamp}.png`);

@@ -123,6 +123,7 @@ def generate(
     export_gallery: bool = True,
     wake_lock: bool = True,
     low_ram_guard: bool = True,
+    auto_provision: bool = False,
     timeout: int = 1800,
 ) -> GenerationResult:
     """Generate an AI image on Samsung Galaxy / Android Termux using Bionic native C++ diffusion.
@@ -142,6 +143,7 @@ def generate(
         export_gallery: Whether to copy image to Samsung Gallery and broadcast media scanner intent.
         wake_lock: Whether to acquire Android CPU WakeLock during generation.
         low_ram_guard: Whether to verify available memory before starting inference. Raises OOMRiskError if RAM is below threshold.
+        auto_provision: Whether to automatically compile the native C++ engine if missing (default: False to respect library boundaries).
         timeout: Maximum inference timeout in seconds (default: 1800s / 30m).
     
     Returns:
@@ -165,7 +167,19 @@ def generate(
             logger.error("Low RAM Guard triggered: %s", msg)
             raise OOMRiskError(msg)
 
-    # 2. Resolve Model Path & Preset Hyperparameters (Validates model name first)
+    # 2. Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
+    sd_cli = locate_sd_cli()
+    if not sd_cli:
+        if auto_provision:
+            logger.info("sd-cli binary not found in standard paths. Attempting auto-provisioning as requested...")
+            sd_cli = provision_engine()
+        else:
+            raise ProvisioningError(
+                "Native 'sd-cli' binary not found on this system. "
+                "Please run 'termux-diffusion install' via CLI or pass auto_provision=True to generate()."
+            )
+
+    # 3. Resolve Model Path & Preset Hyperparameters
     presets = list_presets()
     model_path = resolve_model_path(model)
 
@@ -180,12 +194,6 @@ def generate(
     effective_negative = negative_prompt if negative_prompt is not None else _global_default_negative_prompt
     if effective_negative and not effective_negative.strip():
         effective_negative = None
-
-    # 3. Locate or Auto-provision Native sd-cli Engine
-    sd_cli = locate_sd_cli()
-    if not sd_cli:
-        logger.info("sd-cli binary not found in standard paths. Attempting auto-provisioning...")
-        sd_cli = provision_engine()
 
     # 4. Determine Output Destination
     timestamp = int(time.time())

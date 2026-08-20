@@ -154,7 +154,7 @@ async function main() {
     }
 
     try {
-      await generate({ prompt, model, steps, cfgScale: cfg, output });
+      await generate({ prompt, model, steps, cfgScale: cfg, output, autoProvision: true });
     } catch (err) {
       console.error('[FAIL] Generation error:', err.message);
       process.exit(1);

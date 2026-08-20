@@ -11,6 +11,7 @@ from termux_diffusion.exceptions import (
     InferenceTimeoutError,
     ModelNotFoundError,
     OOMRiskError,
+    ProvisioningError,
     TermuxDiffusionError,
 )
 
@@ -24,8 +25,10 @@ def test_empty_prompt_validation():
 
 
 def test_invalid_model_preset_raises():
-    with pytest.raises(ModelNotFoundError):
-        generate("prompt", model="non_existent_preset_xyz_123")
+    with patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")):
+        with pytest.raises(ModelNotFoundError):
+            generate("prompt", model="non_existent_preset_xyz_123")
 
 
 def test_invalid_device_raises():
@@ -230,3 +233,24 @@ def test_negative_prompt_configuration():
     # Reset back to None
     set_default_negative_prompt(None)
     assert get_default_negative_prompt() is None
+
+
+def test_generate_missing_engine_no_overreach(tmp_path):
+    """Verify generate() fails fast without compiling when auto_provision=False."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    with patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=None), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")):
+
+        with pytest.raises(ProvisioningError, match="Native 'sd-cli' binary not found"):
+            generate(
+                prompt="test prompt",
+                model=str(dummy_model),
+                output=dummy_out,
+                auto_provision=False,
+                wake_lock=False,
+                export_gallery=False
+            )

@@ -75,7 +75,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             width=args.width,
             height=args.height,
             threads=args.threads,
-            output=args.output
+            output=args.output,
+            auto_provision=True
         )
         return 0 if res.path.exists() else 1
 

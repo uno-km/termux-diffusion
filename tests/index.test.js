@@ -176,6 +176,18 @@ async function runTests() {
     assert.strictEqual(caught, true, 'Pre-aborted signal should reject immediately');
   });
 
+  // 12. Library Overreach Prevention (No unexpected compilation)
+  await it('generate fails fast when engine missing without autoProvision', async () => {
+    let caught = false;
+    try {
+      await generate({ prompt: 'test prompt', autoProvision: false });
+    } catch (err) {
+      caught = true;
+      assert(err.message.includes('sd-cli') || err.message.includes('not found') || err.message.includes('termux-diffusion'));
+    }
+    assert.strictEqual(caught, true, 'Should not compile without explicit autoProvision: true');
+  });
+
   console.log(`\n[RESULT] Node.js Test Results: ${passed}/${total} Passed.`);
   if (passed !== total) {
     process.exit(1);

@@ -553,8 +553,8 @@ gallery_html = f"""<!DOCTYPE html>
             <p data-i18n="gallery.subtitle">Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.</p>
 
             <div class="alert alert-tip">
-                <span class="alert-title">📸 Real On-Device Generation Gallery</span>
-                <p>All images showcased below were generated natively on mobile ARM64 hardware using <code>termux-diffusion</code>. No remote cloud GPU was used.</p>
+                <span class="alert-title">📸 Real On-Device Generation Gallery (CPU 4-Core Baseline)</span>
+                <p>All images and latency metrics below were measured on <strong>Pure CPU (4-Threads)</strong> without GPU/NPU acceleration to establish the universal guaranteed baseline across all Android devices. When mobile GPU acceleration (Adreno OpenCL / Mali Vulkan via <code>--device gpu</code>) is enabled, inference is <strong>10x ~ 20x faster</strong>.</p>
             </div>
 
             <!-- SECTION 1: UNIFIED PROMPT BENCHMARK -->
@@ -571,6 +571,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">SDXS Tiny Distilled (Fast)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 28.98s</span>
                             <span class="param-tag">Model: sdxs (Q8_0)</span>
                             <span class="param-tag">Steps: 1</span>
                             <span class="param-tag">CFG: 1.0</span>
@@ -589,6 +590,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">SDXS Tiny Distilled (High-End)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 25.81s</span>
                             <span class="param-tag">Model: sdxs (Q8_0)</span>
                             <span class="param-tag">Steps: 2</span>
                             <span class="param-tag">CFG: 1.0</span>
@@ -607,6 +609,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">DreamShaper 8 LCM (Fast)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 270.63s (4.5m)</span>
                             <span class="param-tag">Model: anime (Q4_0)</span>
                             <span class="param-tag">Steps: 4</span>
                             <span class="param-tag">CFG: 1.5</span>
@@ -625,6 +628,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">DreamShaper 8 LCM (High-End)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 380.58s (6.3m)</span>
                             <span class="param-tag">Model: anime (Q4_0)</span>
                             <span class="param-tag">Steps: 8</span>
                             <span class="param-tag">CFG: 1.8</span>
@@ -643,6 +647,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">SD1.5 Pruned Base (Fast)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 522.95s (8.7m)</span>
                             <span class="param-tag">Model: turbo (Q4_0)</span>
                             <span class="param-tag">Steps: 12</span>
                             <span class="param-tag">CFG: 6.0</span>
@@ -661,6 +666,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">SD1.5 Pruned Base (High-End)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 937.30s (15.6m)</span>
                             <span class="param-tag">Model: turbo (Q4_0)</span>
                             <span class="param-tag">Steps: 20</span>
                             <span class="param-tag">CFG: 7.0</span>
@@ -679,6 +685,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">SD1.5 Base Q4_1 (Fast)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 578.43s (9.6m)</span>
                             <span class="param-tag">Model: speed (Q4_1)</span>
                             <span class="param-tag">Steps: 12</span>
                             <span class="param-tag">CFG: 6.0</span>
@@ -697,6 +704,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">SD1.5 Base Q4_1 (High-End)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 882.51s (14.7m)</span>
                             <span class="param-tag">Model: speed (Q4_1)</span>
                             <span class="param-tag">Steps: 20</span>
                             <span class="param-tag">CFG: 7.0</span>
@@ -715,6 +723,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Realistic Vision V6.0 (Fast)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 509.57s (8.5m)</span>
                             <span class="param-tag">Model: realistic (Q4_K)</span>
                             <span class="param-tag">Steps: 12</span>
                             <span class="param-tag">CFG: 6.0</span>
@@ -733,6 +742,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Realistic Vision V6.0 (High-End)</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1528.87s (25.5m)</span>
                             <span class="param-tag">Model: realistic (Q4_K)</span>
                             <span class="param-tag">Steps: 20</span>
                             <span class="param-tag">CFG: 7.0</span>
@@ -773,6 +783,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Cyberpunk Style Transformation</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 28.7s</span>
                             <span class="param-tag">Model: sdxs</span>
                             <span class="param-tag">Steps: 2</span>
                             <span class="param-tag">CFG: 1.0</span>
@@ -792,6 +803,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Hyperrealistic Studio Rendering</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 31.4s</span>
                             <span class="param-tag">Model: sdxs</span>
                             <span class="param-tag">Steps: 4</span>
                             <span class="param-tag">CFG: 1.0</span>
@@ -816,6 +828,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Anime Heroine with Magical Runes</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 365.1s</span>
                             <span class="param-tag">Model: anime</span>
                             <span class="param-tag">Steps: 8</span>
                             <span class="param-tag">CFG: 2.0</span>
@@ -834,6 +847,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Mars Astronaut Cinematic Close-up</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 798.2s</span>
                             <span class="param-tag">Model: realistic</span>
                             <span class="param-tag">Steps: 10</span>
                             <span class="param-tag">CFG: 7.0</span>
@@ -852,6 +866,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Cyberpunk Sports Car in Neo Seoul</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 29.2s</span>
                             <span class="param-tag">Model: sdxs</span>
                             <span class="param-tag">Steps: 4</span>
                             <span class="param-tag">CFG: 1.0</span>
@@ -870,6 +885,7 @@ gallery_html = f"""<!DOCTYPE html>
                     <div class="gallery-info">
                         <h4 class="gallery-title">Cute Robotic Kitten with Glowing Yarn</h4>
                         <div class="gallery-params">
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 584.6s</span>
                             <span class="param-tag">Model: speed</span>
                             <span class="param-tag">Steps: 8</span>
                             <span class="param-tag">CFG: 6.5</span>
@@ -881,7 +897,7 @@ gallery_html = f"""<!DOCTYPE html>
             </div>
 
             <!-- SECTION 4: FULL PARAMETER & PROMPT MATRIX TABLE -->
-            <h3>4. Full Parameter &amp; Prompt Matrix (전수 설정값 및 프롬프트 표)</h3>
+            <h3>4. Full Parameter &amp; Prompt Matrix (전수 설정값 및 CPU 소요 시간 표)</h3>
             <div style="overflow-x: auto;">
                 <table class="matrix-table">
                     <thead>
@@ -889,6 +905,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <th style="width: 70px;">Preview</th>
                             <th>Category</th>
                             <th>Model / Preset</th>
+                            <th>CPU (4-Core) Latency</th>
                             <th>Steps</th>
                             <th>CFG</th>
                             <th>Sampler &amp; Schedule</th>
@@ -900,6 +917,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_sdxs_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified Fast</span></td>
                             <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong style="color: #004499;">28.98s</strong></td>
                             <td><strong>1</strong></td>
                             <td>1.0</td>
                             <td><code>euler_a</code> (Default)</td>
@@ -909,6 +927,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_sdxs_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified High-End</span></td>
                             <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong style="color: #004499;">25.81s</strong></td>
                             <td><strong>2</strong></td>
                             <td>1.0</td>
                             <td><code>euler_a</code> (Default)</td>
@@ -918,6 +937,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_anime_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified Fast</span></td>
                             <td><code>anime</code> (LCM Distilled)</td>
+                            <td><strong style="color: #004499;">270.63s (4.5m)</strong></td>
                             <td><strong>4</strong></td>
                             <td>1.5</td>
                             <td><code>lcm</code> (Default)</td>
@@ -927,6 +947,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_anime_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified High-End</span></td>
                             <td><code>anime</code> (LCM Distilled)</td>
+                            <td><strong style="color: #004499;">380.58s (6.3m)</strong></td>
                             <td><strong>8</strong></td>
                             <td>1.8</td>
                             <td><code>lcm</code> (Karras)</td>
@@ -936,6 +957,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_turbo_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified Fast</span></td>
                             <td><code>turbo</code> (SD1.5 Pruned)</td>
+                            <td><strong style="color: #004499;">522.95s (8.7m)</strong></td>
                             <td><strong>12</strong></td>
                             <td>6.0</td>
                             <td><code>euler_a</code> (Default)</td>
@@ -945,6 +967,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_turbo_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified High-End</span></td>
                             <td><code>turbo</code> (SD1.5 Pruned)</td>
+                            <td><strong style="color: #004499;">937.30s (15.6m)</strong></td>
                             <td><strong>20</strong></td>
                             <td>7.0</td>
                             <td><code>dpm++2m</code> (Karras)</td>
@@ -954,6 +977,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_speed_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified Fast</span></td>
                             <td><code>speed</code> (SD1.5 Base)</td>
+                            <td><strong style="color: #004499;">578.43s (9.6m)</strong></td>
                             <td><strong>12</strong></td>
                             <td>6.0</td>
                             <td><code>euler_a</code> (Default)</td>
@@ -963,6 +987,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_speed_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified High-End</span></td>
                             <td><code>speed</code> (SD1.5 Base)</td>
+                            <td><strong style="color: #004499;">882.51s (14.7m)</strong></td>
                             <td><strong>20</strong></td>
                             <td>7.0</td>
                             <td><code>dpm++2m</code> (Karras)</td>
@@ -972,6 +997,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_realistic_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified Fast</span></td>
                             <td><code>realistic</code> (Vision V6)</td>
+                            <td><strong style="color: #004499;">509.57s (8.5m)</strong></td>
                             <td><strong>12</strong></td>
                             <td>6.0</td>
                             <td><code>euler_a</code> (Default)</td>
@@ -981,6 +1007,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/final_realistic_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Unified High-End</span></td>
                             <td><code>realistic</code> (Vision V6)</td>
+                            <td><strong style="color: #004499;">1528.87s (25.5m)</strong></td>
                             <td><strong>20</strong></td>
                             <td>7.0</td>
                             <td><code>dpm2</code> (Karras)</td>
@@ -990,6 +1017,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/user_photo_cyberpunk_transformed.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Img2Img Style</span></td>
                             <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong style="color: #004499;">28.7s</strong></td>
                             <td><strong>2</strong></td>
                             <td>1.0</td>
                             <td><code>euler_a</code> (Strength: 0.55)</td>
@@ -999,6 +1027,7 @@ gallery_html = f"""<!DOCTYPE html>
                             <td><img src="assets/gallery/user_photo_hyperrealistic_rendered.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
                             <td><span class="param-tag">Img2Img Studio</span></td>
                             <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong style="color: #004499;">31.4s</strong></td>
                             <td><strong>4</strong></td>
                             <td>1.0</td>
                             <td><code>dpm2</code> (Strength: 0.65, Karras)</td>

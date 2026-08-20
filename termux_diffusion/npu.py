@@ -1,22 +1,16 @@
-"""Neural Processing Unit (NPU) and Tensor Processing Unit (TPU) acceleration engine.
+"""Neural Processing Unit (NPU) and Tensor Processing Unit (TPU) hardware introspection module.
 
-This module provides hardware probing, driver introspection, and heterogeneous
-graph partitioning for mobile NPU/TPU chipsets on Android Termux:
+This module provides hardware probing, driver introspection, and capability reporting
+for mobile NPU/TPU chipsets on Android Termux:
 - Qualcomm Hexagon Tensor Processor (HTP / QNN NPU)
 - Samsung Exynos NPU (ENN / Eden Engine)
 - Google Tensor Edge TPU (Pixel Neural Core)
 - Android Standard Neural Networks API (NNAPI)
 
-Heterogeneous execution pipeline design:
-+------------------------------------------------------------------------+
-| Heterogeneous Diffusion Pipeline (Hetero-Diffusion)                    |
-+-------------------+-------------------+--------------------------------+
-| Text Encoder      | Denoising UNet/DiT| Latent VAE Decoder             |
-| (CLIP ViT-L/14)   | (860M-1.5B Params)| (84M Params)                   |
-+-------------------+-------------------+--------------------------------+
-| CPU ARMv8.2-A     | NPU / GPU Vulkan  | GPU Vulkan 1.3 / FP16          |
-| NEON FP16 Vector  | QNN HTP / NNAPI   | Low-latency Tiling Decoder     |
-+-------------------+-------------------+--------------------------------+
+Architectural Note:
+In v1.1.x, inference is driven by the native Bionic sd-cli engine using Vulkan GPU
+(-ngl 99) and ARM64 NEON CPU acceleration. Direct Qualcomm QNN / Hexagon NPU subgraph
+partitioning is the architectural blueprint for the upcoming v2.0 runtime.
 """
 
 import logging
@@ -231,24 +225,26 @@ def detect_npu_capabilities() -> NPUProfile:
 
 
 def get_optimal_heterogeneous_pipeline(device: str = "auto") -> Dict[str, str]:
-    """Determine the optimal compute processor allocation for each diffusion pipeline component.
+    """Determine the compute processor allocation for each diffusion pipeline component.
     
-    Returns a dictionary mapping sub-modules to target compute hardware.
+    Note:
+        In v1.1, diffusion inference is executed via the native Bionic sd-cli engine using
+        Vulkan GPU compute (-ngl 99) and ARM64 NEON CPU math. Direct Qualcomm QNN / Hexagon
+        NPU subgraph partitioning is the architectural target for the upcoming v2.0 runtime.
     """
-    npu_info = detect_npu_capabilities()
     req = device.lower().strip()
 
-    if req in ("npu", "tpu", "auto") and npu_info.available:
+    if req == "cpu":
         return {
             "text_encoder": "CPU (ARM NEON FP16)",
-            "denoiser_unet": f"NPU ({npu_info.vendor.value} @ {npu_info.tops_rating} TOPS)",
-            "vae_decoder": "GPU (Vulkan 1.3 FP16)",
+            "denoiser_unet": "CPU (ARM NEON DotProd/I8MM)",
+            "vae_decoder": "CPU (ARM NEON FP16)",
             "scheduler": "CPU (Single-Core Fast Math)",
-            "summary": f"Hetero-Accelerated [NPU: {npu_info.dsp_architecture}]"
+            "summary": "CPU-Only [ARM NEON Pipeline]"
         }
     else:
         return {
-            "text_encoder": "CPU (ARM NEON FP16)",
+            "text_encoder": "CPU / GPU (ARM NEON / Vulkan)",
             "denoiser_unet": "GPU (Vulkan Compute / -ngl 99)",
             "vae_decoder": "GPU (Vulkan Compute FP16)",
             "scheduler": "CPU (Single-Core Fast Math)",

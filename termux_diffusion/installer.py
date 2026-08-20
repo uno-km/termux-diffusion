@@ -8,6 +8,17 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from .exceptions import ProvisioningError
 from .platform import (
     TERMUX_PREFIX,
@@ -33,25 +44,28 @@ def get_engine_bin_dir() -> Path:
 def locate_sd_cli() -> Optional[Path]:
     """Locate the compiled sd-cli executable binary across standard locations."""
     # 1. Custom cached engine binary
-    cached_bin = get_engine_bin_dir() / "sd-cli"
-    if cached_bin.is_file() and os.access(cached_bin, os.X_OK):
-        return cached_bin.resolve()
+    for fname in ("sd-cli", "sd-cli.exe", "sd", "sd.exe"):
+        cached_bin = get_engine_bin_dir() / fname
+        if cached_bin.is_file() and (os.access(cached_bin, os.X_OK) or os.name == "nt"):
+            return cached_bin.resolve()
 
     # 2. System PATH
-    for name in ("sd-cli", "sd"):
+    for name in ("sd-cli", "sd-cli.exe", "sd", "sd.exe"):
         which_path = shutil.which(name)
-        if which_path and os.access(which_path, os.X_OK):
+        if which_path and (os.access(which_path, os.X_OK) or os.name == "nt"):
             return Path(which_path).resolve()
 
     # 3. Termux prefix bin
-    termux_bin = Path(TERMUX_PREFIX) / "bin" / "sd-cli"
-    if termux_bin.is_file() and os.access(termux_bin, os.X_OK):
-        return termux_bin.resolve()
+    for name in ("sd-cli", "sd"):
+        termux_bin = Path(TERMUX_PREFIX) / "bin" / name
+        if termux_bin.is_file() and (os.access(termux_bin, os.X_OK) or os.name == "nt"):
+            return termux_bin.resolve()
 
     # 4. Standard user local binary paths
-    local_bin = Path(os.path.expanduser("~/.local/bin/sd-cli"))
-    if local_bin.is_file() and os.access(local_bin, os.X_OK):
-        return local_bin.resolve()
+    for name in ("sd-cli", "sd-cli.exe"):
+        local_bin = Path(os.path.expanduser(f"~/.local/bin/{name}"))
+        if local_bin.is_file() and (os.access(local_bin, os.X_OK) or os.name == "nt"):
+            return local_bin.resolve()
 
     return None
 

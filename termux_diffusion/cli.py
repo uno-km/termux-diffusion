@@ -4,6 +4,17 @@ import argparse
 import sys
 from typing import List, Optional
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from .core import generate
 from .hub import clear_cache, download_model, list_cached_models, list_presets
 from .installer import provision_engine, run_doctor
@@ -110,3 +121,7 @@ def run_install_cli():
 def run_doctor_cli():
     """Entry point for termux-diffusion-doctor."""
     run_doctor()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

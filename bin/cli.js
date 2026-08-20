@@ -5,7 +5,16 @@
 
 'use strict';
 
-const { generate, downloadModel, listPresets, listCachedModels, clearCache, locateSdCli, DEFAULT_PRESETS } = require('../index');
+const {
+  generate,
+  downloadModel,
+  listPresets,
+  listCachedModels,
+  clearCache,
+  locateSdCli,
+  detectHardwareProfile,
+  DEFAULT_PRESETS
+} = require('../index');
 const { spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');

@@ -720,18 +720,28 @@ async function resolveModelPath(modelNameOrPath, cacheDir) {
 }
 
 function locateSdCli() {
-  const homeCacheBin = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin', 'sd-cli');
-  if (fs.existsSync(homeCacheBin)) return homeCacheBin;
+  const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
+  const candidates = ['sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+
+  for (const name of candidates) {
+    const p = path.join(binDir, name);
+    if (fs.existsSync(p)) return p;
+  }
 
   const prefixBin = '/data/data/com.termux/files/usr/bin/sd-cli';
   if (fs.existsSync(prefixBin)) return prefixBin;
 
-  const localBin = path.join(os.homedir(), '.local', 'bin', 'sd-cli');
-  if (fs.existsSync(localBin)) return localBin;
+  for (const name of ['sd-cli', 'sd-cli.exe']) {
+    const localBin = path.join(os.homedir(), '.local', 'bin', name);
+    if (fs.existsSync(localBin)) return localBin;
+  }
 
-  const whichRes = spawnSync('which', ['sd-cli'], { encoding: 'utf-8' });
-  if (whichRes.status === 0 && whichRes.stdout.trim()) {
-    return whichRes.stdout.trim();
+  const whichCmd = process.platform === 'win32' ? 'where' : 'which';
+  for (const name of ['sd-cli', 'sd']) {
+    const whichRes = spawnSync(whichCmd, [name], { encoding: 'utf-8' });
+    if (whichRes.status === 0 && whichRes.stdout.trim()) {
+      return whichRes.stdout.trim().split('\r\n')[0].split('\n')[0];
+    }
   }
   return null;
 }

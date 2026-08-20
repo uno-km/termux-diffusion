@@ -126,5 +126,7 @@ export function resolveDeviceBackend(requestedDevice?: string): { effectiveDevic
 export function getSdCliGpuArgs(device: string, ngl: number): string[];
 export function validateGgufFile(filePath: string): boolean;
 export function getMemoryInfo(): MemoryInfo;
-export function checkMemorySafety(requiredMb?: number): MemorySafetyResult;
 export function getOptimalThreadCount(): number;
+export function getDefaultNegativePrompt(): string | null;
+export function setDefaultNegativePrompt(prompt?: string | null): void;
+export function getQualityGuardNegativePrompt(): string;

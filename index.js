@@ -823,6 +823,21 @@ function provisionEngine(force = false) {
   throw new Error('Could not find compiled sd-cli binary in build directory.');
 }
 
+const DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT = 'lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts';
+let activeDefaultNegativePrompt = null;
+
+function getDefaultNegativePrompt() {
+  return activeDefaultNegativePrompt;
+}
+
+function setDefaultNegativePrompt(prompt) {
+  activeDefaultNegativePrompt = prompt && prompt.trim() ? prompt.trim() : null;
+}
+
+function getQualityGuardNegativePrompt() {
+  return DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT;
+}
+
 async function generate(options) {
   if (typeof options === 'string') {
     options = { prompt: options };
@@ -834,9 +849,9 @@ async function generate(options) {
   const prompt = options.prompt;
   const model = options.model || 'realistic';
   const rawDevice = options.device || 'cpu';
-  const negativePrompt = options.negativePrompt !== undefined
+  const effectiveNegative = options.negativePrompt !== undefined
     ? options.negativePrompt
-    : 'lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts';
+    : activeDefaultNegativePrompt;
   const width = options.width || 512;
   const height = options.height || 512;
   const seed = options.seed !== undefined ? options.seed : -1;
@@ -883,7 +898,9 @@ async function generate(options) {
     '--cfg-scale', String(cfgScale),
     '-o', outPath
   ];
-  if (negativePrompt) cmdArgs.push('-n', negativePrompt);
+  if (effectiveNegative && effectiveNegative.trim()) {
+    cmdArgs.push('-n', effectiveNegative.trim());
+  }
   if (seed >= 0) cmdArgs.push('-s', String(seed));
 
   const gpuArgs = getSdCliGpuArgs(effectiveDevice, nglLayers);
@@ -983,5 +1000,8 @@ module.exports = {
   getMemoryInfo,
   checkMemorySafety,
   getOptimalThreadCount,
+  getDefaultNegativePrompt,
+  setDefaultNegativePrompt,
+  getQualityGuardNegativePrompt,
   DEFAULT_PRESETS
 };

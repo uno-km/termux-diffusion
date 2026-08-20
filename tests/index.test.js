@@ -23,7 +23,10 @@ const {
   getMemoryInfo,
   checkMemorySafety,
   getOptimalThreadCount,
-  detectNpuCapabilities
+  detectNpuCapabilities,
+  getDefaultNegativePrompt,
+  setDefaultNegativePrompt,
+  getQualityGuardNegativePrompt
 } = require('../index.js');
 
 function runTests() {
@@ -140,6 +143,22 @@ function runTests() {
     assert.throws(() => {
       resolveDeviceBackend('npu');
     }, /v2\.0 roadmap/);
+  });
+
+  // 10. Negative Prompt Configuration
+  it('getDefaultNegativePrompt and setDefaultNegativePrompt manage global negative guidance', () => {
+    setDefaultNegativePrompt(null);
+    assert.strictEqual(getDefaultNegativePrompt(), null);
+
+    setDefaultNegativePrompt('low quality, blurry');
+    assert.strictEqual(getDefaultNegativePrompt(), 'low quality, blurry');
+
+    const guard = getQualityGuardNegativePrompt();
+    assert(guard.includes('lowres'));
+    assert(guard.includes('blur'));
+
+    setDefaultNegativePrompt(null);
+    assert.strictEqual(getDefaultNegativePrompt(), null);
   });
 
   console.log(`\n📊 Node.js Test Results: ${passed}/${total} Passed.`);

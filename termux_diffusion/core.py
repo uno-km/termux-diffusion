@@ -57,10 +57,34 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
             logger.warning("Child process cleanup exception: %s", e)
 
 
+DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT = "lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"
+_global_default_negative_prompt: Optional[str] = None
+
+
+def get_default_negative_prompt() -> Optional[str]:
+    """Get the currently configured default negative prompt (None by default)."""
+    return _global_default_negative_prompt
+
+
+def set_default_negative_prompt(prompt: Optional[str]) -> None:
+    """Set or clear the default negative prompt used across generate() calls.
+    
+    Args:
+        prompt: Custom negative prompt string, or None to disable default negative guidance.
+    """
+    global _global_default_negative_prompt
+    _global_default_negative_prompt = prompt.strip() if (prompt and prompt.strip()) else None
+
+
+def get_quality_guard_negative_prompt() -> str:
+    """Return the recommended standard quality-guard negative prompt."""
+    return DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT
+
+
 def generate(
     prompt: str,
     model: str = "realistic",
-    negative_prompt: Optional[str] = "lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts",
+    negative_prompt: Optional[str] = None,
     device: str = "cpu",
     steps: Optional[int] = None,
     cfg_scale: Optional[float] = None,
@@ -79,7 +103,7 @@ def generate(
     Args:
         prompt: Detailed text description of the desired image.
         model: Preset keyword ('realistic', 'speed', 'sdxs', 'turbo', 'anime'), custom repo ('org/repo/file.gguf'), direct URL, or path to .gguf file.
-        negative_prompt: Negative text guidance describing elements to avoid.
+        negative_prompt: Optional negative text guidance describing elements to avoid (default: None).
         device: Computing device ('cpu', 'gpu', 'opencl', 'vulkan', 'auto'). Default is 'cpu'.
         steps: Number of denoising steps (default determined by preset, e.g. 10).
         cfg_scale: Classifier-Free Guidance scale (default determined by preset, e.g. 4.0).
@@ -125,6 +149,11 @@ def generate(
     if threads is None:
         threads = get_optimal_thread_count()
 
+    # Determine effective negative prompt
+    effective_negative = negative_prompt if negative_prompt is not None else _global_default_negative_prompt
+    if effective_negative and not effective_negative.strip():
+        effective_negative = None
+
     # 3. Locate or Auto-provision Native sd-cli Engine
     sd_cli = locate_sd_cli()
     if not sd_cli:
@@ -153,8 +182,8 @@ def generate(
         "--cfg-scale", str(cfg_scale),
         "-o", str(out_path)
     ]
-    if negative_prompt:
-        cmd.extend(["-n", negative_prompt])
+    if effective_negative:
+        cmd.extend(["-n", effective_negative.strip()])
     if seed >= 0:
         cmd.extend(["-s", str(seed)])
     # Append GPU offloading args from hardware detection

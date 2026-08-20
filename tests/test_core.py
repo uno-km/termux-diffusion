@@ -191,3 +191,29 @@ async def test_async_generate_mock(tmp_path):
         )
         assert isinstance(res, GenerationResult)
         assert res.path == dummy_output.resolve()
+
+
+def test_negative_prompt_configuration():
+    """Test get_default_negative_prompt and set_default_negative_prompt."""
+    from termux_diffusion.core import (
+        get_default_negative_prompt,
+        set_default_negative_prompt,
+        get_quality_guard_negative_prompt,
+    )
+
+    # Initial state should be None
+    set_default_negative_prompt(None)
+    assert get_default_negative_prompt() is None
+
+    # Setting custom prompt
+    set_default_negative_prompt("bad anatomy, blurry")
+    assert get_default_negative_prompt() == "bad anatomy, blurry"
+
+    # Quality guard preset
+    guard = get_quality_guard_negative_prompt()
+    assert "lowres" in guard
+    assert "blur" in guard
+
+    # Reset back to None
+    set_default_negative_prompt(None)
+    assert get_default_negative_prompt() is None

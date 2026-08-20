@@ -213,13 +213,14 @@ function detectNpuCapabilities() {
     const tops = is8Gen3 ? 45.0 : is8Gen2 ? 34.0 : is8Gen1 ? 27.0 : 15.0;
     const arch = is8Gen3 ? 'Hexagon v75' : is8Gen2 ? 'Hexagon v73' : 'Hexagon v69';
 
+    const hasDriver = driver !== null;
     return {
-      available: true,
+      available: hasDriver,
       vendor: 'Qualcomm',
       dspArchitecture: arch,
-      topsRating: tops,
+      topsRating: hasDriver ? tops : 0.0,
       supportedPrecisions: ['INT8', 'INT16', 'FP16'],
-      driverLibrary: driver || '/vendor/lib64/libQnnHtp.so',
+      driverLibrary: driver,
       recommendedDelegate: 'qnn_htp'
     };
   }
@@ -238,13 +239,14 @@ function detectNpuCapabilities() {
     const tops = is2400 ? 44.0 : is2200 ? 25.0 : is1380 ? 4.9 : 10.0;
     const arch = is2400 ? 'Samsung NPU v4' : is2200 ? 'Samsung NPU v3' : 'Samsung NPU Lite';
 
+    const hasDriver = driver !== null;
     return {
-      available: true,
+      available: hasDriver,
       vendor: 'Samsung',
       dspArchitecture: arch,
-      topsRating: tops,
+      topsRating: hasDriver ? tops : 0.0,
       supportedPrecisions: ['INT8', 'FP16'],
-      driverLibrary: driver || '/vendor/lib64/libeden_nn.so',
+      driverLibrary: driver,
       recommendedDelegate: 'samsung_eden'
     };
   }
@@ -260,13 +262,14 @@ function detectNpuCapabilities() {
     const isG3 = socName.includes('zuma');
     const isG2 = socName.includes('gs201');
 
+    const hasDriver = driver !== null;
     return {
-      available: true,
+      available: hasDriver,
       vendor: 'Google',
       dspArchitecture: isG3 ? 'EdgeTPU v3' : isG2 ? 'EdgeTPU v2' : 'EdgeTPU v1',
-      topsRating: isG3 ? 35.0 : 20.0,
+      topsRating: hasDriver ? (isG3 ? 35.0 : 20.0) : 0.0,
       supportedPrecisions: ['INT8', 'INT16'],
-      driverLibrary: driver || '/vendor/lib64/libgoogle_nn.so',
+      driverLibrary: driver,
       recommendedDelegate: 'google_edgetpu'
     };
   }
@@ -957,7 +960,7 @@ async function generate(options) {
 
   // Pre-flight memory safety guard
   if (lowRamGuard) {
-    const memCheck = checkMemorySafety(1000);
+    const memCheck = checkMemorySafety(1200);
     if (!memCheck.safe) {
       console.warn(`[termux-diffusion] Low RAM Warning: ${memCheck.message}`);
     }
@@ -1082,10 +1085,13 @@ async function generate(options) {
         }
       });
 
-      // Drain stderr stream continuously to prevent 64KB OS pipe buffer deadlock
+      // Drain stderr stream continuously to prevent 64KB OS pipe buffer deadlock while capping memory buffer to 10KB
       proc.stderr.on('data', (d) => {
         const str = d.toString();
         stderrBuffer += str;
+        if (stderrBuffer.length > 10240) {
+          stderrBuffer = stderrBuffer.slice(-10240);
+        }
         if (process.env.DEBUG) {
           process.stderr.write(str);
         }

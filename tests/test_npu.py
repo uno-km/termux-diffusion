@@ -6,6 +6,9 @@ from unittest.mock import patch
 from termux_diffusion.npu import (
     NPUProfile,
     NPUVendor,
+    QUALCOMM_QNN_LIBS,
+    SAMSUNG_EDEN_LIBS,
+    GOOGLE_EDGETPU_LIBS,
     detect_npu_capabilities,
     get_optimal_heterogeneous_pipeline,
 )
@@ -27,19 +30,32 @@ def test_detect_npu_capabilities_returns_valid_profile():
 
 
 def test_qualcomm_snapdragon_npu_mock():
-    """Verify Qualcomm Snapdragon Hexagon NPU detection and TOPS rating."""
-    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "sm8650" if key == "ro.board.platform" else ""):
+    """Verify Qualcomm Snapdragon Hexagon NPU detection and TOPS rating when driver is present."""
+    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "sm8650" if key == "ro.board.platform" else ""), \
+         patch("termux_diffusion.npu._probe_first_existing_lib", side_effect=lambda libs: "/vendor/lib64/libQnnHtp.so" if libs == QUALCOMM_QNN_LIBS else None):
         profile = detect_npu_capabilities()
         assert profile.available is True
         assert profile.vendor == NPUVendor.QUALCOMM_HEXAGON
         assert profile.tops_rating == 45.0
         assert "Hexagon v75" in profile.dsp_architecture
         assert "INT4" in profile.supported_precisions
+        assert profile.driver_library == "/vendor/lib64/libQnnHtp.so"
+
+
+def test_npu_detected_soc_without_driver_reports_unavailable():
+    """Verify that when SoC matches but .so driver is missing on disk, available is False."""
+    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "sm8650" if key == "ro.board.platform" else ""), \
+         patch("termux_diffusion.npu._probe_first_existing_lib", return_value=None):
+        profile = detect_npu_capabilities()
+        assert profile.available is False
+        assert profile.driver_library is None
+        assert profile.tops_rating == 0.0
 
 
 def test_samsung_exynos_npu_mock():
     """Verify Samsung Exynos NPU detection."""
-    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "exynos2400" if key == "ro.hardware.chipname" else ""):
+    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "exynos2400" if key == "ro.hardware.chipname" else ""), \
+         patch("termux_diffusion.npu._probe_first_existing_lib", side_effect=lambda libs: "/vendor/lib64/libenn_public_api.so" if libs == SAMSUNG_EDEN_LIBS else None):
         profile = detect_npu_capabilities()
         assert profile.available is True
         assert profile.vendor == NPUVendor.SAMSUNG_EDEN
@@ -49,7 +65,8 @@ def test_samsung_exynos_npu_mock():
 
 def test_google_tensor_tpu_mock():
     """Verify Google Tensor Edge TPU detection."""
-    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "zuma" if key == "ro.hardware" else ""):
+    with patch("termux_diffusion.npu._read_android_prop", side_effect=lambda key: "zuma" if key == "ro.hardware" else ""), \
+         patch("termux_diffusion.npu._probe_first_existing_lib", side_effect=lambda libs: "/vendor/lib64/libedgetpu.so" if libs == GOOGLE_EDGETPU_LIBS else None):
         profile = detect_npu_capabilities()
         assert profile.available is True
         assert profile.vendor == NPUVendor.GOOGLE_EDGE_TPU

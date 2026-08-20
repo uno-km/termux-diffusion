@@ -141,16 +141,17 @@ def detect_npu_capabilities() -> NPUProfile:
             tops = 27.0
             dsp_arch = "Hexagon v69 HTP (27 TOPS NPU)"
 
+        has_driver = qnn_lib is not None
         return NPUProfile(
-            available=True,
+            available=has_driver,
             vendor=NPUVendor.QUALCOMM_HEXAGON,
             chipset_name=f"Qualcomm Snapdragon ({soc_platform or hardware})",
-            driver_library=qnn_lib or "/vendor/lib64/libQnnHtp.so",
+            driver_library=qnn_lib,
             dsp_architecture=dsp_arch,
-            tops_rating=tops,
+            tops_rating=tops if has_driver else 0.0,
             supported_precisions=["INT4", "INT8", "FP16"],
             delegate_type="QNN_HTP_DELEGATE",
-            acceleration_status="Operational (Qualcomm Hexagon Tensor Core)",
+            acceleration_status="Operational (Qualcomm Hexagon Tensor Core)" if has_driver else "SoC Detected (Driver inaccessible or SELinux restricted)",
         )
 
     # 2. Samsung Exynos NPU (ENN / Eden) Probe
@@ -170,16 +171,17 @@ def detect_npu_capabilities() -> NPUProfile:
             tops = 4.9
             dsp_arch = "Exynos 1380 NPU (4.9 TOPS)"
 
+        has_driver = eden_lib is not None
         return NPUProfile(
-            available=True,
+            available=has_driver,
             vendor=NPUVendor.SAMSUNG_EDEN,
             chipset_name=f"Samsung Exynos ({chipname or soc_platform})",
-            driver_library=eden_lib or "/vendor/lib64/libenn_public_api.so",
+            driver_library=eden_lib,
             dsp_architecture=dsp_arch,
-            tops_rating=tops,
+            tops_rating=tops if has_driver else 0.0,
             supported_precisions=["INT8", "FP16"],
             delegate_type="EXYNOS_ENN_DELEGATE",
-            acceleration_status="Operational (Samsung Exynos NPU)",
+            acceleration_status="Operational (Samsung Exynos NPU)" if has_driver else "SoC Detected (Driver inaccessible or SELinux restricted)",
         )
 
     # 3. Google Tensor Edge TPU (Pixel Neural Core) Probe
@@ -187,16 +189,17 @@ def detect_npu_capabilities() -> NPUProfile:
     is_google_tensor = any(t in hardware or t in product_board for t in ["zuma", "gs201", "gs101", "tensor", "cloudripper"])
 
     if tpu_lib or is_google_tensor:
+        has_driver = tpu_lib is not None
         return NPUProfile(
-            available=True,
+            available=has_driver,
             vendor=NPUVendor.GOOGLE_EDGE_TPU,
             chipset_name=f"Google Tensor TPU ({hardware or product_board})",
-            driver_library=tpu_lib or "/vendor/lib64/libedgetpu.so",
+            driver_library=tpu_lib,
             dsp_architecture="Google Edge TPU (Custom Tensor Core)",
-            tops_rating=20.0,
+            tops_rating=20.0 if has_driver else 0.0,
             supported_precisions=["INT8", "FP16"],
             delegate_type="EDGETPU_DELEGATE",
-            acceleration_status="Operational (Google Edge TPU Core)",
+            acceleration_status="Operational (Google Edge TPU Core)" if has_driver else "SoC Detected (Driver inaccessible or SELinux restricted)",
         )
 
     # 4. Android Generic NNAPI Runtime Probe

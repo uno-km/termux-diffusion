@@ -162,7 +162,7 @@ def generate(
 
     # 1. Pre-flight Memory Safety Guard
     if low_ram_guard:
-        safe, msg = check_memory_safety(required_mb=1000)
+        safe, msg = check_memory_safety(required_mb=1200)
         if not safe:
             logger.error("Low RAM Guard triggered: %s", msg)
             raise OOMRiskError(msg)

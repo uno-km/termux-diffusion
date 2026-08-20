@@ -105,10 +105,18 @@ function runDoctor() {
   const sdCli = locateSdCli();
   console.log(`4. Native C++ Engine: ${sdCli ? `${sdCli} ✅` : 'Not Found ❌ (Run npx termux-diffusion install)'}`);
 
-  const cached = listCachedModels();
-  console.log(`5. Cached Models: ${cached.length} model(s) available locally.`);
-  for (const m of cached) {
-    console.log(`   ↳ ${m.name} (${m.size_mb} MB)`);
+  const hw = detectHardwareProfile();
+  console.log(`6. Hardware Profile: SoC=${hw.socName}, GPU=${hw.gpuName}, Vulkan=${hw.vulkanAvailable ? 'Available ✅' : 'Not Found ⚠️'}`);
+  if (hw.npuProfile && hw.npuProfile.available) {
+    console.log(`   ↳ NPU Hardware: Detected (${hw.npuProfile.dspArchitecture}, ${hw.npuProfile.topsRating} TOPS) [v2.0 QNN runtime pending]`);
+  }
+  console.log(`   ↳ Active Backend: ${hw.recommendedBackend.toUpperCase()} (Offload layers: ${hw.recommendedNgl})`);
+
+  if (isTermux) {
+    console.log('7. Android 12+ Background Stability Guard:');
+    console.log('   ↳ Tip: If generation crashes when Termux is in background, enable');
+    console.log('          "Developer Options > Disable child process restrictions"');
+    console.log('          or run: adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"');
   }
 
   console.log('=================================================================');

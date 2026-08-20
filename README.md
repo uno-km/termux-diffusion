@@ -262,9 +262,33 @@ print(f"Doctor Health Status: {'PASSED' if report.is_ready else 'FAILED'}")
 
 ---
 
-## 5. Architecture & Security Isolation
+## 5. 🛡️ Android 12 / 13 / 14+ Phantom Process Killer & Background Crash Prevention
+
+안드로이드 12(API 31) 이상 기기에서 백그라운드 추론 시 OS가 자식 프로세스(`sd-cli`)를 강제 종료하는 **Phantom Process Killer**를 방지하기 위한 필수 권장 설정입니다:
+
+### 1️⃣ 스마트폰 개발자 옵션 설정 (Android 12L / 13 / 14+)
+1. 스마트폰 `설정` → `휴대전화 정보` → `소프트웨어 정보` → `빌드번호`를 7번 연속 터치하여 **개발자 옵션**을 활성화합니다.
+2. `설정` → `개발자 옵션`으로 이동합니다.
+3. **`하위 프로세스 제한 비활성화(Disable child process restrictions)`** 옵션을 켭니다.
+
+### 2️⃣ ADB 명령어를 통한 원천 무력화 (PC 연결 1회 실행)
+PC와 스마트폰을 USB로 연결한 후 다음 명령어를 실행하면 하위 프로세스 제한이 영구적으로 해제됩니다:
+```bash
+adb shell "/system/bin/device_config set_sync_disabled_for_tests persistent"
+adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"
+```
+
+### 3️⃣ Termux 배터리 최적화 예외 및 상단 바 알림 고정
+* **배터리 최적화 예외:** 스마트폰 `설정` → `애플리케이션` → `Termux` → `배터리` → **`제한 없음(Unrestricted)`** 선택.
+* **상단 바 알림 고정:** Termux 실행 후 상단 알림 바에서 `Acquire wakelock`을 터치하거나 알림을 유지합니다.
+
+---
+
+## 6. Architecture & Security Isolation
 
 * **Zero PRoot / Zero Root:** Executes directly against native Android Bionic `libc` with ARM64 NEON SIMD optimizations, avoiding virtual container memory amplification.
+* **Zero Deception & Honest Diagnostics:** Zero fake logs. NPU/GPU/CPU hardware is probed transparently without deceptive rerouting.
+* **Configurable Negative Prompt:** Negative prompt defaults to `None` with zero bias against subjects, configurable per-call or globally.
 * **Low Memory Killer (LMK) Guard:** Validates physical RAM and Android zRAM (Samsung RAM Plus) before allocating tensor graphs.
 * **Process Reaper:** Intercepts `SIGINT` / `SIGTERM` / `KeyboardInterrupt` to forcefully clean up orphaned child `sd-cli` processes.
 * **WakeLock Shield:** Automatically prevents CPU sleep states when the smartphone screen turns off during lengthy inference.

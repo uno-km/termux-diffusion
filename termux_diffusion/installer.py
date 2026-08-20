@@ -251,6 +251,13 @@ def run_doctor() -> bool:
     print(f"   Active Compute Pipeline: {hw.recommended_backend.value.upper()} "
           f"(Offload Layers: {hw.recommended_ngl})")
 
+    # 9. Android 12+ Background Stability Guard (Phantom Process Killer)
+    if is_termux:
+        print("9. Android 12+ Background Guard:")
+        print("   ↳ Tip: If generation crashes when Termux is in background, enable")
+        print("          'Developer Options > Disable child process restrictions'")
+        print("          or run: adb shell \"/system/bin/device_config put activity_manager max_phantom_processes 2147483647\"")
+
     print("=" * 65)
     if all_passed:
         print("All core diagnostics passed. System is ready for AI image generation.")

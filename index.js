@@ -977,6 +977,17 @@ async function generate(options) {
   console.log(`[Render] [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
   const startTime = Date.now();
 
+  // Pre-flight memory safety check
+  if (!options.force) {
+    const memSafety = checkMemorySafety(1200);
+    if (!memSafety.safe) {
+      console.warn(`[termux-diffusion] Memory Warning: ${memSafety.message}`);
+      if (options.strictMemory) {
+        throw new Error(`Insufficient memory to safely run diffusion model: ${memSafety.message}`);
+      }
+    }
+  }
+
   // Acquire WakeLock
   if (isAndroidTermux()) {
     try { spawnSync('termux-wake-lock', [], { timeout: 2000 }); } catch (e) {
@@ -1014,6 +1025,8 @@ async function generate(options) {
   try {
     await new Promise((resolve, reject) => {
       const proc = spawn(sdCli, cmdArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+      let stderrBuffer = '';
+
       proc.stdout.on('data', (d) => {
         const str = d.toString();
         if (str.toLowerCase().includes('step') || str.includes('%')) {
@@ -1021,12 +1034,20 @@ async function generate(options) {
         }
       });
 
-      const onSigInt = () => {
+      // Drain stderr stream continuously to prevent 64KB OS pipe buffer deadlock
+      proc.stderr.on('data', (d) => {
+        const str = d.toString();
+        stderrBuffer += str;
+        if (process.env.DEBUG) {
+          process.stderr.write(str);
+        }
+      });
+
+      // Cleanup child process on host process termination without calling process.exit()
+      const onHostExit = () => {
         safeKillProcess(proc);
-        process.exit(130);
       };
-      process.once('SIGINT', onSigInt);
-      process.once('SIGTERM', onSigInt);
+      process.once('exit', onHostExit);
 
       const timer = setTimeout(() => {
         safeKillProcess(proc);
@@ -1035,18 +1056,18 @@ async function generate(options) {
 
       proc.on('close', (code) => {
         clearTimeout(timer);
-        process.removeListener('SIGINT', onSigInt);
-        process.removeListener('SIGTERM', onSigInt);
+        process.removeListener('exit', onHostExit);
         if (code === 0 && fs.existsSync(outPath)) {
           resolve();
         } else {
-          reject(new Error(`Engine failed with exit code ${code}`));
+          const detail = stderrBuffer.trim() ? `\nDetails: ${stderrBuffer.trim().slice(-500)}` : '';
+          reject(new Error(`Engine failed with exit code ${code}.${detail}`));
         }
       });
+
       proc.on('error', (err) => {
         clearTimeout(timer);
-        process.removeListener('SIGINT', onSigInt);
-        process.removeListener('SIGTERM', onSigInt);
+        process.removeListener('exit', onHostExit);
         reject(err);
       });
     });

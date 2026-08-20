@@ -587,15 +587,15 @@ gallery_html = f"""<!DOCTYPE html>
                 <!-- SDXS High-End -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SDXS &bull; HIGH-END</span>
-                        <img src="assets/gallery/final_sdxs_highend.png" alt="SDXS High-End" loading="lazy">
+                        <span class="gallery-badge">SDXS &bull; ULTRA HIGH-END</span>
+                        <img src="assets/gallery/final_sdxs_highend.png" alt="SDXS Ultra High-End" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">SDXS Tiny Distilled (High-End)</h4>
+                        <h4 class="gallery-title">SDXS Tiny Distilled (Ultra High-End)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 25.81s</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 36.98s</span>
                             <span class="param-tag">Model: sdxs (Q8_0)</span>
-                            <span class="param-tag">Steps: 2</span>
+                            <span class="param-tag">Steps: 3</span>
                             <span class="param-tag">CFG: 1.0</span>
                             <span class="param-tag">Sampler: euler_a</span>
                         </div>
@@ -625,16 +625,17 @@ gallery_html = f"""<!DOCTYPE html>
                 <!-- ANIME High-End -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">ANIME &bull; HIGH-END</span>
-                        <img src="assets/gallery/final_anime_highend.png" alt="Anime High-End" loading="lazy">
+                        <span class="gallery-badge">ANIME &bull; ULTRA HIGH-END</span>
+                        <img src="assets/gallery/final_anime_highend.png" alt="Anime Ultra High-End" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">DreamShaper 8 LCM (High-End)</h4>
+                        <h4 class="gallery-title">DreamShaper 8 LCM (Ultra High-End)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 380.58s (6.3m)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 490.20s (8.1m)</span>
                             <span class="param-tag">Model: anime (Q4_0)</span>
-                            <span class="param-tag">Steps: 8</span>
+                            <span class="param-tag">Steps: 10</span>
                             <span class="param-tag">CFG: 1.8</span>
+                            <span class="param-tag">Clip-Skip: 2</span>
                             <span class="param-tag">Sampler: lcm (karras)</span>
                         </div>
                         <div class="gallery-prompt">"1man, anime style, weary 30s Korean Asian man wearing glasses, replaced by AI automation, masterpiece, sharp lineart..."</div>
@@ -663,16 +664,17 @@ gallery_html = f"""<!DOCTYPE html>
                 <!-- TURBO High-End -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">TURBO &bull; HIGH-END</span>
-                        <img src="assets/gallery/final_turbo_highend.png" alt="Turbo High-End" loading="lazy">
+                        <span class="gallery-badge">TURBO &bull; ULTRA HIGH-END</span>
+                        <img src="assets/gallery/final_turbo_highend.png" alt="Turbo Ultra High-End" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">SD1.5 Pruned Base (High-End)</h4>
+                        <h4 class="gallery-title">SD1.5 Pruned Base (Ultra High-End)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 937.30s (15.6m)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1334.08s (22.2m)</span>
                             <span class="param-tag">Model: turbo (Q4_0)</span>
-                            <span class="param-tag">Steps: 20</span>
-                            <span class="param-tag">CFG: 7.0</span>
+                            <span class="param-tag">Steps: 28</span>
+                            <span class="param-tag">CFG: 5.5</span>
+                            <span class="param-tag">Clip-Skip: 2</span>
                             <span class="param-tag">Sampler: dpm++2m (karras)</span>
                         </div>
                         <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed, cinematic lighting, 8k..."</div>
@@ -701,16 +703,17 @@ gallery_html = f"""<!DOCTYPE html>
                 <!-- SPEED High-End -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SPEED &bull; HIGH-END</span>
-                        <img src="assets/gallery/final_speed_highend.png" alt="Speed High-End" loading="lazy">
+                        <span class="gallery-badge">SPEED &bull; ULTRA HIGH-END</span>
+                        <img src="assets/gallery/final_speed_highend.png" alt="Speed Ultra High-End" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">SD1.5 Base Q4_1 (High-End)</h4>
+                        <h4 class="gallery-title">SD1.5 Base Q4_1 (Ultra High-End)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 882.51s (14.7m)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1245.30s (20.7m)</span>
                             <span class="param-tag">Model: speed (Q4_1)</span>
-                            <span class="param-tag">Steps: 20</span>
-                            <span class="param-tag">CFG: 7.0</span>
+                            <span class="param-tag">Steps: 28</span>
+                            <span class="param-tag">CFG: 5.5</span>
+                            <span class="param-tag">Clip-Skip: 2</span>
                             <span class="param-tag">Sampler: dpm++2m (karras)</span>
                         </div>
                         <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed and replaced by AI, 8k uhd..."</div>
@@ -739,17 +742,18 @@ gallery_html = f"""<!DOCTYPE html>
                 <!-- REALISTIC High-End -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">REALISTIC &bull; HIGH-END</span>
-                        <img src="assets/gallery/final_realistic_highend.png" alt="Realistic High-End" loading="lazy">
+                        <span class="gallery-badge">REALISTIC &bull; ULTRA HIGH-END</span>
+                        <img src="assets/gallery/final_realistic_highend.png" alt="Realistic Ultra High-End" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">Realistic Vision V6.0 (High-End)</h4>
+                        <h4 class="gallery-title">Realistic Vision V6.0 (Ultra High-End)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1528.87s (25.5m)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1548.05s (25.8m)</span>
                             <span class="param-tag">Model: realistic (Q4_K)</span>
-                            <span class="param-tag">Steps: 20</span>
-                            <span class="param-tag">CFG: 7.0</span>
-                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                            <span class="param-tag">Steps: 30</span>
+                            <span class="param-tag">CFG: 5.0</span>
+                            <span class="param-tag">Clip-Skip: 2</span>
+                            <span class="param-tag">Sampler: dpm++2m (karras)</span>
                         </div>
                         <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed, sharp focus, 8k uhd..."</div>
                     </div>
@@ -928,13 +932,13 @@ gallery_html = f"""<!DOCTYPE html>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_sdxs_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><span class="param-tag">Ultra High-End</span></td>
                             <td><code>sdxs</code> (Distilled)</td>
-                            <td><strong style="color: #004499;">25.81s</strong></td>
-                            <td><strong>2</strong></td>
+                            <td><strong style="color: #004499;">36.98s</strong></td>
+                            <td><strong>3</strong></td>
                             <td>1.0</td>
                             <td><code>euler_a</code> (Default)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (deformed iris, deformed pupils, bad eyes, dead eyes:1.4), (worst quality:1.4)</small></td>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_anime_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
@@ -948,13 +952,13 @@ gallery_html = f"""<!DOCTYPE html>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_anime_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><span class="param-tag">Ultra High-End</span></td>
                             <td><code>anime</code> (LCM Distilled)</td>
-                            <td><strong style="color: #004499;">380.58s (6.3m)</strong></td>
-                            <td><strong>8</strong></td>
+                            <td><strong style="color: #004499;">490.20s (8.1m)</strong></td>
+                            <td><strong>10</strong></td>
                             <td>1.8</td>
-                            <td><code>lcm</code> (Karras)</td>
-                            <td><em>"1man, anime style, weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, tired facial expression, replaced by AI automation, masterpiece, highly detailed, sharp lineart"</em><br><small style="color: var(--text-muted);">Negative: worst quality, low quality, deformed</small></td>
+                            <td><code>lcm</code> (Karras, Clip-Skip: 2)</td>
+                            <td><em>"1man, anime style, weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, tired facial expression, replaced by AI automation, masterpiece, highly detailed, sharp lineart"</em><br><small style="color: var(--text-muted);">Negative: worst quality, lowres, bad hands, deformed eyes, zombie, creepy</small></td>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_turbo_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
@@ -968,13 +972,13 @@ gallery_html = f"""<!DOCTYPE html>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_turbo_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><span class="param-tag">Ultra High-End</span></td>
                             <td><code>turbo</code> (SD1.5 Pruned)</td>
-                            <td><strong style="color: #004499;">937.30s (15.6m)</strong></td>
-                            <td><strong>20</strong></td>
-                            <td>7.0</td>
-                            <td><code>dpm++2m</code> (Karras)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blurry, low quality, bad anatomy, deformed</small></td>
+                            <td><strong style="color: #004499;">1334.08s (22.2m)</strong></td>
+                            <td><strong>28</strong></td>
+                            <td>5.5</td>
+                            <td><code>dpm++2m</code> (Karras, Clip-Skip: 2)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (deformed iris, deformed pupils, bad eyes, dead eyes:1.4), (bad anatomy:1.3), (morbid, zombie, creepy:1.2)</small></td>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_speed_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
@@ -988,13 +992,13 @@ gallery_html = f"""<!DOCTYPE html>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_speed_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><span class="param-tag">Ultra High-End</span></td>
                             <td><code>speed</code> (SD1.5 Base)</td>
-                            <td><strong style="color: #004499;">882.51s (14.7m)</strong></td>
-                            <td><strong>20</strong></td>
-                            <td>7.0</td>
-                            <td><code>dpm++2m</code> (Karras)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blurry, low quality, bad anatomy, deformed</small></td>
+                            <td><strong style="color: #004499;">1245.30s (20.7m)</strong></td>
+                            <td><strong>28</strong></td>
+                            <td>5.5</td>
+                            <td><code>dpm++2m</code> (Karras, Clip-Skip: 2)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (deformed iris, deformed pupils, bad eyes, dead eyes:1.4), (bad anatomy:1.3), (morbid, zombie, creepy:1.2)</small></td>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_realistic_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
@@ -1008,13 +1012,13 @@ gallery_html = f"""<!DOCTYPE html>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/final_realistic_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><span class="param-tag">Ultra High-End</span></td>
                             <td><code>realistic</code> (Vision V6)</td>
-                            <td><strong style="color: #004499;">1528.87s (25.5m)</strong></td>
-                            <td><strong>20</strong></td>
-                            <td>7.0</td>
-                            <td><code>dpm2</code> (Karras)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blurry, bad anatomy, deformed, distorted, lowres</small></td>
+                            <td><strong style="color: #004499;">1548.05s (25.8m)</strong></td>
+                            <td><strong>30</strong></td>
+                            <td>5.0</td>
+                            <td><code>dpm++2m</code> (Karras, Clip-Skip: 2)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (deformed iris, deformed pupils, bad eyes, semi-realistic:1.4), (bad anatomy, extra digits:1.3), (morbid, dead eyes, zombie:1.2)</small></td>
                         </tr>
                         <tr>
                             <td><img src="assets/gallery/user_photo_cyberpunk_transformed.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>

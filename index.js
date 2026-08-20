@@ -107,6 +107,29 @@ function isExecutable(filePath) {
   }
 }
 
+function atomicReplaceFileSync(sourcePath, destPath) {
+  try {
+    fs.renameSync(sourcePath, destPath);
+  } catch (err) {
+    if (err.code === 'EEXIST' || err.code === 'EPERM' || err.code === 'EBUSY') {
+      try {
+        if (fs.existsSync(destPath)) {
+          fs.unlinkSync(destPath);
+        }
+      } catch (_) {}
+      try {
+        fs.renameSync(sourcePath, destPath);
+        return;
+      } catch (_) {}
+    }
+    // Fallback for cross-device or persistent permission locks (EXDEV / EACCES)
+    fs.copyFileSync(sourcePath, destPath);
+    try {
+      fs.unlinkSync(sourcePath);
+    } catch (_) {}
+  }
+}
+
 // ------------------------------------------------------------------------------
 // Hardware Detection Module (Node.js Parity for GPU, NPU, TPU, CPU)
 // ------------------------------------------------------------------------------
@@ -784,16 +807,7 @@ async function downloadModel(modelNameOrUrl, options = {}) {
         res.on('end', () => {
           fileStream.end(() => {
             process.stdout.write('\n');
-            try {
-              fs.renameSync(tempPath, finalPath);
-            } catch (err) {
-              if (fs.existsSync(finalPath)) {
-                try { fs.unlinkSync(finalPath); } catch (_) {}
-                fs.renameSync(tempPath, finalPath);
-              } else {
-                throw err;
-              }
-            }
+            atomicReplaceFileSync(tempPath, finalPath);
             console.log(`[OK] [termux-diffusion] Model downloaded & cached at: ${finalPath}`);
             resolve(finalPath);
           });

@@ -126,6 +126,7 @@ def generate(
     low_ram_guard: bool = True,
     auto_provision: bool = False,
     timeout: int = 1800,
+    _cancel_event: Optional[threading.Event] = None,
 ) -> GenerationResult:
     """Generate an AI image on Samsung Galaxy / Android Termux using Bionic native C++ diffusion.
     
@@ -207,10 +208,11 @@ def generate(
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     # 5. Build Subprocess Command List (100% List argv, Zero Shell Injection Vector)
+    sanitized_prompt = str(prompt).replace("\x00", "").replace("\r\n", " ").replace("\n", " ").strip()
     cmd = [
         str(sd_cli),
         "-m", str(model_path),
-        "-p", prompt,
+        "-p", sanitized_prompt,
         "-W", str(width),
         "-H", str(height),
         "-t", str(threads),
@@ -219,7 +221,8 @@ def generate(
         "-o", str(out_path)
     ]
     if effective_negative:
-        cmd.extend(["-n", effective_negative.strip()])
+        sanitized_neg = str(effective_negative).replace("\x00", "").replace("\r\n", " ").replace("\n", " ").strip()
+        cmd.extend(["-n", sanitized_neg])
     if seed >= 0:
         cmd.extend(["-s", str(seed)])
     # Append GPU offloading args from hardware detection
@@ -247,6 +250,9 @@ def generate(
             # Stream real-time progress to terminal
             if process.stdout:
                 for line in process.stdout:
+                    if _cancel_event and _cancel_event.is_set():
+                        _safe_kill_process(process)
+                        raise TermuxDiffusionError("Inference cancelled by caller.")
                     line_str = line.strip()
                     if line_str:
                         recent_logs.append(line_str)
@@ -273,6 +279,8 @@ def generate(
             raise
 
     elapsed = time.time() - start_time
+    logger.info("Generation completed in %.2fs -> %s", elapsed, out_path)
+    print(f"[termux-diffusion] Artifact generated in {elapsed:.2f}s -> {out_path}")
 
     if not out_path.is_file():
         raise TermuxDiffusionError(f"Engine finished but output file was not created at: {out_path}")
@@ -282,12 +290,9 @@ def generate(
     if export_gallery:
         try:
             gallery_path = export_to_android_gallery(out_path)
+            print(f"[termux-diffusion] Synchronized to Android MediaStore: {gallery_path}")
         except Exception as e:
             logger.warning("Could not export to Android gallery: %s", e)
-
-    print(f"[termux-diffusion] Artifact generated in {elapsed:.2f}s -> {out_path}")
-    if gallery_path:
-        print(f"[termux-diffusion] Synchronized to Android MediaStore: {gallery_path}")
 
     return GenerationResult(
         path=out_path,
@@ -306,6 +311,13 @@ def generate(
 
 
 async def async_generate(*args, **kwargs) -> GenerationResult:
-    """Asynchronous wrapper for generate() to integrate seamlessly into asyncio event loops."""
+    """Asynchronous wrapper for generate() with real cancellation propagation to child process."""
+    cancel_event = threading.Event()
+    kwargs["_cancel_event"] = cancel_event
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, lambda: generate(*args, **kwargs))
+    task = loop.run_in_executor(None, lambda: generate(*args, **kwargs))
+    try:
+        return await task
+    except asyncio.CancelledError:
+        cancel_event.set()
+        raise

@@ -179,9 +179,18 @@ def provision_engine(force: bool = False) -> Path:
     if cmake_res.returncode != 0:
         raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr.strip()}")
 
-    print("[termux-diffusion] Compiling native Bionic binary with clang (make -j4)...")
+    mem_info = get_memory_info()
+    cpu_cores = os.cpu_count() or 2
+    if mem_info.total_mb < 4096:
+        make_jobs = 1  # RAM < 4GB: Single job to prevent Clang compiler OOM/LMK
+    elif mem_info.total_mb < 8192:
+        make_jobs = min(2, cpu_cores)  # RAM 4-8GB: 2 parallel jobs
+    else:
+        make_jobs = min(4, cpu_cores)  # RAM 8GB+: Up to 4 parallel jobs
+
+    print(f"[termux-diffusion] Compiling native Bionic binary with clang (make -j{make_jobs})...")
     make_res = subprocess.run(
-        ["make", "-j4"],
+        ["make", f"-j{make_jobs}"],
         cwd=str(build_dir),
         capture_output=True,
         text=True

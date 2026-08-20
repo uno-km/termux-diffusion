@@ -659,6 +659,10 @@ function clearCache(cacheDir, modelName) {
 // ------------------------------------------------------------------------------
 
 async function downloadModel(modelNameOrUrl, options = {}) {
+  if (typeof modelNameOrUrl === 'string' && fs.existsSync(modelNameOrUrl)) {
+    return path.resolve(modelNameOrUrl);
+  }
+
   const targetDir = options.cacheDir ? path.resolve(options.cacheDir) : getCacheDir();
   if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
@@ -693,8 +697,12 @@ async function downloadModel(modelNameOrUrl, options = {}) {
   const tempPath = path.join(targetDir, `${targetFilename}.${process.pid}.part`);
   console.log(`[Download] [termux-diffusion] Downloading model '${targetFilename}' (${downloadUrl})...`);
 
+  let redirectCount = 0;
   await new Promise((resolve, reject) => {
     function fetchUrl(currentUrl) {
+      if (++redirectCount > 10) {
+        return reject(new Error(`Too many HTTP redirects (exceeded limit of 10) while downloading: ${downloadUrl}`));
+      }
       const headers = { 'User-Agent': 'termux-diffusion-node/1.1.0' };
       let existingBytes = 0;
 
@@ -901,8 +909,12 @@ function provisionEngine(force = false) {
 
   spawnSync('cmake', cmakeArgs, { cwd: buildDir, stdio: 'inherit' });
 
-  console.log('[Build] Compiling native Bionic binary with clang (make -j4)...');
-  spawnSync('make', ['-j4'], { cwd: buildDir, stdio: 'inherit' });
+  const memInfo = getMemoryInfo();
+  const cpus = (os.cpus() && os.cpus().length) || 2;
+  const makeJobs = memInfo.totalMb < 4096 ? 1 : (memInfo.totalMb < 8192 ? Math.min(2, cpus) : Math.min(4, cpus));
+
+  console.log(`[Build] Compiling native Bionic binary with clang (make -j${makeJobs})...`);
+  spawnSync('make', [`-j${makeJobs}`], { cwd: buildDir, stdio: 'inherit' });
 
   const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
   if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });

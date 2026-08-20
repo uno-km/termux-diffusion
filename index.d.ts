@@ -79,6 +79,9 @@ export interface GenerateOptions {
   output?: string;
   exportGallery?: boolean;
   lowRamGuard?: boolean;
+  strictMemory?: boolean;
+  autoProvision?: boolean;
+  signal?: AbortSignal;
   timeout?: number;
 }
 

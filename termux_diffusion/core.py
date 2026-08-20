@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Union
@@ -242,15 +243,13 @@ def generate(
                 universal_newlines=True
             )
 
-            recent_logs = []
+            recent_logs = deque(maxlen=20)
             # Stream real-time progress to terminal
             if process.stdout:
                 for line in process.stdout:
                     line_str = line.strip()
                     if line_str:
                         recent_logs.append(line_str)
-                        if len(recent_logs) > 20:
-                            recent_logs.pop(0)
                         if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
                             print(f"  > {line_str}")
                         else:
@@ -258,7 +257,7 @@ def generate(
 
             process.wait(timeout=timeout)
             if process.returncode != 0:
-                err_detail = "\n".join(recent_logs[-5:]) if recent_logs else "No engine output"
+                err_detail = "\n".join(list(recent_logs)[-5:]) if recent_logs else "No engine output"
                 raise TermuxDiffusionError(
                     f"Engine process failed with return code {process.returncode}.\nDetails:\n{err_detail}"
                 )

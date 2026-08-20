@@ -1026,10 +1026,15 @@ async function generate(options) {
     }
   }
 
-  // Acquire WakeLock
+  let wakeLockAcquired = false;
   if (isAndroidTermux()) {
-    try { spawnSync('termux-wake-lock', [], { timeout: 2000 }); } catch (e) {
-      console.warn('[termux-diffusion] WakeLock acquire note:', e.message);
+    try {
+      spawnSync('termux-wake-lock', [], { timeout: 1000 });
+      wakeLockAcquired = true;
+    } catch (e) {
+      if (process.env.DEBUG) {
+        console.debug('[termux-diffusion] WakeLock acquire note:', e.message);
+      }
     }
   }
 
@@ -1132,10 +1137,14 @@ async function generate(options) {
       });
     });
   } finally {
-    // Release WakeLock
-    if (isAndroidTermux()) {
-      try { spawnSync('termux-wake-unlock', [], { timeout: 2000 }); } catch (e) {
-        console.warn('[termux-diffusion] WakeLock release note:', e.message);
+    // Release WakeLock safely
+    if (wakeLockAcquired && isAndroidTermux()) {
+      try {
+        spawnSync('termux-wake-unlock', [], { timeout: 1000 });
+      } catch (e) {
+        if (process.env.DEBUG) {
+          console.debug('[termux-diffusion] WakeLock release note:', e.message);
+        }
       }
     }
   }

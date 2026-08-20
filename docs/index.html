@@ -146,68 +146,25 @@
             <h2 data-i18n="home.title">Production On-Device AI Image Generation on Android Termux</h2>
             <p data-i18n="home.subtitle">A unified dual-engine (Python &amp; Node.js) diffusion framework designed for Samsung Galaxy and Android ARM64 hardware without container virtualization or root privileges.</p>
 
-            <div class="badges-bar">
+                                    <div class="badges-bar">
                 <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue" alt="PyPI Version"></a>
                 <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/v/termux-diffusion.svg?color=red" alt="npm Version"></a>
+                <a href="https://pepy.tech/projects/termux-diffusion" target="_blank"><img src="https://img.shields.io/pepy/dt/termux-diffusion?color=orange" alt="Total Downloads"></a>
                 <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python Version">
                 <img src="https://img.shields.io/badge/node-16+-brightgreen.svg" alt="Node Version">
-                <img src="https://img.shields.io/badge/platform-Samsung%20Galaxy%20%7C%20ARM64-green.svg" alt="Platform">
+                <img src="https://img.shields.io/badge/platform-Android%20Termux%20(aarch64)-green.svg" alt="Platform">
                 <img src="https://img.shields.io/badge/tests-48%20passed%20%7C%20100%25-success" alt="Tests">
             </div>
 
-            <!-- 1. 초고속 설치 (Installation First) -->
-            <div class="alert alert-tip" style="margin-top: 20px;">
-                <span class="alert-title" data-i18n="home.quickInstallTitle">[Instant] 1. 1-Line Quick Installation</span>
+                                    <!-- 1. 초고속 설치 (Installation First) -->
+            <div class="alert alert-tip">
+                <span class="alert-title" data-i18n="home.quickInstallTitle">1-Line Quick Installation (Choose Language)</span>
                 <p data-i18n="home.quickInstallDesc">Select your runtime and run the 1-line installation in Termux:</p>
                 <div style="margin-top: 12px;">
-                    <h4 style="margin: 8px 0 4px 0; color: #0055cc;">[Python] Python (PyPI):</h4>
+                    <h4 style="margin: 8px 0 4px 0; color: #0055cc;">🐍 Python Edition (PyPI):</h4>
                     <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
-                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">[Node.js] Node.js / TypeScript (npm):</h4>
+                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js / TypeScript Edition (npm):</h4>
                     <pre><code>npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
-                </div>
-            </div>
-
-            <!-- 2. 즉시 실행 & 생성 방법 (Execution Next) -->
-            <div class="card" style="margin-bottom: 24px;">
-                <h3 style="margin-top: 0; color: var(--primary-color);">[Models] 2. Quick Execution</h3>
-                
-                <h4 style="margin: 12px 0 6px 0;">Option A: CLI 1-Line Terminal Generation (No Code)</h4>
-                <pre><code>termux-diffusion generate "RAW photo, portrait of developer, photorealistic" -m realistic</code></pre>
-
-                <h4 style="margin: 18px 0 6px 0;">Option B: Python SDK Code</h4>
-                <pre><code>from termux_diffusion import generate
-
-result = generate("cyberpunk cat with neon collar in rainy alley", model="speed")
-print(f"Artifact: {result.path} (Gallery: {result.gallery_path})")</code></pre>
-
-                <h4 style="margin: 18px 0 6px 0;">Option C: Node.js SDK Code</h4>
-                <pre><code>const { generate } = require('termux-diffusion');
-
-async function main() {
-    const result = await generate({ prompt: 'cyberpunk cat in neon alley', model: 'speed' });
-    console.log(`Saved: ${result.path}`);
-}
-main();</code></pre>
-            </div>
-
-            <!-- 3. 핵심 기술 특장점 (Core Capabilities) -->
-            <h3 data-i18n="home.capTitle">3. Core Capabilities</h3>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h4>Zero-Root Bionic Execution</h4>
-                    <p>Compiles directly against Android Bionic libc with ARM64 NEON vector optimizations without PRoot bloat.</p>
-                </div>
-                <div class="feature-card">
-                    <h4>Smart Model Hub</h4>
-                    <p>5 built-in presets (realistic, speed, sdxs, turbo, anime) with automatic streaming and cache resume.</p>
-                </div>
-                <div class="feature-card">
-                    <h4>Power &amp; Sleep Shield</h4>
-                    <p>Guarantees uninterrupted inference when the screen turns off via Android CPU WakeLock.</p>
-                </div>
-                <div class="feature-card">
-                    <h4>Samsung MediaStore Bridge</h4>
-                    <p>Persists outputs to ~/storage/pictures/TermuxDiffusion/ and triggers MediaScanner broadcast for Samsung Gallery.</p>
                 </div>
             </div>
 

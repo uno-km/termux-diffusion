@@ -130,15 +130,16 @@ function runTests() {
   });
 
   // 9. NPU Capabilities
-  it('detectNpuCapabilities returns structured NPU capability object', () => {
+  it('detectNpuCapabilities returns structured NPU capability object and raises on npu device request', () => {
     const npu = detectNpuCapabilities();
     assert(typeof npu.available === 'boolean');
     assert(typeof npu.vendor === 'string');
     assert(typeof npu.topsRating === 'number');
     assert(Array.isArray(npu.supportedPrecisions));
 
-    const npuDev = resolveDeviceBackend('npu');
-    assert(['vulkan', 'cpu'].includes(npuDev.effectiveDevice));
+    assert.throws(() => {
+      resolveDeviceBackend('npu');
+    }, /v2\.0 roadmap/);
   });
 
   console.log(`\n📊 Node.js Test Results: ${passed}/${total} Passed.`);

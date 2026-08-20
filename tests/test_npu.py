@@ -66,15 +66,19 @@ def test_heterogeneous_pipeline_allocation():
     assert "summary" in pipeline
 
 
-def test_resolve_device_backend_npu_route():
-    """Test device='npu' and device='tpu' routing in hardware module."""
-    dev, ngl = resolve_device_backend("npu")
-    assert dev in ("vulkan", "cpu")
-    assert ngl >= 0
+from termux_diffusion.exceptions import PlatformNotSupportedError
 
-    dev_tpu, ngl_tpu = resolve_device_backend("tpu")
-    assert dev_tpu in ("vulkan", "cpu")
-    assert ngl_tpu >= 0
+
+def test_resolve_device_backend_npu_explicit_error():
+    """Requesting device='npu' or 'tpu' must raise PlatformNotSupportedError with actionable v2.0 roadmap guidance."""
+    with pytest.raises(PlatformNotSupportedError) as exc_npu:
+        resolve_device_backend("npu")
+    assert "v2.0" in str(exc_npu.value)
+    assert "vulkan" in str(exc_npu.value)
+
+    with pytest.raises(PlatformNotSupportedError) as exc_tpu:
+        resolve_device_backend("tpu")
+    assert "v2.0" in str(exc_tpu.value)
 
 
 def test_format_hardware_report_includes_npu():

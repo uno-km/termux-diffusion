@@ -15,6 +15,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from .exceptions import PlatformNotSupportedError
 from .npu import NPUProfile, NPUVendor, detect_npu_capabilities, get_optimal_heterogeneous_pipeline
 
 logger = logging.getLogger("termux_diffusion.hardware")
@@ -303,23 +304,16 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
         return backend.value, ngl
     
     if req in ("npu", "tpu"):
-        if profile.npu_profile and profile.npu_profile.available:
-            logger.info(
-                "NPU/TPU acceleration active: %s (%s @ %.1f TOPS)",
-                profile.npu_profile.chipset_name,
-                profile.npu_profile.dsp_architecture,
-                profile.npu_profile.tops_rating
-            )
-            print(
-                f"[termux-diffusion] NPU Delegate Activated: {profile.npu_profile.dsp_architecture} "
-                f"({profile.npu_profile.tops_rating} TOPS). Offloading UNet denoiser."
-            )
-            # Route with full GPU/NPU layer offload
-            return "vulkan" if profile.vulkan_available else "cpu", 99
-        else:
-            logger.warning("NPU/TPU requested but no dedicated NPU driver detected. Falling back to GPU/CPU.")
-            print("[termux-diffusion] WARNING: NPU requested but no dedicated NPU hardware detected. Using GPU/CPU pipeline.")
-            return "vulkan" if profile.vulkan_available else "cpu", 99 if profile.vulkan_available else 0
+        npu_desc = (
+            f"{profile.npu_profile.chipset_name} / {profile.npu_profile.dsp_architecture}"
+            if (profile.npu_profile and profile.npu_profile.available)
+            else "Hardware not detected"
+        )
+        raise PlatformNotSupportedError(
+            f"Native NPU/TPU acceleration ({npu_desc}) requires Qualcomm QNN / LiteRT C++ Graph Runtime (scheduled for v2.0 roadmap). "
+            f"Currently, full hardware acceleration is supported via Vulkan GPU (device='vulkan') and ARM NEON (device='cpu'). "
+            f"Please use device='vulkan' or device='auto'."
+        )
 
     if req in ("vulkan", "gpu"):
         if profile.vulkan_available:
@@ -371,13 +365,12 @@ def format_hardware_report(profile: HardwareProfile) -> str:
         lines.append(f"  ↳ OpenCL Lib: {profile.opencl_driver.library_path}")
     
     if profile.npu_profile and profile.npu_profile.available:
-        lines.append(f"NPU / TPU Acceleration: Available ✅")
-        lines.append(f"  ↳ Architecture: {profile.npu_profile.dsp_architecture}")
-        lines.append(f"  ↳ Peak Throughput: {profile.npu_profile.tops_rating} TOPS")
-        lines.append(f"  ↳ Delegate Driver: {profile.npu_profile.driver_library}")
-        lines.append(f"  ↳ Supported Precisions: {', '.join(profile.npu_profile.supported_precisions)}")
+        lines.append(f"NPU / TPU Hardware: Detected ℹ️ ({profile.npu_profile.dsp_architecture})")
+        lines.append(f"  ↳ Peak Hardware Spec: {profile.npu_profile.tops_rating} TOPS")
+        lines.append(f"  ↳ Driver Library: {profile.npu_profile.driver_library}")
+        lines.append(f"  ↳ Runtime Status: Native QNN C++ execution scheduled for v2.0 (Active: Vulkan GPU & ARM NEON)")
     else:
-        lines.append("NPU / TPU Acceleration: Not Available (CPU/GPU pipeline active)")
+        lines.append("NPU / TPU Hardware: Not Detected (CPU/GPU pipeline active)")
         
     lines.append(f"Recommended Compute Backend: {profile.recommended_backend.value}")
     lines.append(f"Recommended GPU/NPU Offload Layers: {profile.recommended_ngl}")

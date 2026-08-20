@@ -389,12 +389,14 @@ function resolveDeviceBackend(requestedDevice) {
   }
 
   if (req === 'npu' || req === 'tpu') {
-    if (profile.npuProfile && profile.npuProfile.available) {
-      console.log(`[termux-diffusion] NPU/TPU Delegate Active: ${profile.npuProfile.dspArchitecture} (${profile.npuProfile.topsRating} TOPS)`);
-      return { effectiveDevice: profile.vulkanAvailable ? 'vulkan' : 'cpu', nglLayers: 99 };
-    }
-    console.warn('[termux-diffusion] NPU/TPU requested but no dedicated NPU hardware detected. Using GPU/CPU.');
-    return { effectiveDevice: profile.vulkanAvailable ? 'vulkan' : 'cpu', nglLayers: profile.vulkanAvailable ? 99 : 0 };
+    const npuDesc = (profile.npuProfile && profile.npuProfile.available)
+      ? `${profile.npuProfile.chipsetName} / ${profile.npuProfile.dspArchitecture}`
+      : 'Hardware not detected';
+    throw new Error(
+      `[termux-diffusion] Native NPU/TPU acceleration (${npuDesc}) requires Qualcomm QNN / LiteRT C++ Graph Runtime (scheduled for v2.0 roadmap). ` +
+      `Currently, full hardware acceleration is supported via Vulkan GPU (device='vulkan') and ARM NEON (device='cpu'). ` +
+      `Please use device='vulkan' or device='auto'.`
+    );
   }
 
   if (req === 'vulkan' || req === 'gpu') {
@@ -832,7 +834,9 @@ async function generate(options) {
   const prompt = options.prompt;
   const model = options.model || 'realistic';
   const rawDevice = options.device || 'cpu';
-  const negativePrompt = options.negativePrompt || 'woman, girl, cartoon, anime, 3d render, plastic, illustration, b&w, lowres, blur, deformed hands, extra fingers, messy face, horror';
+  const negativePrompt = options.negativePrompt !== undefined
+    ? options.negativePrompt
+    : 'lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts';
   const width = options.width || 512;
   const height = options.height || 512;
   const seed = options.seed !== undefined ? options.seed : -1;

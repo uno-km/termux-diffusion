@@ -60,9 +60,7 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
 def generate(
     prompt: str,
     model: str = "realistic",
-    negative_prompt: Optional[str] = (
-        "woman, girl, cartoon, anime, 3d render, plastic, illustration, b&w, lowres, blur, deformed hands, extra fingers, messy face, horror"
-    ),
+    negative_prompt: Optional[str] = "lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts",
     device: str = "cpu",
     steps: Optional[int] = None,
     cfg_scale: Optional[float] = None,

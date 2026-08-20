@@ -238,16 +238,17 @@ def run_doctor() -> bool:
     if hw.opencl_driver:
         print(f"     ↳ OpenCL Driver: {hw.opencl_driver.library_path}")
     if hw.npu_profile and hw.npu_profile.available:
-        print(f"   NPU / TPU Acceleration: Available ✅")
+        print(f"   NPU / TPU Hardware: Detected ℹ️")
         print(f"     ↳ Architecture: {hw.npu_profile.dsp_architecture} ({hw.npu_profile.tops_rating} TOPS)")
-        print(f"     ↳ Delegate: {hw.npu_profile.delegate_type} ({hw.npu_profile.driver_library})")
+        print(f"     ↳ Driver: {hw.npu_profile.driver_library}")
+        print(f"     ↳ Runtime: Native QNN C++ execution scheduled for v2.0")
     else:
-        print(f"   NPU / TPU Acceleration: Not Detected ℹ️ (GPU Vulkan & CPU NEON Active)")
+        print(f"   NPU / TPU Hardware: Not Detected ℹ️ (GPU Vulkan & CPU NEON Active)")
     print(f"   CPU ISA SIMD: DotProd={'✅' if hw.has_dotprod else '❌'} "
           f"FP16={'✅' if hw.has_fp16 else '❌'} "
           f"I8MM={'✅' if hw.has_i8mm else '❌'} "
           f"SVE={'✅' if hw.has_sve else '❌'}")
-    print(f"   Recommended Compute Pipeline: {hw.recommended_backend.value.upper()} "
+    print(f"   Active Compute Pipeline: {hw.recommended_backend.value.upper()} "
           f"(Offload Layers: {hw.recommended_ngl})")
 
     print("=" * 65)

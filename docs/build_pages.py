@@ -1238,6 +1238,169 @@ api_reference_html = f"""<!DOCTYPE html>
 </body>
 </html>"""
 
+# 5-1. advanced-parameters.html
+advanced_parameters_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{get_head_meta(
+    "Advanced Parameters & High-Precision Controls | Termux-Diffusion",
+    "Detailed guide for all advanced parameters supported by termux-diffusion and sd-cli: samplers, schedulers, VAE tiling, Img2Img, LoRA, ControlNet, TAESD, and Clip-Skip."
+)}
+</head>
+<body>
+{get_header('advanced-parameters.html')}
+
+    <div class="container">
+{get_sidebar('advanced-parameters.html')}
+
+        <main class="content">
+            <h2>Advanced Parameters &amp; High-Precision Controls</h2>
+            <p>Direct low-level control over the underlying Bionic C++ <code>sd-cli</code> (stable-diffusion.cpp) engine with robust error isolation, automatic boundary clamping, and zero-overhead defaults.</p>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>Parameter Quick Reference Table</h3>
+                <div style="overflow-x: auto;">
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter (Python / JS)</th>
+                                <th>CLI Flag</th>
+                                <th>Valid Choices / Range</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>sampling_method</code> / <code>samplingMethod</code></td>
+                                <td><code>--sampler</code></td>
+                                <td><code>euler</code>, <code>euler_a</code>, <code>heun</code>, <code>dpm2</code>, <code>dpm++2s_a</code>, <code>dpm++2m</code>, <code>dpm++2mv2</code>, <code>ipndm</code>, <code>lcm</code></td>
+                                <td><code>euler_a</code></td>
+                                <td>Denoising sampler algorithm</td>
+                            </tr>
+                            <tr>
+                                <td><code>schedule</code></td>
+                                <td><code>--schedule</code></td>
+                                <td><code>default</code>, <code>discrete</code>, <code>karras</code>, <code>exponential</code>, <code>ays</code>, <code>gits</code></td>
+                                <td><code>default</code></td>
+                                <td>Noise sigma schedule</td>
+                            </tr>
+                            <tr>
+                                <td><code>vae_tiling</code> / <code>vaeTiling</code></td>
+                                <td><code>--vae-tiling</code></td>
+                                <td><code>true</code> / <code>false</code></td>
+                                <td><code>false</code></td>
+                                <td>Reduces peak memory by ~70% during VAE decoding</td>
+                            </tr>
+                            <tr>
+                                <td><code>init_img</code> / <code>initImg</code></td>
+                                <td><code>-i</code>, <code>--init-img</code></td>
+                                <td>Valid image filepath (PNG/JPG)</td>
+                                <td><code>None</code></td>
+                                <td>Source image for Image-to-Image (Img2Img)</td>
+                            </tr>
+                            <tr>
+                                <td><code>strength</code></td>
+                                <td><code>--strength</code></td>
+                                <td><code>0.0</code> to <code>1.0</code></td>
+                                <td><code>0.75</code></td>
+                                <td>Img2Img denoising strength</td>
+                            </tr>
+                            <tr>
+                                <td><code>lora_dir</code> / <code>loraDir</code></td>
+                                <td><code>--lora-dir</code></td>
+                                <td>Valid directory path</td>
+                                <td><code>None</code></td>
+                                <td>Directory containing LoRA adapter weights</td>
+                            </tr>
+                            <tr>
+                                <td><code>clip_skip</code> / <code>clipSkip</code></td>
+                                <td><code>--clip-skip</code></td>
+                                <td><code>1</code> or <code>2</code></td>
+                                <td><code>None</code></td>
+                                <td>Skips final CLIP text encoder layers</td>
+                            </tr>
+                            <tr>
+                                <td><code>control_net</code> / <code>controlNet</code></td>
+                                <td><code>--control-net</code></td>
+                                <td>Valid ControlNet model path</td>
+                                <td><code>None</code></td>
+                                <td>Spatial conditioning model</td>
+                            </tr>
+                            <tr>
+                                <td><code>control_image</code> / <code>controlImage</code></td>
+                                <td><code>--control-image</code></td>
+                                <td>Valid guide image path</td>
+                                <td><code>None</code></td>
+                                <td>Guide image for ControlNet</td>
+                            </tr>
+                            <tr>
+                                <td><code>control_strength</code> / <code>controlStrength</code></td>
+                                <td><code>--control-strength</code></td>
+                                <td><code>0.0</code> to <code>2.0</code></td>
+                                <td><code>0.9</code></td>
+                                <td>Influence weight of ControlNet conditioning</td>
+                            </tr>
+                            <tr>
+                                <td><code>taesd</code></td>
+                                <td><code>--taesd</code></td>
+                                <td>Valid TAESD model path</td>
+                                <td><code>None</code></td>
+                                <td>Tiny AutoEncoder for 0.1s VAE decoding</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 1. Samplers & Schedulers -->
+            <div class="card" style="margin-top: 24px;">
+                <h3>1. Samplers &amp; Schedulers</h3>
+                <p>Pairing <code>dpm++2m</code> with the <code>karras</code> scheduler yields photorealistic facial textures and skin micro-details in only 10 to 12 steps.</p>
+                <pre><code># Python SDK
+from termux_diffusion import generate
+
+result = generate(
+    "hyperrealistic portrait of a cyberpunk hacker, neon lighting, 8k",
+    model="realistic",
+    sampling_method="dpm++2m",
+    schedule="karras",
+    steps=12,
+    cfg_scale=4.0
+)</code></pre>
+            </div>
+
+            <!-- 2. VAE Tiling -->
+            <div class="card" style="margin-top: 24px;">
+                <h3>2. VAE Tiling (Mobile Peak RAM Reduction)</h3>
+                <p>Splits latent decoding into 64x64 spatial tiles, slashing peak VRAM/RAM consumption by 70% to prevent Android Low Memory Killer (LMK) termination.</p>
+                <pre><code># Python SDK
+generate("futuristic landscape", width=768, height=768, vae_tiling=True)</code></pre>
+            </div>
+
+            <!-- 3. Img2Img -->
+            <div class="card" style="margin-top: 24px;">
+                <h3>3. Image-to-Image (Img2Img)</h3>
+                <p>Transform sketches, rough drawings, or existing photos into finished AI art.</p>
+                <pre><code># CLI Execution
+termux-diffusion generate "convert sketch into oil painting" -i /sdcard/Pictures/sketch.png --strength 0.70</code></pre>
+            </div>
+
+            <!-- Safety & Boundary Clamping -->
+            <div class="card" style="margin-top: 24px;">
+                <h3>Safety, Boundary Clamping &amp; Fail-Fast Isolation</h3>
+                <ul>
+                    <li><strong>Missing File Safety:</strong> If <code>init_img</code> or <code>control_net</code> points to a non-existent file, the wrapper immediately halts with a clear <code>FileNotFoundError</code> to avoid unintended generation.</li>
+                    <li><strong>Automatic Clamping:</strong> Out-of-bounds numbers (e.g. <code>strength=999</code> or <code>clip_skip=50</code>) are automatically clamped to valid ranges (<code>1.0</code> and <code>2</code>) with actionable warning logs.</li>
+                    <li><strong>Zero-Overhead Defaults:</strong> Unset parameters are cleanly omitted from the C++ command line, preserving 100% baseline speed.</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+{get_footer()}
+</body>
+</html>"""
+
 # 6. benchmarks.html
 benchmarks_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1478,6 +1641,12 @@ sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
         <priority>0.8</priority>
     </url>
     <url>
+        <loc>https://uno-km.github.io/termux-diffusion/advanced-parameters.html</loc>
+        <lastmod>2026-08-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
         <loc>https://uno-km.github.io/termux-diffusion/benchmarks.html</loc>
         <lastmod>2026-08-20</lastmod>
         <changefreq>weekly</changefreq>
@@ -1668,6 +1837,7 @@ pages = {
     'docs/gallery.html': gallery_html,
     'docs/quickstart.html': quickstart_html,
     'docs/api-reference.html': api_reference_html,
+    'docs/advanced-parameters.html': advanced_parameters_html,
     'docs/benchmarks.html': benchmarks_html,
     'docs/versions.html': versions_html,
     'docs/robots.txt': robots_txt,

@@ -101,7 +101,7 @@ def get_head_meta(title, description):
         "price": "0",
         "priceCurrency": "USD"
       }},
-      "softwareVersion": "1.0.0",
+      "softwareVersion": "1.1.1",
       "description": "{description}",
       "url": "https://uno-km.github.io/termux-diffusion/",
       "aggregateRating": {{
@@ -181,17 +181,17 @@ index_html = f"""<!DOCTYPE html>
             <p data-i18n="home.subtitle">A unified dual-engine (Python &amp; Node.js) diffusion framework designed for Samsung Galaxy and Android ARM64 hardware without container virtualization or root privileges.</p>
 
             <div class="badges-bar">
-                <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/badge/pypi-v1.0.0-blue.svg" alt="PyPI Version"></a>
-                <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/badge/npm-v1.0.0-red.svg" alt="npm Version"></a>
+                <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue" alt="PyPI Version"></a>
+                <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/v/termux-diffusion.svg?color=red" alt="npm Version"></a>
                 <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python Version">
                 <img src="https://img.shields.io/badge/node-16+-brightgreen.svg" alt="Node Version">
                 <img src="https://img.shields.io/badge/platform-Samsung%20Galaxy%20%7C%20ARM64-green.svg" alt="Platform">
-                <img src="https://img.shields.io/badge/tests-15%20passed%20%7C%20100%25-success" alt="Tests">
+                <img src="https://img.shields.io/badge/tests-48%20passed%20%7C%20100%25-success" alt="Tests">
             </div>
 
             <!-- 1. 초고속 설치 (Installation First) -->
             <div class="alert alert-tip" style="margin-top: 20px;">
-                <span class="alert-title" data-i18n="home.quickInstallTitle">[Instant] 1. 1-Line Quick Installation (초고속 설치)</span>
+                <span class="alert-title" data-i18n="home.quickInstallTitle">[Instant] 1. 1-Line Quick Installation</span>
                 <p data-i18n="home.quickInstallDesc">Select your runtime and run the 1-line installation in Termux:</p>
                 <div style="margin-top: 12px;">
                     <h4 style="margin: 8px 0 4px 0; color: #0055cc;">[Python] Python (PyPI):</h4>
@@ -203,9 +203,9 @@ index_html = f"""<!DOCTYPE html>
 
             <!-- 2. 즉시 실행 & 생성 방법 (Execution Next) -->
             <div class="card" style="margin-bottom: 24px;">
-                <h3 style="margin-top: 0; color: var(--primary-color);">[Models] 2. Quick Execution (즉시 실행 및 이미지 생성)</h3>
+                <h3 style="margin-top: 0; color: var(--primary-color);">[Models] 2. Quick Execution</h3>
                 
-                <h4 style="margin: 12px 0 6px 0;">Option A: CLI 1줄 터미널 생성 (No Code)</h4>
+                <h4 style="margin: 12px 0 6px 0;">Option A: CLI 1-Line Terminal Generation (No Code)</h4>
                 <pre><code>termux-diffusion generate "RAW photo, portrait of developer, photorealistic" -m realistic</code></pre>
 
                 <h4 style="margin: 18px 0 6px 0;">Option B: Python SDK Code</h4>
@@ -225,7 +225,7 @@ main();</code></pre>
             </div>
 
             <!-- 3. 핵심 기술 특장점 (Core Capabilities) -->
-            <h3 data-i18n="home.capTitle">3. Core Capabilities (핵심 기술 역량)</h3>
+            <h3 data-i18n="home.capTitle">3. Core Capabilities</h3>
             <div class="features-grid">
                 <div class="feature-card">
                     <h4>Zero-Root Bionic Execution</h4>
@@ -246,43 +246,50 @@ main();</code></pre>
             </div>
 
             <!-- 4. 상세 매뉴얼 및 서브페이지 이동 안내 (Deep Documentation Navigation Cards) -->
-            <h3 style="margin-top: 32px;">4. Detailed Documentation &amp; Manuals (상세 매뉴얼 바로가기)</h3>
+            <h3 style="margin-top: 32px;">4. Detailed Documentation &amp; Manuals</h3>
             <div class="features-grid">
                 <a href="installation.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
                         <h4 style="color: var(--primary-color);">[Docs] Installation Guide</h4>
-                        <p>상황별 1/2/3단계 설치 안내 (새 폰, 이미 설치된 유저, 커스텀 모델).</p>
+                        <p>Step-by-step setup guides for fresh installs, CLI drafting, and custom models.</p>
                     </div>
                 </a>
                 <a href="quickstart.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
                         <h4 style="color: var(--primary-color);">[Instant] Quickstart &amp; Recipes</h4>
-                        <p>실사 포토리얼리즘, 초저지연 모바일 프로토타이핑, GPU 가속 레시피.</p>
+                        <p>Production recipes for photorealism, ultra-low latency mobile prototyping, and GPU acceleration.</p>
                     </div>
                 </a>
                 <a href="models.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
                         <h4 style="color: var(--primary-color);">[Models] Model Hub &amp; Presets</h4>
-                        <p>5대 모바일 GGUF 프리셋, 모델 별명 등록 및 SD카드 스토리지 라우팅.</p>
+                        <p>5 curated mobile GGUF presets, custom alias registration, and SD card cache routing.</p>
+                    </div>
+                </a>
+                <a href="advanced-parameters.html" style="text-decoration: none; color: inherit;">
+                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
+                        <h4 style="color: var(--primary-color);">[Advanced] High-Precision Controls</h4>
+                        <p>Samplers (dpm++2m, lcm), VAE Tiling, Img2Img, LoRA, ControlNet, and TAESD handbook.</p>
                     </div>
                 </a>
                 <a href="api-reference.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">🔬 100% Full API Reference</h4>
-                        <p>15개 파라미터 전수 명세표, zRAM 메모리 검사, CLI 명령어 매트릭스.</p>
+                        <h4 style="color: var(--primary-color);">[API] 100% Full API Reference</h4>
+                        <p>Comprehensive parameter specifications, zRAM diagnostics, and CLI command matrix.</p>
                     </div>
                 </a>
                 <a href="benchmarks.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">📊 Benchmarks &amp; Profiling</h4>
-                        <p>Exynos 1380 및 Snapdragon 8 Gen 3 칩셋별 실측 지연 시간 벤치마크.</p>
+                        <h4 style="color: var(--primary-color);">[Metrics] Benchmarks &amp; Profiling</h4>
+                        <p>Real-device latency benchmarks across Exynos 1380 and Snapdragon 8 Gen 3 chipsets.</p>
                     </div>
                 </a>
                 <a href="versions.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">📜 Version Archive</h4>
-                        <p>v1.0.0 Genesis 릴리즈 노트 및 아카이브.</p>
+                        <h4 style="color: var(--primary-color);">[Versions] Version Archive</h4>
+                        <p>v1.1.1 production changelog and Genesis release archive.</p>
                     </div>
+                </a>
             </div>
         </main>
     </div>

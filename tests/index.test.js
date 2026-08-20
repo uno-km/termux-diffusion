@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 
 const {
+  generate,
   DEFAULT_PRESETS,
   listPresets,
   registerModel,
@@ -29,15 +30,15 @@ const {
   getQualityGuardNegativePrompt
 } = require('../index.js');
 
-function runTests() {
+async function runTests() {
   console.log('[TEST] Starting Node.js Engine Unit Tests...\n');
   let passed = 0;
   let total = 0;
 
-  function it(name, fn) {
+  async function it(name, fn) {
     total++;
     try {
-      fn();
+      await fn();
       console.log(`  [PASS] ${name}`);
       passed++;
     } catch (err) {
@@ -46,7 +47,7 @@ function runTests() {
   }
 
   // 1. Presets
-  it('DEFAULT_PRESETS contains standard mobile models', () => {
+  await it('DEFAULT_PRESETS contains standard mobile models', () => {
     assert(DEFAULT_PRESETS.realistic, 'realistic model preset missing');
     assert(DEFAULT_PRESETS.speed, 'speed model preset missing');
     assert(DEFAULT_PRESETS.sdxs, 'sdxs model preset missing');
@@ -54,7 +55,7 @@ function runTests() {
   });
 
   // 2. Custom Model Registration
-  it('registerModel adds custom model to catalog', () => {
+  await it('registerModel adds custom model to catalog', () => {
     registerModel('custom-test', {
       repo_id: 'org/repo',
       filename: 'custom.gguf',
@@ -70,7 +71,7 @@ function runTests() {
   });
 
   // 3. Cache directory management
-  it('setCacheDir and getCacheDir manage cache path', () => {
+  await it('setCacheDir and getCacheDir manage cache path', () => {
     const tempDir = path.join(os.tmpdir(), `td_node_test_${Date.now()}`);
     setCacheDir(tempDir);
     assert.strictEqual(getCacheDir(), path.resolve(tempDir));
@@ -78,7 +79,7 @@ function runTests() {
   });
 
   // 4. Hardware Profile Detection
-  it('detectHardwareProfile returns valid system capability profile', () => {
+  await it('detectHardwareProfile returns valid system capability profile', () => {
     const hw = detectHardwareProfile();
     assert(typeof hw.cpuArch === 'string');
     assert(typeof hw.cpuCores === 'number');
@@ -89,7 +90,7 @@ function runTests() {
   });
 
   // 5. Device Backend Resolution
-  it('resolveDeviceBackend correctly handles cpu, auto, and fallbacks', () => {
+  await it('resolveDeviceBackend correctly handles cpu, auto, and fallbacks', () => {
     const cpuRes = resolveDeviceBackend('cpu');
     assert.strictEqual(cpuRes.effectiveDevice, 'cpu');
     assert.strictEqual(cpuRes.nglLayers, 0);
@@ -105,7 +106,7 @@ function runTests() {
   });
 
   // 6. GGUF Magic Header Validation
-  it('validateGgufFile accurately validates GGUF binary format', () => {
+  await it('validateGgufFile accurately validates GGUF binary format', () => {
     const tempGguf = path.join(os.tmpdir(), `test_valid_${Date.now()}.gguf`);
     const tempInvalid = path.join(os.tmpdir(), `test_invalid_${Date.now()}.gguf`);
 
@@ -121,7 +122,7 @@ function runTests() {
   });
 
   // 7. Memory info and safety guard
-  it('getMemoryInfo and checkMemorySafety return genuine OS metrics', () => {
+  await it('getMemoryInfo and checkMemorySafety return genuine OS metrics', () => {
     const mem = getMemoryInfo();
     assert(typeof mem.mem_total_mb === 'number');
     assert(typeof mem.effective_available_mb === 'number');
@@ -133,7 +134,7 @@ function runTests() {
   });
 
   // 9. NPU Capabilities
-  it('detectNpuCapabilities returns structured NPU capability object and raises on npu device request', () => {
+  await it('detectNpuCapabilities returns structured NPU capability object and raises on npu device request', () => {
     const npu = detectNpuCapabilities();
     assert(typeof npu.available === 'boolean');
     assert(typeof npu.vendor === 'string');
@@ -146,7 +147,7 @@ function runTests() {
   });
 
   // 10. Negative Prompt Configuration
-  it('getDefaultNegativePrompt and setDefaultNegativePrompt manage global negative guidance', () => {
+  await it('getDefaultNegativePrompt and setDefaultNegativePrompt manage global negative guidance', () => {
     setDefaultNegativePrompt(null);
     assert.strictEqual(getDefaultNegativePrompt(), null);
 
@@ -161,10 +162,27 @@ function runTests() {
     assert.strictEqual(getDefaultNegativePrompt(), null);
   });
 
+  // 11. Cancellation Propagation (AbortSignal)
+  await it('generate respects pre-aborted AbortSignal immediately', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    let caught = false;
+    try {
+      await generate({ prompt: 'test prompt', signal: controller.signal });
+    } catch (err) {
+      caught = true;
+      assert(err.message.includes('aborted'));
+    }
+    assert.strictEqual(caught, true, 'Pre-aborted signal should reject immediately');
+  });
+
   console.log(`\n[RESULT] Node.js Test Results: ${passed}/${total} Passed.`);
   if (passed !== total) {
     process.exit(1);
   }
 }
 
-runTests();
+runTests().catch((err) => {
+  console.error('[FAIL] Test execution error:', err);
+  process.exit(1);
+});

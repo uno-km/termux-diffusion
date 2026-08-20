@@ -687,7 +687,7 @@ async function downloadModel(modelNameOrUrl, options = {}) {
     return finalPath;
   }
 
-  const tempPath = path.join(targetDir, `${targetFilename}.part`);
+  const tempPath = path.join(targetDir, `${targetFilename}.${process.pid}.part`);
   console.log(`[Download] [termux-diffusion] Downloading model '${targetFilename}' (${downloadUrl})...`);
 
   await new Promise((resolve, reject) => {
@@ -938,6 +938,10 @@ async function generate(options) {
     throw new Error('Prompt is required for generation');
   }
 
+  if (options.signal && options.signal.aborted) {
+    throw new Error('Inference aborted by signal');
+  }
+
   const prompt = options.prompt;
   const model = options.model || 'realistic';
   const rawDevice = options.device || 'cpu';
@@ -1051,6 +1055,19 @@ async function generate(options) {
       const proc = spawn(sdCli, cmdArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
       let stderrBuffer = '';
 
+      let onAbort = null;
+      if (options.signal) {
+        if (options.signal.aborted) {
+          safeKillProcess(proc);
+          return reject(new Error('Inference aborted by signal'));
+        }
+        onAbort = () => {
+          safeKillProcess(proc);
+          reject(new Error('Inference aborted by signal'));
+        };
+        options.signal.addEventListener('abort', onAbort, { once: true });
+      }
+
       proc.stdout.on('data', (d) => {
         const str = d.toString();
         if (str.toLowerCase().includes('step') || str.includes('%')) {
@@ -1081,6 +1098,9 @@ async function generate(options) {
       proc.on('close', (code) => {
         clearTimeout(timer);
         process.removeListener('exit', onHostExit);
+        if (onAbort && options.signal) {
+          options.signal.removeEventListener('abort', onAbort);
+        }
         if (code === 0 && fs.existsSync(outPath)) {
           resolve();
         } else {
@@ -1092,6 +1112,9 @@ async function generate(options) {
       proc.on('error', (err) => {
         clearTimeout(timer);
         process.removeListener('exit', onHostExit);
+        if (onAbort && options.signal) {
+          options.signal.removeEventListener('abort', onAbort);
+        }
         reject(err);
       });
     });

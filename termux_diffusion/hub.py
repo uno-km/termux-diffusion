@@ -282,25 +282,26 @@ def download_model(
         logger.info("Model '%s' already cached at: %s", model_name_or_url, final_path)
         return final_path
 
-    temp_path = target_dir / f"{target_filename}.part"
+    temp_path = target_dir / f"{target_filename}.{os.getpid()}.part"
     logger.info("Downloading '%s' from %s -> %s", model_name_or_url, download_url, final_path)
     print(f"[termux-diffusion] Fetching model '{target_filename}' ({download_url})...")
 
     # Attempt download with streaming chunk writer and HTTP Range resume support
     try:
         _stream_download(download_url, temp_path, progress_callback)
-        temp_path.rename(final_path)
+        os.replace(temp_path, final_path)
 
         # Integrity Check
         if expected_sha256:
             print(f"[termux-diffusion] Verifying SHA256 integrity checksum...")
             if not verify_file_sha256(final_path, expected_sha256):
-                final_path.unlink()
+                final_path.unlink(missing_ok=True)
                 raise ModelDownloadError(f"SHA256 checksum mismatch for downloaded model '{target_filename}'")
 
         print(f"[termux-diffusion] Successfully cached model at: {final_path}")
         return final_path
     except Exception as exc:
+        temp_path.unlink(missing_ok=True)
         raise ModelDownloadError(f"Failed downloading model '{model_name_or_url}' from {download_url}: {exc}") from exc
 
 
@@ -335,8 +336,9 @@ def _stream_download(
                 req = urllib.request.Request(url, headers={"User-Agent": "termux-diffusion/1.1.0"})
                 continue
             elif e.code in (429, 503) and attempt < 2:
-                retry_after = 1.5 * (attempt + 1)
-                logger.warning("HTTP %d Rate Limited. Retrying in %.1fs (attempt %d/2)...", e.code, retry_after, attempt + 1)
+                import random
+                retry_after = random.uniform(0.8, 1.6) * (attempt + 1)
+                logger.warning("HTTP %d Rate Limited. Retrying in %.2fs with jitter (attempt %d/2)...", e.code, retry_after, attempt + 1)
                 time.sleep(retry_after)
                 continue
             else:

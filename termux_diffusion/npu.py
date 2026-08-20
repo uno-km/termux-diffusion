@@ -149,8 +149,8 @@ def detect_npu_capabilities() -> NPUProfile:
             driver_library=qnn_lib,
             dsp_architecture=dsp_arch,
             tops_rating=tops if has_driver else 0.0,
-            supported_precisions=["INT4", "INT8", "FP16"],
-            delegate_type="QNN_HTP_DELEGATE",
+            supported_precisions=["INT4", "INT8", "FP16"] if has_driver else [],
+            delegate_type="QNN_HTP_DELEGATE" if has_driver else None,
             acceleration_status="Operational (Qualcomm Hexagon Tensor Core)" if has_driver else "SoC Detected (Driver inaccessible or SELinux restricted)",
         )
 
@@ -179,8 +179,8 @@ def detect_npu_capabilities() -> NPUProfile:
             driver_library=eden_lib,
             dsp_architecture=dsp_arch,
             tops_rating=tops if has_driver else 0.0,
-            supported_precisions=["INT8", "FP16"],
-            delegate_type="EXYNOS_ENN_DELEGATE",
+            supported_precisions=["INT8", "FP16"] if has_driver else [],
+            delegate_type="EXYNOS_ENN_DELEGATE" if has_driver else None,
             acceleration_status="Operational (Samsung Exynos NPU)" if has_driver else "SoC Detected (Driver inaccessible or SELinux restricted)",
         )
 
@@ -197,8 +197,8 @@ def detect_npu_capabilities() -> NPUProfile:
             driver_library=tpu_lib,
             dsp_architecture="Google Edge TPU (Custom Tensor Core)",
             tops_rating=20.0 if has_driver else 0.0,
-            supported_precisions=["INT8", "FP16"],
-            delegate_type="EDGETPU_DELEGATE",
+            supported_precisions=["INT8", "FP16"] if has_driver else [],
+            delegate_type="EDGETPU_DELEGATE" if has_driver else None,
             acceleration_status="Operational (Google Edge TPU Core)" if has_driver else "SoC Detected (Driver inaccessible or SELinux restricted)",
         )
 

@@ -219,9 +219,9 @@ function detectNpuCapabilities() {
       vendor: 'Qualcomm',
       dspArchitecture: arch,
       topsRating: hasDriver ? tops : 0.0,
-      supportedPrecisions: ['INT8', 'INT16', 'FP16'],
+      supportedPrecisions: hasDriver ? ['INT8', 'INT16', 'FP16'] : [],
       driverLibrary: driver,
-      recommendedDelegate: 'qnn_htp'
+      recommendedDelegate: hasDriver ? 'qnn_htp' : null
     };
   }
 
@@ -245,9 +245,9 @@ function detectNpuCapabilities() {
       vendor: 'Samsung',
       dspArchitecture: arch,
       topsRating: hasDriver ? tops : 0.0,
-      supportedPrecisions: ['INT8', 'FP16'],
+      supportedPrecisions: hasDriver ? ['INT8', 'FP16'] : [],
       driverLibrary: driver,
-      recommendedDelegate: 'samsung_eden'
+      recommendedDelegate: hasDriver ? 'samsung_eden' : null
     };
   }
 
@@ -268,9 +268,9 @@ function detectNpuCapabilities() {
       vendor: 'Google',
       dspArchitecture: isG3 ? 'EdgeTPU v3' : isG2 ? 'EdgeTPU v2' : 'EdgeTPU v1',
       topsRating: hasDriver ? (isG3 ? 35.0 : 20.0) : 0.0,
-      supportedPrecisions: ['INT8', 'INT16'],
+      supportedPrecisions: hasDriver ? ['INT8', 'INT16'] : [],
       driverLibrary: driver,
-      recommendedDelegate: 'google_edgetpu'
+      recommendedDelegate: hasDriver ? 'google_edgetpu' : null
     };
   }
 

@@ -117,21 +117,36 @@ def provision_engine(force: bool = False) -> Path:
 
     if not repo_dir.exists():
         print(f"[termux-diffusion] Cloning {SD_CPP_REPO}...")
-        res = subprocess.run(["git", "clone", SD_CPP_REPO, str(repo_dir)], capture_output=True, text=True)
-        if res.returncode != 0:
-            raise ProvisioningError(f"Failed cloning stable-diffusion.cpp repository: {res.stderr}")
+        try:
+            res = subprocess.run(
+                ["git", "clone", SD_CPP_REPO, str(repo_dir)],
+                capture_output=True,
+                text=True,
+                timeout=30.0
+            )
+            if res.returncode != 0:
+                raise ProvisioningError(f"Failed cloning stable-diffusion.cpp repository: {res.stderr.strip()}")
+        except subprocess.TimeoutExpired:
+            raise ProvisioningError(
+                "Network timeout (30s) while cloning stable-diffusion.cpp. "
+                "Please check your internet connection or install sd-cli manually."
+            )
 
     # Step 3: Crucial Submodule Update (Ensures ggml is present)
     print("[termux-diffusion] Synchronizing tensor submodules (ggml)...")
-    sub_res = subprocess.run(
-        ["git", "submodule", "update", "--init", "--recursive"],
-        cwd=str(repo_dir),
-        capture_output=True,
-        text=True,
-        check=False
-    )
-    if sub_res.returncode != 0:
-        logger.warning("Git submodule sync note: %s", sub_res.stderr)
+    try:
+        sub_res = subprocess.run(
+            ["git", "submodule", "update", "--init", "--recursive"],
+            cwd=str(repo_dir),
+            capture_output=True,
+            text=True,
+            timeout=45.0,
+            check=False
+        )
+        if sub_res.returncode != 0:
+            logger.warning("Git submodule sync note: %s", sub_res.stderr)
+    except subprocess.TimeoutExpired:
+        logger.warning("Submodule sync timed out after 45s. Proceeding with existing source files.")
 
     # Step 4: CMake & Compilation - Use hardware-detected optimal flags
     build_dir = repo_dir / "build"
@@ -162,16 +177,22 @@ def provision_engine(force: bool = False) -> Path:
         text=True
     )
     if cmake_res.returncode != 0:
-        raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr}")
+        raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr.strip()}")
 
     print("[termux-diffusion] Compiling native Bionic binary with clang (make -j4)...")
     make_res = subprocess.run(
         ["make", "-j4"],
         cwd=str(build_dir),
-        capture_output=False
+        capture_output=True,
+        text=True
     )
     if make_res.returncode != 0:
-        raise ProvisioningError("Compilation failed. Please run 'termux-diffusion doctor' to diagnose missing headers.")
+        err_tail = "\n".join(make_res.stderr.strip().splitlines()[-10:]) if make_res.stderr else "No compiler error output"
+        raise ProvisioningError(
+            f"Compilation failed with exit code {make_res.returncode}.\n"
+            f"Compiler Error:\n{err_tail}\n"
+            "Please run 'termux-diffusion doctor' to diagnose missing headers."
+        )
 
     # Locate compiled binary
     compiled_bin = None

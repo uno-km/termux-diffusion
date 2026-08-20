@@ -322,17 +322,28 @@ def _stream_download(
     req = urllib.request.Request(url, headers=headers)
     is_resumed = False
 
-    try:
-        resp = urllib.request.urlopen(req, timeout=30.0)
-    except urllib.error.HTTPError as e:
-        if e.code == 416:  # Range Not Satisfiable (file may be fully downloaded or invalid range)
-            logger.debug("HTTP 416 Range Not Satisfiable; resetting temp file.")
-            temp_path.unlink(missing_ok=True)
-            existing_bytes = 0
-            req = urllib.request.Request(url, headers={"User-Agent": "termux-diffusion/1.1.0"})
+    resp = None
+    for attempt in range(3):
+        try:
             resp = urllib.request.urlopen(req, timeout=30.0)
-        else:
-            raise
+            break
+        except urllib.error.HTTPError as e:
+            if e.code == 416:  # Range Not Satisfiable
+                logger.debug("HTTP 416 Range Not Satisfiable; resetting temp file.")
+                temp_path.unlink(missing_ok=True)
+                existing_bytes = 0
+                req = urllib.request.Request(url, headers={"User-Agent": "termux-diffusion/1.1.0"})
+                continue
+            elif e.code in (429, 503) and attempt < 2:
+                retry_after = 1.5 * (attempt + 1)
+                logger.warning("HTTP %d Rate Limited. Retrying in %.1fs (attempt %d/2)...", e.code, retry_after, attempt + 1)
+                time.sleep(retry_after)
+                continue
+            else:
+                raise
+
+    if resp is None:
+        raise ModelDownloadError(f"Failed opening connection to '{url}' after 3 attempts.")
 
     with resp:
         status_code = resp.status if hasattr(resp, "status") else 200
@@ -352,26 +363,36 @@ def _stream_download(
         downloaded = existing_bytes
         chunk_size = 1024 * 1024  # 1MB chunks
 
-        with open(temp_path, file_mode) as f:
-            last_print = time.time()
-            while True:
-                chunk = resp.read(chunk_size)
-                if not chunk:
-                    break
-                f.write(chunk)
-                downloaded += len(chunk)
+        try:
+            with open(temp_path, file_mode) as f:
+                last_print = time.time()
+                while True:
+                    chunk = resp.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
 
-                if progress_callback:
-                    progress_callback(downloaded, total_size)
-                elif total_size > 0 and (time.time() - last_print > 0.5):
-                    pct = (downloaded / total_size) * 100
-                    mb_done = downloaded / (1024 * 1024)
-                    mb_total = total_size / (1024 * 1024)
-                    print(f"  > Progress: {mb_done:.1f}MB / {mb_total:.1f}MB ({pct:.1f}%) [Resumed: {'Y' if is_resumed else 'N'}]", end="\r", flush=True)
-                    last_print = time.time()
+                    if progress_callback:
+                        progress_callback(downloaded, total_size)
+                    elif total_size > 0 and (time.time() - last_print > 0.5):
+                        pct = (downloaded / total_size) * 100
+                        mb_done = downloaded / (1024 * 1024)
+                        mb_total = total_size / (1024 * 1024)
+                        print(f"  > Progress: {mb_done:.1f}MB / {mb_total:.1f}MB ({pct:.1f}%) [Resumed: {'Y' if is_resumed else 'N'}]", end="\r", flush=True)
+                        last_print = time.time()
 
-            if total_size > 0:
-                print(f"  > Progress: {total_size / (1024*1024):.1f}MB / {total_size / (1024*1024):.1f}MB (100.0%)")
+                if total_size > 0:
+                    print(f"  > Progress: {total_size / (1024*1024):.1f}MB / {total_size / (1024*1024):.1f}MB (100.0%)")
+        except OSError as err:
+            import errno
+            if err.errno == errno.ENOSPC or "space" in str(err).lower():
+                temp_path.unlink(missing_ok=True)
+                raise ModelDownloadError(
+                    f"Insufficient disk space on device while downloading model '{temp_path.name}'. "
+                    "Please free up at least 2GB of internal storage."
+                ) from err
+            raise
 
     print()  # newline after completion
 

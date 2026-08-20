@@ -722,6 +722,11 @@ async function downloadModel(modelNameOrUrl, options = {}) {
           }
           return fetchUrl(currentUrl);
         }
+        if ((res.statusCode === 429 || res.statusCode === 503)) {
+          console.warn(`[termux-diffusion] Notice: HTTP ${res.statusCode} Rate limited. Retrying in 2.0s...`);
+          setTimeout(() => fetchUrl(currentUrl), 2000);
+          return;
+        }
         if (res.statusCode !== 200 && res.statusCode !== 206) {
           return reject(new Error(`Failed with HTTP ${res.statusCode} from ${currentUrl}`));
         }
@@ -732,9 +737,18 @@ async function downloadModel(modelNameOrUrl, options = {}) {
         let downloadedBytes = isResumed ? existingBytes : 0;
         const fileStream = fs.createWriteStream(tempPath, { flags: isResumed ? 'a' : 'w' });
 
+        fileStream.on('error', (err) => {
+          res.destroy();
+          reject(err);
+        });
+
         res.on('data', (chunk) => {
           downloadedBytes += chunk.length;
-          fileStream.write(chunk);
+          const ok = fileStream.write(chunk);
+          if (!ok) {
+            res.pause();
+            fileStream.once('drain', () => res.resume());
+          }
           if (totalBytes > 0) {
             const pct = ((downloadedBytes / totalBytes) * 100).toFixed(1);
             const mbDone = (downloadedBytes / (1024 * 1024)).toFixed(1);
@@ -753,7 +767,7 @@ async function downloadModel(modelNameOrUrl, options = {}) {
         });
 
         res.on('error', (err) => {
-          fileStream.close();
+          fileStream.destroy();
           reject(err);
         });
       });

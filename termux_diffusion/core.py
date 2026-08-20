@@ -5,6 +5,7 @@ import logging
 import os
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -79,11 +80,13 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
 
 DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT = "lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"
 _global_default_negative_prompt: Optional[str] = None
+_negative_prompt_lock = threading.Lock()
 
 
 def get_default_negative_prompt() -> Optional[str]:
     """Get the currently configured default negative prompt (None by default)."""
-    return _global_default_negative_prompt
+    with _negative_prompt_lock:
+        return _global_default_negative_prompt
 
 
 def set_default_negative_prompt(prompt: Optional[str]) -> None:
@@ -93,7 +96,11 @@ def set_default_negative_prompt(prompt: Optional[str]) -> None:
         prompt: Custom negative prompt string, or None to disable default negative guidance.
     """
     global _global_default_negative_prompt
-    _global_default_negative_prompt = prompt.strip() if (prompt and prompt.strip()) else None
+    with _negative_prompt_lock:
+        if prompt is not None and not str(prompt).strip():
+            _global_default_negative_prompt = None
+        else:
+            _global_default_negative_prompt = str(prompt).strip() if prompt is not None else None
 
 
 def get_quality_guard_negative_prompt() -> str:
@@ -227,11 +234,15 @@ def generate(
                 universal_newlines=True
             )
 
+            recent_logs = []
             # Stream real-time progress to terminal
             if process.stdout:
                 for line in process.stdout:
                     line_str = line.strip()
                     if line_str:
+                        recent_logs.append(line_str)
+                        if len(recent_logs) > 20:
+                            recent_logs.pop(0)
                         if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
                             print(f"  > {line_str}")
                         else:
@@ -239,7 +250,10 @@ def generate(
 
             process.wait(timeout=timeout)
             if process.returncode != 0:
-                raise TermuxDiffusionError(f"Engine process failed with return code {process.returncode}")
+                err_detail = "\n".join(recent_logs[-5:]) if recent_logs else "No engine output"
+                raise TermuxDiffusionError(
+                    f"Engine process failed with return code {process.returncode}.\nDetails:\n{err_detail}"
+                )
         except KeyboardInterrupt:
             _safe_kill_process(process)
             print("\n[termux-diffusion] Inference interrupted by user. Child processes terminated safely.")

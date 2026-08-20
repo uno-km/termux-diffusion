@@ -90,13 +90,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.command == "models":
         print("\n--- [Presets] Available Presets ---")
         for k, v in list_presets().items():
-            print(f"  • {k:12} : {v['description']} ({v.get('size_mb', 0)}MB)")
+            print(f"  - {k:12} : {v['description']} ({v.get('size_mb', 0)}MB)")
         print("\n--- [Models] Locally Cached Models ---")
         cached = list_cached_models()
         if not cached:
             print("  (No models cached yet. Run 'termux-diffusion download <model>' or generate)")
         for m in cached:
-            print(f"  • {m['name']:25} [{m['size_mb']} MB] -> {m['path']}")
+            print(f"  - {m['name']:25} [{m['size_mb']} MB] -> {m['path']}")
         print()
         return 0
 

@@ -190,19 +190,19 @@ index_html = f"""<!DOCTYPE html>
 
             <!-- 1. 초고속 설치 (Installation First) -->
             <div class="alert alert-tip" style="margin-top: 20px;">
-                <span class="alert-title" data-i18n="home.quickInstallTitle">⚡ 1. 1-Line Quick Installation (초고속 설치)</span>
+                <span class="alert-title" data-i18n="home.quickInstallTitle">[Instant] 1. 1-Line Quick Installation (초고속 설치)</span>
                 <p data-i18n="home.quickInstallDesc">Select your runtime and run the 1-line installation in Termux:</p>
                 <div style="margin-top: 12px;">
-                    <h4 style="margin: 8px 0 4px 0; color: #0055cc;">🐍 Python (PyPI):</h4>
+                    <h4 style="margin: 8px 0 4px 0; color: #0055cc;">[Python] Python (PyPI):</h4>
                     <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
-                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js / TypeScript (npm):</h4>
+                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">[Node.js] Node.js / TypeScript (npm):</h4>
                     <pre><code>npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
                 </div>
             </div>
 
             <!-- 2. 즉시 실행 & 생성 방법 (Execution Next) -->
             <div class="card" style="margin-bottom: 24px;">
-                <h3 style="margin-top: 0; color: var(--primary-color);">🎨 2. Quick Execution (즉시 실행 및 이미지 생성)</h3>
+                <h3 style="margin-top: 0; color: var(--primary-color);">[Models] 2. Quick Execution (즉시 실행 및 이미지 생성)</h3>
                 
                 <h4 style="margin: 12px 0 6px 0;">Option A: CLI 1줄 터미널 생성 (No Code)</h4>
                 <pre><code>termux-diffusion generate "RAW photo, portrait of developer, photorealistic" -m realistic</code></pre>
@@ -249,19 +249,19 @@ main();</code></pre>
             <div class="features-grid">
                 <a href="installation.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">📖 Installation Guide</h4>
+                        <h4 style="color: var(--primary-color);">[Docs] Installation Guide</h4>
                         <p>상황별 1/2/3단계 설치 안내 (새 폰, 이미 설치된 유저, 커스텀 모델).</p>
                     </div>
                 </a>
                 <a href="quickstart.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">⚡ Quickstart &amp; Recipes</h4>
+                        <h4 style="color: var(--primary-color);">[Instant] Quickstart &amp; Recipes</h4>
                         <p>실사 포토리얼리즘, 초저지연 모바일 프로토타이핑, GPU 가속 레시피.</p>
                     </div>
                 </a>
                 <a href="models.html" style="text-decoration: none; color: inherit;">
                     <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">🎨 Model Hub &amp; Presets</h4>
+                        <h4 style="color: var(--primary-color);">[Models] Model Hub &amp; Presets</h4>
                         <p>5대 모바일 GGUF 프리셋, 모델 별명 등록 및 SD카드 스토리지 라우팅.</p>
                     </div>
                 </a>
@@ -531,7 +531,7 @@ api_reference_html = f"""<!DOCTYPE html>
             <h2 data-i18n="api.title">100% Full API Reference Manual</h2>
             <p data-i18n="api.subtitle">Comprehensive public interface specification for <code>termux_diffusion</code> (Python) and <code>termux-diffusion</code> (Node.js).</p>
 
-            <h3>1. <code>generate(...)</code> — Main Image Generation Function</h3>
+            <h3>1. <code>generate(...)</code> - Main Image Generation Function</h3>
             <table class="data-table">
                 <thead>
                     <tr>
@@ -808,7 +808,7 @@ versions_html = f"""<!DOCTYPE html>
 
             <div class="card" style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; color: var(--primary-color);">v1.0.0 — Genesis Release</h3>
+                    <h3 style="margin: 0; color: var(--primary-color);">v1.0.0 - Genesis Release</h3>
                     <span class="release-tag">2026-08-20</span>
                 </div>
                 <ul style="margin-top: 12px; line-height: 1.8;">

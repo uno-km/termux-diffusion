@@ -25,7 +25,7 @@ const command = args[0];
 
 function printHelp() {
   console.log(`
-[Render] termux-diffusion CLI (v1.0.0) — On-Device AI Image Generation for Samsung Galaxy & Termux
+[Render] termux-diffusion CLI (v1.0.0) - On-Device AI Image Generation for Samsung Galaxy & Termux
 
 Usage:
   npx termux-diffusion <command> [options]
@@ -117,13 +117,13 @@ function runDoctor() {
   const hw = detectHardwareProfile();
   console.log(`6. Hardware Profile: SoC=${hw.socName}, GPU=${hw.gpuName}, Vulkan=${hw.vulkanAvailable ? 'Available [OK]' : 'Not Found [WARN]'}`);
   if (hw.npuProfile && hw.npuProfile.available) {
-    console.log(`   ↳ NPU Hardware: Detected (${hw.npuProfile.dspArchitecture}, ${hw.npuProfile.topsRating} TOPS) [v2.0 QNN runtime pending]`);
+    console.log(`   -> NPU Hardware: Detected (${hw.npuProfile.dspArchitecture}, ${hw.npuProfile.topsRating} TOPS) [v2.0 QNN runtime pending]`);
   }
-  console.log(`   ↳ Active Backend: ${hw.recommendedBackend.toUpperCase()} (Offload layers: ${hw.recommendedNgl})`);
+  console.log(`   -> Active Backend: ${hw.recommendedBackend.toUpperCase()} (Offload layers: ${hw.recommendedNgl})`);
 
   if (isTermux) {
     console.log('7. Android 12+ Background Stability Guard:');
-    console.log('   ↳ Tip: If generation crashes when Termux is in background, enable');
+    console.log('   -> Tip: If generation crashes when Termux is in background, enable');
     console.log('          "Developer Options > Disable child process restrictions"');
     console.log('          or run: adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"');
   }
@@ -166,7 +166,7 @@ async function main() {
   } else if (command === 'models') {
     console.log('\n--- [Presets] Available Presets ---');
     for (const [k, v] of Object.entries(listPresets())) {
-      console.log(`  • ${k.padEnd(12)} : ${v.description} (${v.size_mb}MB)`);
+      console.log(`  - ${k.padEnd(12)} : ${v.description} (${v.size_mb}MB)`);
     }
     console.log('\n--- [Models] Locally Cached Models ---');
     const cached = listCachedModels();
@@ -174,7 +174,7 @@ async function main() {
       console.log('  (No models cached yet. Run npx termux-diffusion download <model>)');
     }
     for (const m of cached) {
-      console.log(`  • ${m.name.padEnd(25)} [${m.size_mb} MB] -> ${m.path}`);
+      console.log(`  - ${m.name.padEnd(25)} [${m.size_mb} MB] -> ${m.path}`);
     }
     console.log();
   } else if (command === 'download') {

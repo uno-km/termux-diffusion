@@ -63,9 +63,9 @@ class HardwareProfile:
     cmake_extra_flags: List[str] = field(default_factory=list)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # 1. CPU & GPU Feature Detection
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 _VULKAN_LIB_SEARCH_PATHS = [
     "/system/lib64/libvulkan.so",
@@ -207,9 +207,9 @@ def _probe_opencl_driver() -> Optional[GPUDriverInfo]:
     return None
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # 2. Main Hardware Profiler
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 def detect_hardware_profile() -> HardwareProfile:
     """Run comprehensive hardware detection across CPU, GPU, NPU, and TPU."""
@@ -301,9 +301,9 @@ def _build_cmake_flags(profile: HardwareProfile) -> List[str]:
     return flags
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # 3. Device Selection for generate()
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
     """Resolve the user's device= argument to an actual backend and ngl count."""
@@ -375,16 +375,16 @@ def format_hardware_report(profile: HardwareProfile) -> str:
         f"GPU Vulkan: {'Available [OK]' if profile.vulkan_available else 'Not Found [WARN]'}",
     ]
     if profile.vulkan_driver:
-        lines.append(f"  ↳ Vulkan Lib: {profile.vulkan_driver.library_path}")
+        lines.append(f"  -> Vulkan Lib: {profile.vulkan_driver.library_path}")
     lines.append(f"GPU OpenCL: {'Available [OK]' if profile.opencl_available else 'Not Found [WARN]'}")
     if profile.opencl_driver:
-        lines.append(f"  ↳ OpenCL Lib: {profile.opencl_driver.library_path}")
+        lines.append(f"  -> OpenCL Lib: {profile.opencl_driver.library_path}")
     
     if profile.npu_profile and profile.npu_profile.available:
         lines.append(f"NPU / TPU Hardware: Detected [INFO] ({profile.npu_profile.dsp_architecture})")
-        lines.append(f"  ↳ Peak Hardware Spec: {profile.npu_profile.tops_rating} TOPS")
-        lines.append(f"  ↳ Driver Library: {profile.npu_profile.driver_library}")
-        lines.append(f"  ↳ Runtime Status: Native QNN C++ execution scheduled for v2.0 (Active: Vulkan GPU & ARM NEON)")
+        lines.append(f"  -> Peak Hardware Spec: {profile.npu_profile.tops_rating} TOPS")
+        lines.append(f"  -> Driver Library: {profile.npu_profile.driver_library}")
+        lines.append(f"  -> Runtime Status: Native QNN C++ execution scheduled for v2.0 (Active: Vulkan GPU & ARM NEON)")
     else:
         lines.append("NPU / TPU Hardware: Not Detected (CPU/GPU pipeline active)")
         

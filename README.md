@@ -14,11 +14,11 @@
 
 ## 1. Quick Scenario Playbook (사용자 상황별 초간단 가이드)
 
-### 🐣 Scenario 1: Clean Install (아무것도 설치되지 않은 사용자 / Termux 처음)
+### [Install] Scenario 1: Clean Install (아무것도 설치되지 않은 사용자 / Termux 처음)
 
 Open the Termux application and execute the 2 commands for your preferred runtime:
 
-#### 🐍 Python:
+#### [Python] Python:
 ```bash
 # 1. Grant Android Storage Permission (Tap 'Allow' on the Android OS prompt)
 termux-setup-storage
@@ -28,7 +28,7 @@ pkg update -y && pkg install python clang cmake git termux-api wget -y
 pip install termux-diffusion && termux-diffusion-install
 ```
 
-#### ☕ Node.js / TypeScript:
+#### [Node.js] Node.js / TypeScript:
 ```bash
 # 1. Grant Android Storage Permission
 termux-setup-storage
@@ -40,7 +40,7 @@ npm install -g termux-diffusion && npx termux-diffusion install
 
 ---
 
-### ⚡ Scenario 2: Instant Generation (이미 설치된 사용자)
+### [Instant] Scenario 2: Instant Generation (이미 설치된 사용자)
 
 #### Option A: One-Line CLI Generation (No Coding Required)
 * **Python CLI:**
@@ -79,7 +79,7 @@ npm install -g termux-diffusion && npx termux-diffusion install
 
 ---
 
-### 🎨 Scenario 3: Custom Models & External Weights (커스텀 모델 사용)
+### [Models] Scenario 3: Custom Models & External Weights (커스텀 모델 사용)
 
 #### Case A: Direct Hugging Face Repository
 Provide any Hugging Face repo ID and `.gguf` file path. The engine auto-streams, caches, and runs it:
@@ -111,7 +111,7 @@ register_model("waifu", repo_id="second-state/DreamShaper-8-GGUF", filename="dre
 generate("magical forest with fairies", model="waifu")
 ```
 
-#### 🚀 Hardware Acceleration Target (`device`):
+#### [Engine] Hardware Acceleration Target (`device`):
 ```python
 # Offload compute to mobile GPU (Adreno / Samsung Xclipse)
 generate("speedy race car", model="speed", device="gpu")
@@ -133,7 +133,7 @@ generate("speedy race car", model="speed", device="gpu")
 
 ## 3. Comprehensive 100% Function & API Reference
 
-### 3.1 `generate(...)` — Primary Synthesis Function
+### 3.1 `generate(...)` - Primary Synthesis Function
 
 Full parameter specification for Python and Node.js:
 
@@ -262,24 +262,24 @@ print(f"Doctor Health Status: {'PASSED' if report.is_ready else 'FAILED'}")
 
 ---
 
-## 5. 🛡️ Android 12 / 13 / 14+ Phantom Process Killer & Background Crash Prevention
+## 5. [Security] Android 12 / 13 / 14+ Phantom Process Killer & Background Crash Prevention
 
 안드로이드 12(API 31) 이상 기기에서 백그라운드 추론 시 OS가 자식 프로세스(`sd-cli`)를 강제 종료하는 **Phantom Process Killer**를 방지하기 위한 필수 권장 설정입니다:
 
-### 1️⃣ 스마트폰 개발자 옵션 설정 (Android 12L / 13 / 14+)
-1. 스마트폰 `설정` → `휴대전화 정보` → `소프트웨어 정보` → `빌드번호`를 7번 연속 터치하여 **개발자 옵션**을 활성화합니다.
-2. `설정` → `개발자 옵션`으로 이동합니다.
+### 1. 스마트폰 개발자 옵션 설정 (Android 12L / 13 / 14+)
+1. 스마트폰 `설정` -> `휴대전화 정보` -> `소프트웨어 정보` -> `빌드번호`를 7번 연속 터치하여 **개발자 옵션**을 활성화합니다.
+2. `설정` -> `개발자 옵션`으로 이동합니다.
 3. **`하위 프로세스 제한 비활성화(Disable child process restrictions)`** 옵션을 켭니다.
 
-### 2️⃣ ADB 명령어를 통한 원천 무력화 (PC 연결 1회 실행)
+### 2. ADB 명령어를 통한 원천 무력화 (PC 연결 1회 실행)
 PC와 스마트폰을 USB로 연결한 후 다음 명령어를 실행하면 하위 프로세스 제한이 영구적으로 해제됩니다:
 ```bash
 adb shell "/system/bin/device_config set_sync_disabled_for_tests persistent"
 adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"
 ```
 
-### 3️⃣ Termux 배터리 최적화 예외 및 상단 바 알림 고정
-* **배터리 최적화 예외:** 스마트폰 `설정` → `애플리케이션` → `Termux` → `배터리` → **`제한 없음(Unrestricted)`** 선택.
+### 3. Termux 배터리 최적화 예외 및 상단 바 알림 고정
+* **배터리 최적화 예외:** 스마트폰 `설정` -> `애플리케이션` -> `Termux` -> `배터리` -> **`제한 없음(Unrestricted)`** 선택.
 * **상단 바 알림 고정:** Termux 실행 후 상단 알림 바에서 `Acquire wakelock`을 터치하거나 알림을 유지합니다.
 
 ---
@@ -297,7 +297,7 @@ adb shell "/system/bin/device_config put activity_manager max_phantom_processes 
 
 ## 6. The AMEVA Mobile AI & Automation Ecosystem
 
-* **📱 [Termux-Playwright](https://github.com/uno-km/termux-playwright-demo)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [📖 Official Docs](https://uno-km.github.io/termux-playwright-demo/)): Production headless Chromium browser automation for Android Termux.
+* **[Mobile] [Termux-Playwright](https://github.com/uno-km/termux-playwright-demo)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [[Docs] Official Docs](https://uno-km.github.io/termux-playwright-demo/)): Production headless Chromium browser automation for Android Termux.
   * **Python:** `pip install termux-playwright && termux-playwright-install`
   * **Node.js:** `npm install termux-playwright && npx termux-playwright install`
 

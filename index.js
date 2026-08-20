@@ -17,7 +17,7 @@ const DEFAULT_PRESETS = {
     repo_id: 'second-state/Realistic_Vision_V6.0_B1-GGUF',
     filename: 'realisticVisionV60B1_v51HyperVAE-Q4_k.gguf',
     alias: 'realistic.gguf',
-    description: 'Realistic Vision V6.0 B1 (Q4_K) — Ultra-detailed photorealistic portraits',
+    description: 'Realistic Vision V6.0 B1 (Q4_K) - Ultra-detailed photorealistic portraits',
     size_mb: 1620,
     default_steps: 10,
     default_cfg: 4.0
@@ -26,7 +26,7 @@ const DEFAULT_PRESETS = {
     repo_id: 'gpustack/stable-diffusion-v1-5-GGUF',
     filename: 'stable-diffusion-v1-5-Q4_1.gguf',
     alias: 'lightning.gguf',
-    description: 'Stable Diffusion 1.5 (Q4_1) — Fast general-purpose base model',
+    description: 'Stable Diffusion 1.5 (Q4_1) - Fast general-purpose base model',
     size_mb: 1590,
     default_steps: 10,
     default_cfg: 4.0
@@ -35,7 +35,7 @@ const DEFAULT_PRESETS = {
     repo_id: 'gpustack/SDXS-512-0.9-GGUF',
     filename: 'sdxs-512-0.9-Q4_0.gguf',
     alias: 'sdxs.gguf',
-    description: 'SDXS 512-0.9 (Q4_0) — Ultra-lightweight mobile-optimized 2-3 step model (~450MB)',
+    description: 'SDXS 512-0.9 (Q4_0) - Ultra-lightweight mobile-optimized 2-3 step model (~450MB)',
     size_mb: 450,
     default_steps: 2,
     default_cfg: 2.0
@@ -44,7 +44,7 @@ const DEFAULT_PRESETS = {
     repo_id: 'second-state/SD-Turbo-GGUF',
     filename: 'sd-turbo-Q4_0.gguf',
     alias: 'turbo.gguf',
-    description: 'SD Turbo (Q4_0) — Real-time 1-step inference model',
+    description: 'SD Turbo (Q4_0) - Real-time 1-step inference model',
     size_mb: 1200,
     default_steps: 1,
     default_cfg: 1.5
@@ -53,7 +53,7 @@ const DEFAULT_PRESETS = {
     repo_id: 'second-state/DreamShaper-8-GGUF',
     filename: 'dreamshaper-8-Q4_k.gguf',
     alias: 'anime.gguf',
-    description: 'DreamShaper 8 (Q4_K) — Stylized anime & 2.5D illustration art',
+    description: 'DreamShaper 8 (Q4_K) - Stylized anime & 2.5D illustration art',
     size_mb: 1650,
     default_steps: 10,
     default_cfg: 4.5
@@ -94,9 +94,9 @@ function validateGgufFile(filePath) {
   }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 // Hardware Detection Module (Node.js Parity for GPU, NPU, TPU, CPU)
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 
 const VULKAN_LIB_PATHS = [
   '/system/lib64/libvulkan.so',
@@ -469,9 +469,9 @@ function getSdCliGpuArgs(device, ngl) {
   return [];
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 // Memory & Optimal Thread Count
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 
 function getMemoryInfo() {
   const metrics = {
@@ -545,9 +545,9 @@ function getOptimalThreadCount() {
   return Math.max(1, Math.min(8, totalCores > 4 ? Math.floor(totalCores / 2) : totalCores));
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 // Cache and Hub
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 
 function getCacheDir() {
   if (activeCacheDir) return activeCacheDir;
@@ -641,9 +641,9 @@ function clearCache(cacheDir, modelName) {
   return count;
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 // Download Manager with HTTP Range Resumable Transfers
-// ──────────────────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------------------
 
 async function downloadModel(modelNameOrUrl, options = {}) {
   const targetDir = options.cacheDir ? path.resolve(options.cacheDir) : getCacheDir();

@@ -8,15 +8,15 @@ graph partitioning for mobile NPU/TPU chipsets on Android Termux:
 - Android Standard Neural Networks API (NNAPI)
 
 Heterogeneous execution pipeline design:
-┌────────────────────────────────────────────────────────────────────────┐
-│ Heterogeneous Diffusion Pipeline (Hetero-Diffusion)                    │
-├───────────────────┬───────────────────┬────────────────────────────────┤
-│ Text Encoder      │ Denoising UNet/DiT│ Latent VAE Decoder             │
-│ (CLIP ViT-L/14)   │ (860M-1.5B Params)│ (84M Params)                   │
-├───────────────────┼───────────────────┼────────────────────────────────┤
-│ CPU ARMv8.2-A     │ NPU / GPU Vulkan  │ GPU Vulkan 1.3 / FP16          │
-│ NEON FP16 Vector  │ QNN HTP / NNAPI   │ Low-latency Tiling Decoder     │
-└───────────────────┴───────────────────┴────────────────────────────────┘
++------------------------------------------------------------------------+
+| Heterogeneous Diffusion Pipeline (Hetero-Diffusion)                    |
++-------------------+-------------------+--------------------------------+
+| Text Encoder      | Denoising UNet/DiT| Latent VAE Decoder             |
+| (CLIP ViT-L/14)   | (860M-1.5B Params)| (84M Params)                   |
++-------------------+-------------------+--------------------------------+
+| CPU ARMv8.2-A     | NPU / GPU Vulkan  | GPU Vulkan 1.3 / FP16          |
+| NEON FP16 Vector  | QNN HTP / NNAPI   | Low-latency Tiling Decoder     |
++-------------------+-------------------+--------------------------------+
 """
 
 import logging
@@ -54,9 +54,9 @@ class NPUProfile:
     acceleration_status: str = "Not Available"
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # NPU Driver Search Paths on Android Bionic Filesystems
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 QUALCOMM_QNN_LIBS = [
     "/vendor/lib64/libQnnHtp.so",

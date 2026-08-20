@@ -126,11 +126,11 @@ def provision_engine(force: bool = False) -> Path:
             )
             if res.returncode != 0:
                 raise ProvisioningError(f"Failed cloning stable-diffusion.cpp repository: {res.stderr.strip()}")
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as exc:
             raise ProvisioningError(
                 "Network timeout (30s) while cloning stable-diffusion.cpp. "
                 "Please check your internet connection or install sd-cli manually."
-            )
+            ) from exc
 
     # Step 3: Crucial Submodule Update (Ensures ggml is present)
     print("[termux-diffusion] Synchronizing tensor submodules (ggml)...")

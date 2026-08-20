@@ -27,46 +27,46 @@ DEFAULT_PRESETS = MappingProxyType({
         "repo_id": "second-state/Realistic_Vision_V6.0_B1-GGUF",
         "filename": "realisticVisionV60B1_v51HyperVAE-Q4_k.gguf",
         "alias": "realistic.gguf",
-        "description": "Realistic Vision V6.0 B1 (Q4_K) - Ultra-detailed photorealistic portraits & scenes",
+        "description": "Realistic Vision V6.0 B1 (Q4_K) - Full SD1.5 photorealistic portraits (Needs 20-25 steps, CFG 7.0, DPM2 Karras)",
         "size_mb": 1547,
-        "default_steps": 10,
-        "default_cfg": 4.0,
+        "default_steps": 20,
+        "default_cfg": 7.0,
     },
     "speed": {
         "repo_id": "gpustack/stable-diffusion-v1-5-GGUF",
         "filename": "stable-diffusion-v1-5-Q4_1.gguf",
         "alias": "lightning.gguf",
-        "description": "Stable Diffusion 1.5 (Q4_1) - Fast general-purpose base model",
+        "description": "Stable Diffusion 1.5 Base (Q4_1) - General-purpose base model (Needs 15-20 steps, CFG 6.0)",
         "size_mb": 1682,
-        "default_steps": 10,
-        "default_cfg": 4.0,
+        "default_steps": 20,
+        "default_cfg": 6.0,
     },
     "sdxs": {
         "repo_id": "concedo/sdxs-512-tinySDdistilled-GGUF",
         "filename": "sdxs-512-tinySDdistilled_Q8_0.gguf",
         "alias": "sdxs.gguf",
-        "description": "SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight mobile-optimized model (~650MB)",
+        "description": "SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight 1-2 step distilled model (CFG 1.0, Euler A)",
         "size_mb": 651,
         "default_steps": 2,
-        "default_cfg": 2.0,
+        "default_cfg": 1.0,
     },
     "turbo": {
         "repo_id": "second-state/stable-diffusion-v1-5-GGUF",
         "filename": "stable-diffusion-v1-5-pruned-emaonly-Q4_0.gguf",
         "alias": "turbo.gguf",
-        "description": "Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency lightweight base model",
+        "description": "Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency SD1.5 base model (Needs 15-20 steps, CFG 6.0)",
         "size_mb": 1494,
-        "default_steps": 8,
-        "default_cfg": 3.0,
+        "default_steps": 20,
+        "default_cfg": 6.0,
     },
     "anime": {
         "repo_id": "haven-ai-companion/dreamshaper8-lcm-gguf",
         "filename": "DreamShaper8_LCM_q4_0.gguf",
         "alias": "anime.gguf",
-        "description": "DreamShaper 8 LCM (Q4_0) - Stylized anime & 2.5D fast illustration art",
+        "description": "DreamShaper 8 LCM (Q4_0) - Fast 4-8 step LCM stylized anime & illustration art (CFG 1.5, LCM)",
         "size_mb": 1550,
         "default_steps": 6,
-        "default_cfg": 2.0,
+        "default_cfg": 1.5,
     },
 })
 
@@ -146,11 +146,13 @@ def register_model(
     default_steps: int = 10,
     default_cfg: float = 4.0,
     sha256: Optional[str] = None,
+    size_mb: Optional[int] = None,
+    **kwargs,
 ) -> None:
     """Register a custom Hugging Face GGUF model into the hub catalog."""
     alias_name = str(alias) if alias else f"{name}.gguf"
     with _registry_lock:
-        _custom_registry[name] = {
+        meta = {
             "repo_id": str(repo_id),
             "filename": str(filename),
             "alias": alias_name,
@@ -159,6 +161,10 @@ def register_model(
             "default_cfg": default_cfg,
             "sha256": sha256,
         }
+        if size_mb is not None:
+            meta["size_mb"] = int(size_mb)
+        meta.update(kwargs)
+        _custom_registry[name] = meta
     logger.info("Registered custom model '%s' -> %s/%s", name, repo_id, filename)
 
 

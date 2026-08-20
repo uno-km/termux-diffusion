@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import sys
 import subprocess
 import pytest
 from pathlib import Path
@@ -37,11 +38,30 @@ def test_invalid_device_raises():
         generate("prompt", model="realistic", device="invalid_device_quantum")
 
 
-def test_low_ram_guard_raises_oom_risk_error():
-    """Verify that OOMRiskError is raised when low_ram_guard=True and memory is below threshold."""
-    with patch("termux_diffusion.core.check_memory_safety", return_value=(False, "Insufficient RAM for test")):
-        with pytest.raises(OOMRiskError, match="Insufficient RAM for test"):
-            generate("a cyberpunk city", low_ram_guard=True)
+def test_low_ram_guard_emits_warning_without_blocking(tmp_path):
+    """Verify that low memory emits a warning but does not block execution."""
+    dummy_output = tmp_path / "test_low_ram.png"
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 64)
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = ["Step 1/2 (50%)\n"]
+    mock_proc.returncode = 0
+    mock_proc.communicate.return_value = ("", "")
+
+    def fake_wait(timeout=None):
+        dummy_output.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 32)
+        return 0
+    mock_proc.wait = fake_wait
+
+    with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(False, "Low memory test warning")), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=tmp_path / "sd-cli"), \
+         patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.subprocess.Popen", return_value=mock_proc), \
+         patch("termux_diffusion.core.export_to_android_gallery", return_value=dummy_output):
+        res = generate("a cyberpunk city", output=str(dummy_output), low_ram_guard=True)
+        assert res.path == dummy_output.resolve()
 
 
 def test_generate_mock_successful_execution(tmp_path):
@@ -292,8 +312,203 @@ async def test_async_generate_cancellation_kills_child_process(tmp_path):
         )
         await asyncio.sleep(0.05)
         task.cancel()
-
         with pytest.raises(asyncio.CancelledError):
             await task
 
         assert mock_kill.called
+
+
+@pytest.mark.asyncio
+async def test_async_generate_real_process_cancellation_kills_os_pid(tmp_path):
+    """Verify that a real live OS process spawned during async_generate is killed when cancelled."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    engine_script = tmp_path / "mock_engine.py"
+    engine_script.write_text("import time, sys\nprint('Step 1/10', flush=True)\ntime.sleep(30)\n")
+
+    real_proc_holder = []
+    original_popen = subprocess.Popen
+
+    def real_popen_stub(cmd, **kwargs):
+        stub_cmd = [sys.executable, str(engine_script)]
+        p = original_popen(stub_cmd, **kwargs)
+        real_proc_holder.append(p)
+        return p
+
+    with patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path(sys.executable)), \
+         patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")), \
+         patch("termux_diffusion.core.subprocess.Popen", side_effect=real_popen_stub):
+
+        task = asyncio.create_task(
+            async_generate(
+                prompt="real process cancellation test",
+                model=str(dummy_model),
+                output=dummy_out,
+                wake_lock=False,
+                export_gallery=False
+            )
+        )
+        for _ in range(50):
+            if real_proc_holder and real_proc_holder[0].poll() is None:
+                break
+            await asyncio.sleep(0.05)
+
+        assert len(real_proc_holder) == 1
+        live_proc = real_proc_holder[0]
+        assert live_proc.poll() is None
+
+        task.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+        await asyncio.sleep(0.3)
+        assert live_proc.poll() is not None
+
+
+
+def test_advanced_parameters_cmd_generation(tmp_path):
+    """Verify that sampling_method, schedule, vae_tiling, clip_skip are passed to sd-cli."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    captured_cmd = []
+
+    def fake_popen(cmd, **kwargs):
+        captured_cmd.extend(cmd)
+        mock_proc = MagicMock()
+        mock_proc.stdout = ["Step 1/1 (100%)\n"]
+        mock_proc.returncode = 0
+        mock_proc.wait = lambda timeout=None: 0
+        dummy_out.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 32)
+        return mock_proc
+
+    with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")), \
+         patch("termux_diffusion.core.subprocess.Popen", side_effect=fake_popen), \
+         patch("termux_diffusion.core.export_to_android_gallery", return_value=dummy_out):
+
+        res = generate(
+            prompt="cyberpunk warrior",
+            model=str(dummy_model),
+            output=dummy_out,
+            sampling_method="dpm++2m",
+            schedule="karras",
+            vae_tiling=True,
+            clip_skip=2,
+            wake_lock=False,
+            export_gallery=False
+        )
+        assert "--sampling-method" in captured_cmd
+        assert "dpm++2m" in captured_cmd
+        assert "--schedule" in captured_cmd
+        assert "karras" in captured_cmd
+        assert "--vae-tiling" in captured_cmd
+        assert "--clip-skip" in captured_cmd
+        assert "2" in captured_cmd
+        assert res.sampling_method == "dpm++2m"
+        assert res.schedule == "karras"
+        assert res.vae_tiling is True
+        assert res.clip_skip == 2
+
+
+def test_img2img_missing_file_raises_filenotfound(tmp_path):
+    """Missing init_img file must raise FileNotFoundError immediately (Critical fail-fast)."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+
+    with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")):
+
+        with pytest.raises(FileNotFoundError, match="Img2Img source image file does not exist"):
+            generate("convert sketch", model=str(dummy_model), init_img=tmp_path / "non_existent.png")
+
+
+def test_img2img_strength_clamping(tmp_path):
+    """Out-of-bounds strength must be auto-clamped between 0.0 and 1.0."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_img = tmp_path / "source.png"
+    dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    captured_cmd = []
+
+    def fake_popen(cmd, **kwargs):
+        captured_cmd.extend(cmd)
+        mock_proc = MagicMock()
+        mock_proc.stdout = ["Step 1/1 (100%)\n"]
+        mock_proc.returncode = 0
+        mock_proc.wait = lambda timeout=None: 0
+        mock_proc.communicate.return_value = ("", "")
+        dummy_out.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 32)
+        return mock_proc
+
+    with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")), \
+         patch("termux_diffusion.core.subprocess.Popen", side_effect=fake_popen), \
+         patch("termux_diffusion.core.export_to_android_gallery", return_value=dummy_out):
+
+        res = generate(
+            prompt="convert sketch",
+            model=str(dummy_model),
+            init_img=dummy_img,
+            strength=999.0,
+            output=dummy_out,
+            wake_lock=False,
+            export_gallery=False
+        )
+        assert "-i" in captured_cmd
+        assert "--strength" in captured_cmd
+        assert "1.0" in captured_cmd
+        assert res.strength == 1.0
+
+
+def test_clip_skip_clamping(tmp_path):
+    """clip_skip > 2 or < 1 must be auto-clamped to 1 or 2."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    captured_cmd = []
+
+    def fake_popen(cmd, **kwargs):
+        captured_cmd.extend(cmd)
+        mock_proc = MagicMock()
+        mock_proc.stdout = ["Step 1/1 (100%)\n"]
+        mock_proc.returncode = 0
+        mock_proc.wait = lambda timeout=None: 0
+        mock_proc.communicate.return_value = ("", "")
+        dummy_out.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 32)
+        return mock_proc
+
+    with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")), \
+         patch("termux_diffusion.core.subprocess.Popen", side_effect=fake_popen), \
+         patch("termux_diffusion.core.export_to_android_gallery", return_value=dummy_out):
+
+        res = generate(
+            prompt="anime portrait",
+            model=str(dummy_model),
+            clip_skip=50,
+            output=dummy_out,
+            wake_lock=False,
+            export_gallery=False
+        )
+        assert "--clip-skip" in captured_cmd
+        assert "2" in captured_cmd
+        assert res.clip_skip == 2
+

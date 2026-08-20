@@ -11,7 +11,7 @@ def get_header(active_page):
             <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.0.0 (Dual Engine)</span>
+            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
             <div class="lang-selector-wrapper">
                 <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
                     <option value="en">🇺🇸 English</option>
@@ -33,6 +33,7 @@ def get_sidebar(active_page):
         ('quickstart.html', 'common.nav.quickstart', 'Quickstart & Recipes'),
         ('models.html', 'common.nav.models', 'Model Hub & Presets'),
         ('api-reference.html', 'common.nav.apiReference', '100% Full API Reference'),
+        ('advanced-parameters.html', 'common.nav.advancedParams', 'High-Precision Parameters'),
         ('benchmarks.html', 'common.nav.benchmarks', 'Benchmarks & Hardware'),
         ('versions.html', 'common.nav.versions', 'Version Archive')
     ]
@@ -374,48 +375,60 @@ models_html = f"""<!DOCTYPE html>
                         <th>Preset Name</th>
                         <th>Base Architecture &amp; Quantization</th>
                         <th>File Size</th>
-                        <th>Latency Baseline (Exynos 1380)</th>
-                        <th>Recommended Workload</th>
+                        <th>Optimal Steps &amp; CFG</th>
+                        <th>Recommended Sampler</th>
+                        <th>Key Visual Workload</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
+                        <td><strong><code>"sdxs"</code></strong></td>
+                        <td>SDXS 512 Tiny SD Distilled (Q8_0)</td>
+                        <td><strong>651 MB</strong></td>
+                        <td><strong>1 ~ 2 steps (CFG 1.0)</strong></td>
+                        <td><code>euler_a</code></td>
+                        <td>Ultra-low latency mobile prototyping (Instant 1-2s, sharp)</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>"anime"</code></strong></td>
+                        <td>DreamShaper 8 LCM (Q4_0)</td>
+                        <td>1.55 GB</td>
+                        <td><strong>4 ~ 8 steps (CFG 1.5)</strong></td>
+                        <td><code>lcm</code></td>
+                        <td>2D / 2.5D stylized anime art (Crisp lineart, rich cel-shading)</td>
+                    </tr>
+                    <tr>
                         <td><strong><code>"realistic"</code></strong></td>
                         <td>Realistic Vision V6.0 B1 (Q4_K)</td>
-                        <td>1.62 GB</td>
-                        <td>~25 min (10 steps)</td>
-                        <td>High-fidelity photorealism (portraits, skin textures, lighting)</td>
+                        <td>1.55 GB</td>
+                        <td><strong>20 ~ 25 steps (CFG 7.0)</strong></td>
+                        <td><code>dpm2</code> / <code>karras</code></td>
+                        <td>Ultra-detailed photorealism (Pores, eyes, cinematic lighting)</td>
                     </tr>
                     <tr>
                         <td><strong><code>"speed"</code></strong></td>
                         <td>Stable Diffusion 1.5 Base (Q4_1)</td>
-                        <td>1.59 GB</td>
-                        <td>~15 min (10 steps)</td>
-                        <td>General-purpose drafting and composition</td>
-                    </tr>
-                    <tr>
-                        <td><strong><code>"sdxs"</code></strong></td>
-                        <td>SDXS 512-0.9 Mobile (Q4_0)</td>
-                        <td><strong>450 MB</strong></td>
-                        <td><strong>~2.5 min (2 steps)</strong></td>
-                        <td>Ultra-low latency mobile prototyping</td>
+                        <td>1.68 GB</td>
+                        <td><strong>15 ~ 20 steps (CFG 6.0)</strong></td>
+                        <td><code>euler_a</code> / <code>dpm++2m</code></td>
+                        <td>General-purpose drafting and balanced composition</td>
                     </tr>
                     <tr>
                         <td><strong><code>"turbo"</code></strong></td>
-                        <td>SD Turbo (Q4_0)</td>
-                        <td>1.20 GB</td>
-                        <td>~4 min (1 step)</td>
-                        <td>Single-step real-time inference</td>
-                    </tr>
-                    <tr>
-                        <td><strong><code>"anime"</code></strong></td>
-                        <td>DreamShaper 8 (Q4_K)</td>
-                        <td>1.65 GB</td>
-                        <td>~20 min (10 steps)</td>
-                        <td>2D / 2.5D stylized illustration and animation art</td>
+                        <td>Stable Diffusion 1.5 Pruned (Q4_0)</td>
+                        <td>1.49 GB</td>
+                        <td><strong>15 ~ 20 steps (CFG 6.0)</strong></td>
+                        <td><code>euler_a</code> / <code>dpm++2m</code></td>
+                        <td>Lightweight SD1.5 base generation</td>
                     </tr>
                 </tbody>
             </table>
+
+            <div class="alert alert-tip">
+                <span class="alert-title">💡 Denoising Architecture Rules (정석 파라미터 가이드)</span>
+                <p><strong>1. Distilled Models (<code>sdxs</code>, <code>anime</code>):</strong> Keep CFG low (1.0~1.5) and use 1st-order samplers (<code>euler_a</code>, <code>lcm</code>). High CFG or 2nd-order ODE samplers (<code>dpm2</code>) will collapse the latent space.</p>
+                <p><strong>2. Full SD1.5 Models (<code>realistic</code>, <code>speed</code>, <code>turbo</code>):</strong> Require at least 15~20 steps and CFG 6.0~7.5 with quality-guard negative prompts to fully resolve photorealistic details.</p>
+            </div>
 
             <h3>Custom Model Management API</h3>
             <pre><code>from termux_diffusion import (
@@ -805,6 +818,20 @@ versions_html = f"""<!DOCTYPE html>
         <main class="content">
             <h2 data-i18n="versions.title">Version Archive &amp; Changelog</h2>
             <p data-i18n="versions.subtitle">Historical release logs and upgrade migration guides.</p>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; color: var(--primary-color);">v1.1.1 - Production High-Precision &amp; Stability Release</h3>
+                    <span class="release-tag">2026-08-20</span>
+                </div>
+                <ul style="margin-top: 12px; line-height: 1.8;">
+                    <li><strong>TOP 7 High-Precision Advanced Parameters:</strong> 10 Samplers (<code>euler_a</code>, <code>dpm++2m</code>, <code>lcm</code>, etc.), 6 Schedulers (<code>karras</code>, <code>exponential</code>, <code>ays</code>, etc.), VAE Tiling (reduces peak RAM by ~70%), Img2Img (<code>init_img</code>, <code>strength</code>), LoRA adapter weights, CLIP-Skip, ControlNet, and TAESD support.</li>
+                    <li><strong>Fail-Fast Missing File Validation:</strong> Instant validation on missing files (<code>init_img</code>, <code>control_net</code>, etc.) before triggering 1.5GB model downloads.</li>
+                    <li><strong>Async Cancellation &amp; Process Reaping:</strong> Full asynchronous cancellation support (<code>async_generate()</code> in Python, <code>AbortSignal</code> in Node.js) with POSIX process group tree termination (<code>_safe_kill_process</code>).</li>
+                    <li><strong>Strict Hardware Acceleration:</strong> GPU/Vulkan backend fails fast if drivers are missing, preventing deceptive fallbacks.</li>
+                    <li><strong>Samsung RAM Plus &amp; Low-Memory Guidance:</strong> Removed library-level blocking OOM aborts; added comprehensive virtual swap / RAM Plus configuration guide in README.</li>
+                </ul>
+            </div>
 
             <div class="card" style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">

@@ -10,7 +10,7 @@
     "en": {
       "common": {
         "brand": "Termux-Diffusion",
-        "releaseTag": "v1.0.0 (Dual Engine)",
+        "releaseTag": "v1.1.1 (Dual Engine)",
         "pypiBtn": "PyPI Package",
         "npmBtn": "npm Package",
         "githubBtn": "GitHub Repo",
@@ -22,6 +22,7 @@
           "models": "Model Hub & Presets",
           "apiReference": "100% Full API Reference",
           "versions": "Version Archive",
+          \"advancedParams\": \"Advanced Parameters\",
           "advanced": "AI Agent Specifications"
         },
         "footerText": "© 2026 Termux-Diffusion Project (uno-km). Released under the MIT License."
@@ -80,6 +81,7 @@
           "models": "모델 허브 & 프리셋",
           "apiReference": "100% 풀 API 명세",
           "versions": "버전 아카이브",
+          \"advancedParams\": \"Advanced Parameters\",
           "advanced": "AI 에이전트 사양서"
         },
         "footerText": "© 2026 Termux-Diffusion 프로젝트 (김은호 / uno-km). MIT 라이선스에 따라 배포됩니다."
@@ -138,6 +140,7 @@
           "models": "モデルハブ & プリセット",
           "apiReference": "100% 完全APIリファレンス",
           "versions": "バージョン履歴",
+          \"advancedParams\": \"Advanced Parameters\",
           "advanced": "AIエージェント仕様書"
         },
         "footerText": "© 2026 Termux-Diffusion Project (uno-km). MIT License."
@@ -170,6 +173,7 @@
           "models": "模型中心 & 预设",
           "apiReference": "100% 完整API参考",
           "versions": "版本归档",
+          \"advancedParams\": \"Advanced Parameters\",
           "advanced": "AI智能体规范"
         },
         "footerText": "© 2026 Termux-Diffusion Project (uno-km). MIT License."

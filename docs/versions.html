@@ -104,7 +104,7 @@
             <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.0.0 (Dual Engine)</span>
+            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
             <div class="lang-selector-wrapper">
                 <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
                     <option value="en">🇺🇸 English</option>
@@ -128,6 +128,7 @@
                 <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
                 <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
                 <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
+                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
                 <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
                 <li><a href="versions.html" class="active" data-i18n="common.nav.versions">Version Archive</a></li>
             </ul>
@@ -143,6 +144,20 @@
         <main class="content">
             <h2 data-i18n="versions.title">Version Archive &amp; Changelog</h2>
             <p data-i18n="versions.subtitle">Historical release logs and upgrade migration guides.</p>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; color: var(--primary-color);">v1.1.1 - Production High-Precision &amp; Stability Release</h3>
+                    <span class="release-tag">2026-08-20</span>
+                </div>
+                <ul style="margin-top: 12px; line-height: 1.8;">
+                    <li><strong>TOP 7 High-Precision Advanced Parameters:</strong> 10 Samplers (<code>euler_a</code>, <code>dpm++2m</code>, <code>lcm</code>, etc.), 6 Schedulers (<code>karras</code>, <code>exponential</code>, <code>ays</code>, etc.), VAE Tiling (reduces peak RAM by ~70%), Img2Img (<code>init_img</code>, <code>strength</code>), LoRA adapter weights, CLIP-Skip, ControlNet, and TAESD support.</li>
+                    <li><strong>Fail-Fast Missing File Validation:</strong> Instant validation on missing files (<code>init_img</code>, <code>control_net</code>, etc.) before triggering 1.5GB model downloads.</li>
+                    <li><strong>Async Cancellation &amp; Process Reaping:</strong> Full asynchronous cancellation support (<code>async_generate()</code> in Python, <code>AbortSignal</code> in Node.js) with POSIX process group tree termination (<code>_safe_kill_process</code>).</li>
+                    <li><strong>Strict Hardware Acceleration:</strong> GPU/Vulkan backend fails fast if drivers are missing, preventing deceptive fallbacks.</li>
+                    <li><strong>Samsung RAM Plus &amp; Low-Memory Guidance:</strong> Removed library-level blocking OOM aborts; added comprehensive virtual swap / RAM Plus configuration guide in README.</li>
+                </ul>
+            </div>
 
             <div class="card" style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">

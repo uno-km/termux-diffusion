@@ -39,10 +39,25 @@ Commands:
   clear-cache         Delete cached models to reclaim storage space
 
 Options:
-  -m, --model <name>  Model preset name (default: realistic)
-  -s, --steps <num>   Denoising steps (default: 10)
-  -c, --cfg <num>     CFG guidance scale (default: 4.0)
-  -o, --output <path> Destination output filename
+  -m, --model <name>       Model preset name (default: realistic)
+  -n, --negative <text>    Negative prompt
+  -d, --device <dev>       Computing device (cpu, gpu, vulkan, opencl, auto)
+  -s, --steps <num>        Denoising steps (default: 10)
+  -c, --cfg <num>          CFG guidance scale (default: 4.0)
+  -t, --threads <num>      CPU threads (default: auto-detected big cores)
+  -o, --output <path>      Destination output filename
+  --seed <num>             RNG seed (-1 for random)
+  --sampler <name>         Sampling method (euler, euler_a, heun, dpm++2m, lcm)
+  --schedule <name>        Noise schedule (default, discrete, karras, exponential, ays)
+  --vae-tiling             Enable VAE tiling for ~70% lower peak memory
+  -i, --init-img <path>    Source image for Img2Img synthesis
+  --strength <num>         Img2Img strength (0.0 to 1.0, default: 0.75)
+  --lora-dir <path>        Directory containing LoRA adapter weights
+  --clip-skip <num>        CLIP layers to skip (1 or 2)
+  --control-net <path>     Path to ControlNet model
+  --control-image <path>   Path to ControlNet guide image
+  --control-strength <num> ControlNet strength (0.0 to 2.0, default: 0.9)
+  --taesd <path>           Path to Tiny AutoEncoder (TAESD) model
 `);
 }
 
@@ -50,53 +65,14 @@ function runInstall() {
   console.log('[Start] [termux-diffusion] Running automated provisioner for native Bionic C++ engine...');
   const isTermux = fs.existsSync('/data/data/com.termux');
   if (isTermux) {
-    console.log('[Package] Checking required packages via pkg (clang, cmake, git, termux-api)...');
+    console.log('[Package] Checking required packages via pkg (clang, make, cmake, git, termux-api, vulkan-loader, opencl-headers)...');
     try {
-      spawnSync('pkg', ['install', '-y', 'clang', 'cmake', 'git', 'termux-api', 'wget'], { stdio: 'inherit' });
+      spawnSync('pkg', ['install', '-y', 'clang', 'make', 'cmake', 'git', 'termux-api', 'wget', 'vulkan-loader', 'vulkan-headers', 'vulkan-tools', 'opencl-headers'], { stdio: 'inherit' });
     } catch (_) {}
   }
 
-  const buildRoot = path.join(os.homedir(), '.cache', 'termux-diffusion', 'build_src');
-  if (!fs.existsSync(buildRoot)) fs.mkdirSync(buildRoot, { recursive: true });
-  const repoDir = path.join(buildRoot, 'stable-diffusion.cpp');
-
-  if (!fs.existsSync(repoDir)) {
-    console.log('[Download] Cloning stable-diffusion.cpp repository...');
-    spawnSync('git', ['clone', 'https://github.com/leejet/stable-diffusion.cpp', repoDir], { stdio: 'inherit' });
-  }
-
-  console.log('[Submodule] Synchronizing submodules (ggml)...');
-  spawnSync('git', ['submodule', 'update', '--init', '--recursive'], { cwd: repoDir, stdio: 'inherit' });
-
-  const buildDir = path.join(repoDir, 'build');
-  if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
-
-  console.log('[Config] Configuring CMake build with ARM64 optimizations...');
-  spawnSync('cmake', [
-    '..',
-    '-DCMAKE_BUILD_TYPE=Release',
-    '-DSD_BUILD_EXAMPLES=ON',
-    '-DGGML_OPENMP=OFF',
-    '-DCMAKE_C_FLAGS=-O3 -D_GNU_SOURCE',
-    '-DCMAKE_CXX_FLAGS=-O3 -D_GNU_SOURCE'
-  ], { cwd: buildDir, stdio: 'inherit' });
-
-  console.log('[Build] Compiling native Bionic binary with clang (make -j4)...');
-  spawnSync('make', ['-j4'], { cwd: buildDir, stdio: 'inherit' });
-
-  const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
-  if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
-  const compiled = path.join(buildDir, 'bin', 'sd-cli');
-  const target = path.join(binDir, 'sd-cli');
-
-  if (fs.existsSync(compiled)) {
-    fs.copyFileSync(compiled, target);
-    fs.chmodSync(target, 0o755);
-    console.log(`[Done] [termux-diffusion] Engine provisioned successfully at: ${target}`);
-  } else {
-    console.error('[FAIL] Could not find compiled sd-cli binary in build directory.');
-    process.exit(1);
-  }
+  const binPath = provisionEngine(true);
+  console.log(`\n[SUCCESS] Native Bionic C++ engine ready: ${binPath}`);
 }
 
 function runDoctor() {
@@ -144,13 +120,29 @@ async function main() {
       process.exit(1);
     }
     let model = 'realistic';
-    let steps, cfg, output, seed = -1;
+    let steps, cfg, output, seed = -1, threads, device = 'cpu', negative;
+    let sampler, schedule, vaeTiling = false, initImg, strength;
+    let loraDir, clipSkip, controlNet, controlImage, controlStrength, taesd;
 
     for (let i = 2; i < args.length; i++) {
       if (args[i] === '-m' || args[i] === '--model') model = args[++i];
+      if (args[i] === '-n' || args[i] === '--negative') negative = args[++i];
+      if (args[i] === '-d' || args[i] === '--device') device = args[++i];
       if (args[i] === '-s' || args[i] === '--steps') steps = parseInt(args[++i], 10);
       if (args[i] === '-c' || args[i] === '--cfg') cfg = parseFloat(args[++i]);
+      if (args[i] === '-t' || args[i] === '--threads') threads = parseInt(args[++i], 10);
       if (args[i] === '-o' || args[i] === '--output') output = args[++i];
+      if (args[i] === '--sampler' || args[i] === '--sampling-method') sampler = args[++i];
+      if (args[i] === '--schedule') schedule = args[++i];
+      if (args[i] === '--vae-tiling') vaeTiling = true;
+      if (args[i] === '-i' || args[i] === '--init-img') initImg = args[++i];
+      if (args[i] === '--strength') strength = parseFloat(args[++i]);
+      if (args[i] === '--lora-dir') loraDir = args[++i];
+      if (args[i] === '--clip-skip') clipSkip = parseInt(args[++i], 10);
+      if (args[i] === '--control-net') controlNet = args[++i];
+      if (args[i] === '--control-image') controlImage = args[++i];
+      if (args[i] === '--control-strength') controlStrength = parseFloat(args[++i]);
+      if (args[i] === '--taesd') taesd = args[++i];
       if (args[i] === '--seed') {
         seed = parseInt(args[++i], 10);
         if (isNaN(seed) || seed < -1 || seed > 4294967295) {
@@ -161,7 +153,29 @@ async function main() {
     }
 
     try {
-      await generate({ prompt, model, steps, cfgScale: cfg, seed, output, autoProvision: true });
+      await generate({
+        prompt,
+        model,
+        negativePrompt: negative,
+        device,
+        steps,
+        cfgScale: cfg,
+        seed,
+        threads,
+        output,
+        samplingMethod: sampler,
+        schedule,
+        vaeTiling,
+        initImg,
+        strength,
+        loraDir,
+        clipSkip,
+        controlNet,
+        controlImage,
+        controlStrength,
+        taesd,
+        autoProvision: true
+      });
     } catch (err) {
       console.error('[FAIL] Generation error:', err.message);
       process.exit(1);

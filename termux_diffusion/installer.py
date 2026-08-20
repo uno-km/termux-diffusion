@@ -70,7 +70,11 @@ def locate_sd_cli() -> Optional[Path]:
     return None
 
 
-def provision_engine(force: bool = False) -> Path:
+def provision_engine(
+    force: bool = False,
+    jobs: Optional[int] = None,
+    make_jobs: Optional[int] = None,
+) -> Path:
     """Download, update submodules, and compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
     existing = locate_sd_cli()
     if existing and not force:
@@ -81,10 +85,15 @@ def provision_engine(force: bool = False) -> Path:
 
     # Step 1: Ensure required system packages
     if is_android_termux() and shutil.which("pkg"):
-        print("[termux-diffusion] Checking build toolchains (git, cmake, clang, termux-api)...")
+        print("[termux-diffusion] Checking build toolchains & GPU acceleration packages...")
         try:
             subprocess.run(
-                ["pkg", "install", "-y", "git", "cmake", "clang", "termux-api", "wget"],
+                [
+                    "pkg", "install", "-y",
+                    "git", "cmake", "clang", "make", "termux-api", "wget",
+                    "vulkan-loader", "vulkan-headers", "vulkan-tools",
+                    "opencl-headers"
+                ],
                 capture_output=False,
                 check=False,
                 timeout=180.0
@@ -116,19 +125,19 @@ def provision_engine(force: bool = False) -> Path:
     repo_dir = build_root / "stable-diffusion.cpp"
 
     if not repo_dir.exists():
-        print(f"[termux-diffusion] Cloning {SD_CPP_REPO}...")
+        print(f"[termux-diffusion] Cloning {SD_CPP_REPO} (depth=1, recursive)...")
         try:
             res = subprocess.run(
-                ["git", "clone", SD_CPP_REPO, str(repo_dir)],
+                ["git", "clone", "--depth", "1", "--recursive", SD_CPP_REPO, str(repo_dir)],
                 capture_output=True,
                 text=True,
-                timeout=30.0
+                timeout=180.0
             )
             if res.returncode != 0:
                 raise ProvisioningError(f"Failed cloning stable-diffusion.cpp repository: {res.stderr.strip()}")
         except subprocess.TimeoutExpired as exc:
             raise ProvisioningError(
-                "Network timeout (30s) while cloning stable-diffusion.cpp. "
+                "Network timeout (180s) while cloning stable-diffusion.cpp. "
                 "Please check your internet connection or install sd-cli manually."
             ) from exc
 
@@ -136,11 +145,11 @@ def provision_engine(force: bool = False) -> Path:
     print("[termux-diffusion] Synchronizing tensor submodules (ggml)...")
     try:
         sub_res = subprocess.run(
-            ["git", "submodule", "update", "--init", "--recursive"],
+            ["git", "submodule", "update", "--init", "--recursive", "--depth", "1"],
             cwd=str(repo_dir),
             capture_output=True,
             text=True,
-            timeout=45.0,
+            timeout=180.0,
             check=False
         )
         if sub_res.returncode != 0:
@@ -179,18 +188,28 @@ def provision_engine(force: bool = False) -> Path:
     if cmake_res.returncode != 0:
         raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr.strip()}")
 
-    mem_info = get_memory_info()
-    cpu_cores = os.cpu_count() or 2
-    if mem_info.total_mb < 4096:
-        make_jobs = 1  # RAM < 4GB: Single job to prevent Clang compiler OOM/LMK
-    elif mem_info.total_mb < 8192:
-        make_jobs = min(2, cpu_cores)  # RAM 4-8GB: 2 parallel jobs
+    # Determine parallel make compilation jobs (with explicit user / env override support)
+    env_jobs = os.environ.get("TERMUX_DIFFUSION_MAKE_JOBS") or os.environ.get("TERMUX_DIFFUSION_JOBS")
+    if jobs is not None:
+        actual_jobs = max(1, int(jobs))
+    elif make_jobs is not None:
+        actual_jobs = max(1, int(make_jobs))
+    elif env_jobs and env_jobs.strip().isdigit():
+        actual_jobs = max(1, int(env_jobs.strip()))
     else:
-        make_jobs = min(4, cpu_cores)  # RAM 8GB+: Up to 4 parallel jobs
+        mem_info = get_memory_info()
+        cpu_cores = os.cpu_count() or 2
+        total_ram = mem_info.get("effective_total_mb") or mem_info.get("mem_total_mb", 4096)
+        if total_ram < 4096:
+            actual_jobs = 1  # RAM < 4GB: Single job to prevent Clang compiler OOM/LMK
+        elif total_ram < 8192:
+            actual_jobs = min(2, cpu_cores)  # RAM 4-8GB: 2 parallel jobs
+        else:
+            actual_jobs = min(4, cpu_cores)  # RAM 8GB+: Up to 4 parallel jobs
 
-    print(f"[termux-diffusion] Compiling native Bionic binary with clang (make -j{make_jobs})...")
+    print(f"[termux-diffusion] Compiling native Bionic binary with clang (make -j{actual_jobs})...")
     make_res = subprocess.run(
-        ["make", f"-j{make_jobs}"],
+        ["make", f"-j{actual_jobs}"],
         cwd=str(build_dir),
         capture_output=True,
         text=True

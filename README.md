@@ -12,9 +12,9 @@
 
 ---
 
-## 1. Quick Scenario Playbook (사용자 상황별 초간단 가이드)
+## 1. Quick Scenario Playbook
 
-### [Install] Scenario 1: Clean Install (아무것도 설치되지 않은 사용자 / Termux 처음)
+### [Install] Scenario 1: Clean Install (Fresh Setup on Android Termux)
 
 Open the Termux application and execute the 2 commands for your preferred runtime:
 
@@ -24,7 +24,7 @@ Open the Termux application and execute the 2 commands for your preferred runtim
 termux-setup-storage
 
 # 2. Install Toolchains & Provision Native Engine
-pkg update -y && pkg install python clang cmake git termux-api wget -y
+pkg update -y && pkg install python clang make cmake git termux-api wget vulkan-loader vulkan-headers vulkan-tools -y
 pip install termux-diffusion && termux-diffusion-install
 ```
 
@@ -34,13 +34,13 @@ pip install termux-diffusion && termux-diffusion-install
 termux-setup-storage
 
 # 2. Install Toolchains & Provision Native Engine
-pkg update -y && pkg install nodejs-lts clang cmake git termux-api wget -y
+pkg update -y && pkg install nodejs-lts clang make cmake git termux-api wget vulkan-loader vulkan-headers vulkan-tools -y
 npm install -g termux-diffusion && npx termux-diffusion install
 ```
 
 ---
 
-### [Instant] Scenario 2: Instant Generation (이미 설치된 사용자)
+### [Instant] Scenario 2: Instant Generation (Ready to Run)
 
 #### Option A: One-Line CLI Generation (No Coding Required)
 * **Python CLI:**
@@ -79,7 +79,7 @@ npm install -g termux-diffusion && npx termux-diffusion install
 
 ---
 
-### [Models] Scenario 3: Custom Models & External Weights (커스텀 모델 사용)
+### [Models] Scenario 3: Custom Models & External Weights
 
 #### Case A: Direct Hugging Face Repository
 Provide any Hugging Face repo ID and `.gguf` file path. The engine auto-streams, caches, and runs it:
@@ -119,15 +119,23 @@ generate("speedy race car", model="speed", device="gpu")
 
 ---
 
-## 2. Built-in Model Hub Presets
+## 2. Built-in Model Hub Presets & Golden Parameter Matrix
 
-| Preset | Model & Quantization | Size | Steps | Latency (Exynos 1380) | Key Workload |
-| :--- | :--- | :---: | :---: | :---: | :--- |
-| **`"realistic"`** | Realistic Vision V6.0 B1 (Q4_K) | 1.62 GB | 10 | ~25 min | High-fidelity photorealism (portraits, skin, lighting) |
-| **`"speed"`** | Stable Diffusion 1.5 Base (Q4_1) | 1.59 GB | 10 | ~15 min | General drafting and rapid composition |
-| **`"sdxs"`** | SDXS 512-0.9 Mobile (Q4_0) | **450 MB** | **2 - 3** | **~2.5 min** | Ultra-low latency mobile prototyping |
-| **`"turbo"`** | SD Turbo (Q4_0) | 1.20 GB | 1 | ~4 min | Single-step real-time inference |
-| **`"anime"`** | DreamShaper 8 (Q4_K) | 1.65 GB | 10 | ~20 min | 2D / 2.5D stylized illustration and animation art |
+Each model architecture has distinct mathematical requirements for denoising steps, CFG scale, and samplers:
+
+| Preset | Actual Model Checkpoint & Quantization | Architecture Type | Optimal Steps | Optimal CFG | Recommended Sampler & Scheduler | Workload & Visual Output |
+| :--- | :--- | :---: | :---: | :---: | :--- | :--- |
+| **`"sdxs"`** | `sdxs-512-tinySDdistilled_Q8_0` (651 MB) | 1-Step Distilled | **1 ~ 2** | **1.0** | `euler_a` (default) | **Ultra-Fast Mobile (1-2s): Clean & crisp, zero noise** |
+| **`"anime"`** | `DreamShaper8_LCM_q4_0` (1.55 GB) | LCM 4~8-Step | **4 ~ 8** | **1.5 ~ 2.0** | `lcm` (default / karras) | **Sharp 2D/2.5D Anime: Clear line art & rich cel-shading** |
+| **`"realistic"`** | `realisticVisionV60B1_v51HyperVAE_Q4_k` (1.55 GB) | Full SD1.5 Photoreal | **20 ~ 25** | **6.5 ~ 7.5** | `dpm2` / `euler_a` (karras) | **Ultra-Detailed Realism: Skin pores, realistic eyes, cinematic** |
+| **`"speed"`** | `stable-diffusion-v1-5-Q4_1` (1.68 GB) | SD1.5 Base Q4_1 | **15 ~ 20** | **6.0 ~ 7.0** | `euler_a` / `dpm++2m` (karras) | **General Drafting: Balanced speed & composition fidelity** |
+| **`"turbo"`** | `stable-diffusion-v1-5-pruned-emaonly_Q4_0` (1.49 GB) | SD1.5 Base Pruned | **15 ~ 20** | **6.0 ~ 7.0** | `euler_a` / `dpm++2m` (karras) | **Lightweight SD1.5: Fast base generation** |
+
+> ⚠️ **Golden Rule for Distilled Models (`sdxs`, `turbo` ADD, `anime` LCM):**  
+> Never use high CFG ($> 2.0$) or 2nd-order ODE samplers (`dpm2`, `heun`) on distilled 1~4 step models. Doing so breaks the compressed latent manifold and causes color blowout or over-smoothing blur. Keep `cfg_scale=1.0` with `euler_a` for crisp clarity!  
+> 
+> 💡 **Golden Rule for Full SD1.5 Models (`realistic`, `speed`, `turbo`):**  
+> Full SD1.5 models require at least **15~20 steps** with `CFG=6.0~7.5` and quality-guard negative prompts to fully resolve high-frequency photorealistic details. Running them at 2~4 steps results in un-denoised noise.
 
 ---
 
@@ -148,21 +156,19 @@ result = generate(
     output="lion.png",          # Custom destination file path (default: output_<timestamp>.png)
     width=512,                  # Image width in pixels (multiple of 64, default: 512)
     height=512,                 # Image height in pixels (multiple of 64, default: 512)
-    steps=10,                   # Sampling steps (default: 10, sdxs: 2, turbo: 1)
+    steps=10,                   # Sampling steps (default: 10, sdxs: 2, turbo: 8)
     cfg_scale=4.0,              # Classifier-Free Guidance scale (default: 4.0)
     seed=-1,                    # Random seed (-1 for randomized generation)
-    threads=6,                  # Core allocation (default: max(1, cpu_count - 2))
+    threads=4,                  # Core allocation (default: auto-detected big cores)
     wake_lock=True,             # Hold Android CPU WakeLock to prevent sleep
     export_gallery=True,        # Sync to ~/storage/pictures/TermuxDiffusion & trigger MediaScanner
-    timeout=3600.0,             # Max execution timeout in seconds
-    model_cache_dir=None        # Custom cache directory path
+    timeout=1800,               # Max execution timeout in seconds
+    auto_provision=False        # Auto-compile C++ engine if missing
 )
 
 # Return Object: GenerationResult
 print("Local Path:", result.path)
 print("Gallery Path:", result.gallery_path)
-print("Elapsed Seconds:", result.elapsed_sec)
-print("Seed Used:", result.seed)
 ```
 
 ```javascript
@@ -180,16 +186,55 @@ const result = await generate({
   steps: 10,
   cfgScale: 4.0,
   seed: -1,
-  threads: 6,
+  threads: 4,
   wakeLock: true,
   exportGallery: true,
-  timeout: 3600
+  timeout: 1800
 });
 ```
 
----
+### 3.2 High-Precision Controls & Advanced Parameters
 
-### 3.2 Model Cache & Storage Management APIs
+`termux-diffusion` exposes full native C++ controls for fine-grained generation. For an exhaustive guide and all valid option lists, see **[ADVANCED_PARAMETERS.md](docs/ADVANCED_PARAMETERS.md)**.
+
+```python
+# 1. Advanced Sampler & Noise Schedule (dpm++2m + karras photorealism)
+generate(
+    "hyperrealistic portrait of a cyberpunk hacker, 8k",
+    sampling_method="dpm++2m",
+    schedule="karras",
+    steps=12
+)
+
+# 2. VAE Tiling (Reduces peak RAM by ~70% on mobile devices)
+generate("epic mountain landscape", width=768, height=768, vae_tiling=True)
+
+# 3. Image-to-Image (Img2Img Transformation)
+generate(
+    "convert sketch into an oil painting of a castle",
+    init_img="/sdcard/Pictures/my_sketch.png",
+    strength=0.70
+)
+
+# 4. LoRA Adapter Weights Injection
+generate(
+    "cyberpunk warrior in battle armor <lora:cyber_armor:0.8>",
+    lora_dir="/data/data/com.termux/files/home/loras"
+)
+
+# 5. CLIP Skip (Anime / DreamShaper Optimization)
+generate("1girl, anime masterpiece, starry night", model="anime", clip_skip=2)
+
+# 6. ControlNet Spatial Guidance
+generate(
+    "warrior posing heroically",
+    control_net="~/models/cnet_openpose.gguf",
+    control_image="~/pose_guide.png",
+    control_strength=0.9
+)
+```
+
+### 3.3 Model Cache & Storage Management APIs
 
 ```python
 from termux_diffusion import (
@@ -233,7 +278,7 @@ from termux_diffusion import (
     get_memory_info,            # RAM and zRAM (Samsung RAM Plus) stats
     get_optimal_thread_count,   # Optimal CPU thread affinity count
     is_android_termux,          # True if running inside Android Termux
-    run_doctor,                 # Automated 6-point system diagnostic health check
+    run_doctor,                 # Automated 7-tier system diagnostic health check
     export_to_android_gallery,  # Manually broadcast any image to Android Gallery
     TermuxWakeLock              # Context manager for holding CPU WakeLock
 )
@@ -253,56 +298,74 @@ print(f"Doctor Health Status: {'PASSED' if report.is_ready else 'FAILED'}")
 
 | Command | Arguments | Description |
 | :--- | :--- | :--- |
-| `termux-diffusion generate` | `"<prompt>" [-m model] [--device cpu\|gpu] [--steps N] [--cfg N] [-o file.png] [-W 512] [-H 512] [-t threads] [-s seed] [--no-wakelock] [--no-gallery]` | Executes diffusion inference with custom options |
+| `termux-diffusion generate` | `"<prompt>" [-m model] [--device cpu\|gpu] [-s steps] [-c cfg] [-t threads] [--sampler name] [--schedule name] [--vae-tiling] [-i img.png] [--strength 0.75] [--lora-dir dir] [--clip-skip 2] [--control-net cnet.gguf] [--control-image img.png] [--taesd taesd.gguf] [--seed N] [-o file.png]` | Executes diffusion inference with custom options |
 | `termux-diffusion download` | `<model_name>` | Pre-downloads and caches model weights |
 | `termux-diffusion models` | *(None)* | Displays catalog of available presets and cached models |
-| `termux-diffusion doctor` | *(None)* | Runs automated 6-phase pre-flight diagnostic health check |
+| `termux-diffusion doctor` | *(None)* | Runs automated 7-tier pre-flight diagnostic health check |
 | `termux-diffusion install` | `[--force]` | Compiles native ARM64 Bionic engine binary |
-| `termux-diffusion clear` | *(None)* | Clears cached weights to free storage |
+| `termux-diffusion clear-cache` | *(None)* | Clears cached weights to free storage |
 
 ---
 
-## 5. [Security] Android 12 / 13 / 14+ Phantom Process Killer & Background Crash Prevention
+## 5. [Memory Optimization] Samsung RAM Plus & Low-Memory (RAM) Devices
 
-안드로이드 12(API 31) 이상 기기에서 백그라운드 추론 시 OS가 자식 프로세스(`sd-cli`)를 강제 종료하는 **Phantom Process Killer**를 방지하기 위한 필수 권장 설정입니다:
+For Android devices with 4GB - 8GB physical RAM, image synthesis models (1.5GB tensor graphs) require additional virtual swap space to prevent the Android Low Memory Killer (LMK) from terminating background tasks.
 
-### 1. 스마트폰 개발자 옵션 설정 (Android 12L / 13 / 14+)
-1. 스마트폰 `설정` -> `휴대전화 정보` -> `소프트웨어 정보` -> `빌드번호`를 7번 연속 터치하여 **개발자 옵션**을 활성화합니다.
-2. `설정` -> `개발자 옵션`으로 이동합니다.
-3. **`하위 프로세스 제한 비활성화(Disable child process restrictions)`** 옵션을 켭니다.
+### 1. Enable Samsung RAM Plus (One UI 4 / 5 / 6)
+1. Open **Settings** -> **Battery and device care** (or **Device Care**).
+2. Tap **Memory** -> **RAM Plus**.
+3. Select **+4 GB**, **+6 GB**, or **+8 GB** and restart your phone.
+4. This expands available virtual memory (zRAM swap) to ensure Stable Diffusion runs seamlessly without memory pressure.
 
-### 2. ADB 명령어를 통한 원천 무력화 (PC 연결 1회 실행)
-PC와 스마트폰을 USB로 연결한 후 다음 명령어를 실행하면 하위 프로세스 제한이 영구적으로 해제됩니다:
+### 2. General Android / Non-Samsung Devices (zRAM Activation)
+If your device does not have manufacturer RAM Plus, ensure zRAM swap is active:
+```bash
+# Verify active swap memory in Termux:
+free -m
+```
+
+---
+
+## 6. [Security] Android 12 / 13 / 14+ Phantom Process Killer Prevention
+
+On Android 12 (API 31) and higher, the OS may kill background child processes (`sd-cli`) if the total process limit exceeds 32. Follow these recommended settings for 24/7 background stability:
+
+### 1. Developer Options Configuration (Android 12L / 13 / 14+)
+1. Open **Settings** -> **About phone** -> **Software information** -> Tap **Build number** 7 times to unlock Developer Options.
+2. Go to **Settings** -> **Developer options**.
+3. Enable **Disable child process restrictions**.
+
+### 2. ADB One-Time Permanent Bypass (Optional via PC)
+Connect phone to PC via USB debugging and run once:
 ```bash
 adb shell "/system/bin/device_config set_sync_disabled_for_tests persistent"
 adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"
 ```
 
-### 3. Termux 배터리 최적화 예외 및 상단 바 알림 고정
-* **배터리 최적화 예외:** 스마트폰 `설정` -> `애플리케이션` -> `Termux` -> `배터리` -> **`제한 없음(Unrestricted)`** 선택.
-* **상단 바 알림 고정:** Termux 실행 후 상단 알림 바에서 `Acquire wakelock`을 터치하거나 알림을 유지합니다.
+### 3. Battery Optimization & Background Notification
+* **Unrestricted Battery:** Open **Settings** -> **Apps** -> **Termux** -> **Battery** -> Select **Unrestricted (Don't optimize)**.
+* **WakeLock Notification:** Keep the Termux notification active and tap **Acquire wakelock** from the status bar dropdown.
 
 ---
 
-## 6. Architecture & Security Isolation
+## 7. Architecture & Security Isolation
 
 * **Zero PRoot / Zero Root:** Executes directly against native Android Bionic `libc` with ARM64 NEON SIMD optimizations, avoiding virtual container memory amplification.
 * **Zero Deception & Honest Diagnostics:** Zero fake logs. NPU/GPU/CPU hardware is probed transparently without deceptive rerouting.
 * **Configurable Negative Prompt:** Negative prompt defaults to `None` with zero bias against subjects, configurable per-call or globally.
-* **Low Memory Killer (LMK) Guard:** Validates physical RAM and Android zRAM (Samsung RAM Plus) before allocating tensor graphs.
 * **Process Reaper:** Intercepts `SIGINT` / `SIGTERM` / `KeyboardInterrupt` to forcefully clean up orphaned child `sd-cli` processes.
 * **WakeLock Shield:** Automatically prevents CPU sleep states when the smartphone screen turns off during lengthy inference.
 
 ---
 
-## 6. The AMEVA Mobile AI & Automation Ecosystem
+## 8. The AMEVA Mobile AI & Automation Ecosystem
 
-* **[Mobile] [Termux-Playwright](https://github.com/uno-km/termux-playwright-demo)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [[Docs] Official Docs](https://uno-km.github.io/termux-playwright-demo/)): Production headless Chromium browser automation for Android Termux.
+* **[Termux-Playwright](https://github.com/uno-km/termux-playwright-demo)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [Official Docs](https://uno-km.github.io/termux-playwright-demo/)): Production headless Chromium browser automation for Android Termux.
   * **Python:** `pip install termux-playwright && termux-playwright-install`
-  * **Node.js:** `npm install termux-playwright && npx termux-playwright install`
+  * **Node.js:** `npm install -g termux-playwright && npx termux-playwright install`
 
 ---
 
-## 7. License
+## 9. License
 
 Released under the **MIT License**. Maintained by **uno-km (Eunho Kim)**.

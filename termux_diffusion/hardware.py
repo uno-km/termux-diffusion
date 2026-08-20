@@ -68,6 +68,8 @@ class HardwareProfile:
 # ------------------------------------------------------------------------------
 
 _VULKAN_LIB_SEARCH_PATHS = [
+    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib", "libvulkan.so"),
+    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib64", "libvulkan.so"),
     "/system/lib64/libvulkan.so",
     "/system/lib/libvulkan.so",
     "/vendor/lib64/libvulkan.so",
@@ -335,9 +337,9 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
         if profile.vulkan_available:
             return "vulkan", 99
         raise PlatformNotSupportedError(
-            "Vulkan GPU acceleration was explicitly requested (device='vulkan'), "
+            "Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), "
             "but no accessible Vulkan driver (.so) was found on this system. "
-            "To allow automatic CPU fallback when GPU is missing, use device='auto'."
+            "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
         )
     
     if req == "opencl":
@@ -346,7 +348,7 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
         raise PlatformNotSupportedError(
             "OpenCL acceleration was explicitly requested (device='opencl'), "
             "but no accessible OpenCL driver (.so) was found on this system. "
-            "To allow automatic CPU fallback when OpenCL is missing, use device='auto'."
+            "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
         )
     
     if req == "cpu":

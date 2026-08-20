@@ -17,46 +17,46 @@ const DEFAULT_PRESETS = {
     repo_id: 'second-state/Realistic_Vision_V6.0_B1-GGUF',
     filename: 'realisticVisionV60B1_v51HyperVAE-Q4_k.gguf',
     alias: 'realistic.gguf',
-    description: 'Realistic Vision V6.0 B1 (Q4_K) - Ultra-detailed photorealistic portraits & scenes',
+    description: 'Realistic Vision V6.0 B1 (Q4_K) - Full SD1.5 photorealistic portraits (Needs 20-25 steps, CFG 7.0, DPM2 Karras)',
     size_mb: 1547,
-    default_steps: 10,
-    default_cfg: 4.0
+    default_steps: 20,
+    default_cfg: 7.0
   },
   speed: {
     repo_id: 'gpustack/stable-diffusion-v1-5-GGUF',
     filename: 'stable-diffusion-v1-5-Q4_1.gguf',
     alias: 'lightning.gguf',
-    description: 'Stable Diffusion 1.5 (Q4_1) - Fast general-purpose base model',
+    description: 'Stable Diffusion 1.5 Base (Q4_1) - General-purpose base model (Needs 15-20 steps, CFG 6.0)',
     size_mb: 1682,
-    default_steps: 10,
-    default_cfg: 4.0
+    default_steps: 20,
+    default_cfg: 6.0
   },
   sdxs: {
     repo_id: 'concedo/sdxs-512-tinySDdistilled-GGUF',
     filename: 'sdxs-512-tinySDdistilled_Q8_0.gguf',
     alias: 'sdxs.gguf',
-    description: 'SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight mobile-optimized model (~650MB)',
+    description: 'SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight 1-2 step distilled model (CFG 1.0, Euler A)',
     size_mb: 651,
     default_steps: 2,
-    default_cfg: 2.0
+    default_cfg: 1.0
   },
   turbo: {
     repo_id: 'second-state/stable-diffusion-v1-5-GGUF',
     filename: 'stable-diffusion-v1-5-pruned-emaonly-Q4_0.gguf',
     alias: 'turbo.gguf',
-    description: 'Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency lightweight base model',
+    description: 'Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency SD1.5 base model (Needs 15-20 steps, CFG 6.0)',
     size_mb: 1494,
-    default_steps: 8,
-    default_cfg: 3.0
+    default_steps: 20,
+    default_cfg: 6.0
   },
   anime: {
     repo_id: 'haven-ai-companion/dreamshaper8-lcm-gguf',
     filename: 'DreamShaper8_LCM_q4_0.gguf',
     alias: 'anime.gguf',
-    description: 'DreamShaper 8 LCM (Q4_0) - Stylized anime & 2.5D fast illustration art',
+    description: 'DreamShaper 8 LCM (Q4_0) - Fast 4-8 step LCM stylized anime & illustration art (CFG 1.5, LCM)',
     size_mb: 1550,
     default_steps: 6,
-    default_cfg: 2.0
+    default_cfg: 1.5
   }
 };
 
@@ -487,9 +487,9 @@ function resolveDeviceBackend(requestedDevice) {
       return { effectiveDevice: 'vulkan', nglLayers: 99 };
     }
     throw new Error(
-      "[termux-diffusion] Vulkan GPU acceleration was explicitly requested (device='vulkan'), " +
+      "[termux-diffusion] Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), " +
       "but no accessible Vulkan driver (.so) was found on this system. " +
-      "To allow automatic CPU fallback when GPU is missing, use device='auto'."
+      "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
     );
   }
 
@@ -500,7 +500,7 @@ function resolveDeviceBackend(requestedDevice) {
     throw new Error(
       "[termux-diffusion] OpenCL acceleration was explicitly requested (device='opencl'), " +
       "but no accessible OpenCL driver (.so) was found on this system. " +
-      "To allow automatic CPU fallback when OpenCL is missing, use device='auto'."
+      "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
     );
   }
 
@@ -879,40 +879,62 @@ function locateSdCli() {
 function getGalaxyGalleryDir() {
   const p1 = path.join(os.homedir(), 'storage', 'pictures', 'TermuxDiffusion');
   if (fs.existsSync(path.dirname(p1))) {
-    if (!fs.existsSync(p1)) fs.mkdirSync(p1, { recursive: true });
-    return p1;
+    try {
+      if (!fs.existsSync(p1)) fs.mkdirSync(p1, { recursive: true });
+      return p1;
+    } catch (_) {}
   }
   const fallback = path.join(getCacheDir(), 'outputs');
-  if (!fs.existsSync(fallback)) fs.mkdirSync(fallback, { recursive: true });
+  try {
+    if (!fs.existsSync(fallback)) fs.mkdirSync(fallback, { recursive: true });
+  } catch (_) {}
   return fallback;
 }
 
 function exportToAndroidGallery(sourcePath, destinationName) {
-  const destDir = getGalaxyGalleryDir();
-  const destName = destinationName || path.basename(sourcePath);
-  const destPath = path.join(destDir, destName);
-  fs.copyFileSync(sourcePath, destPath);
+  try {
+    const destDir = getGalaxyGalleryDir();
+    const fallbackDir = path.join(getCacheDir(), 'outputs');
+    const destName = destinationName || path.basename(sourcePath);
+    const destPath = path.join(destDir, destName);
 
-  if (isAndroidTermux()) {
-    try {
-      spawnSync('am', ['broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', `file://${destPath}`], { timeout: 3000 });
-    } catch (e) {
-      console.warn('[termux-diffusion] Media scanner intent warning:', e.message);
+    if (destDir === fallbackDir && isAndroidTermux() && !fs.existsSync(path.join(os.homedir(), 'storage'))) {
+      console.warn('[termux-diffusion] Android storage permission not granted. Image saved to app cache: ' + sourcePath + '. Run termux-setup-storage to auto-sync to Gallery.');
+      return sourcePath;
     }
+
+    if (path.resolve(sourcePath) !== path.resolve(destPath)) {
+      fs.copyFileSync(sourcePath, destPath);
+    }
+
+    if (isAndroidTermux()) {
+      try {
+        spawnSync('am', ['broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', `file://${destPath}`], { timeout: 3000 });
+      } catch (e) {
+        console.warn('[termux-diffusion] Media scanner intent warning:', e.message);
+      }
+    }
+    return destPath;
+  } catch (err) {
+    console.warn('[termux-diffusion] Could not export to Galaxy gallery (permission missing? Run termux-setup-storage):', err.message);
+    return null;
   }
-  return destPath;
 }
 
-function provisionEngine(force = false) {
+function provisionEngine(optionsOrForce = false) {
+  const isObj = typeof optionsOrForce === 'object' && optionsOrForce !== null;
+  const force = isObj ? Boolean(optionsOrForce.force) : Boolean(optionsOrForce);
+  const explicitJobs = isObj ? (optionsOrForce.jobs || optionsOrForce.makeJobs || optionsOrForce.make_jobs) : null;
+
   const existing = locateSdCli();
   if (existing && !force) return existing;
 
   console.log('[Start] [termux-diffusion] Running automated provisioner for native Bionic C++ engine...');
   const isTermux = isAndroidTermux();
   if (isTermux) {
-    console.log('[Package] Checking required packages via pkg (clang, cmake, git, termux-api)...');
+    console.log('[Package] Checking required packages via pkg (clang, make, cmake, git, termux-api, vulkan-loader, opencl-headers)...');
     try {
-      spawnSync('pkg', ['install', '-y', 'clang', 'cmake', 'git', 'termux-api', 'wget'], { stdio: 'inherit' });
+      spawnSync('pkg', ['install', '-y', 'clang', 'make', 'cmake', 'git', 'termux-api', 'wget', 'vulkan-loader', 'vulkan-headers', 'vulkan-tools', 'opencl-headers'], { stdio: 'inherit' });
     } catch (e) {
       console.warn('[termux-diffusion] pkg install warning:', e.message);
     }
@@ -923,12 +945,12 @@ function provisionEngine(force = false) {
   const repoDir = path.join(buildRoot, 'stable-diffusion.cpp');
 
   if (!fs.existsSync(repoDir)) {
-    console.log('[Download] Cloning stable-diffusion.cpp repository...');
-    spawnSync('git', ['clone', 'https://github.com/leejet/stable-diffusion.cpp', repoDir], { stdio: 'inherit' });
+    console.log('[Download] Cloning stable-diffusion.cpp repository (depth=1, recursive)...');
+    spawnSync('git', ['clone', '--depth', '1', '--recursive', 'https://github.com/leejet/stable-diffusion.cpp', repoDir], { stdio: 'inherit', timeout: 180000 });
   }
 
   console.log('[Submodule] Synchronizing submodules (ggml)...');
-  spawnSync('git', ['submodule', 'update', '--init', '--recursive'], { cwd: repoDir, stdio: 'inherit' });
+  spawnSync('git', ['submodule', 'update', '--init', '--recursive', '--depth', '1'], { cwd: repoDir, stdio: 'inherit', timeout: 180000 });
 
   const buildDir = path.join(repoDir, 'build');
   if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
@@ -946,9 +968,18 @@ function provisionEngine(force = false) {
 
   spawnSync('cmake', cmakeArgs, { cwd: buildDir, stdio: 'inherit' });
 
-  const memInfo = getMemoryInfo();
-  const cpus = (os.cpus() && os.cpus().length) || 2;
-  const makeJobs = memInfo.totalMb < 4096 ? 1 : (memInfo.totalMb < 8192 ? Math.min(2, cpus) : Math.min(4, cpus));
+  const envJobs = process.env.TERMUX_DIFFUSION_MAKE_JOBS || process.env.TERMUX_DIFFUSION_JOBS;
+  let makeJobs;
+  if (explicitJobs !== null && explicitJobs !== undefined) {
+    makeJobs = Math.max(1, parseInt(explicitJobs, 10));
+  } else if (envJobs && !isNaN(parseInt(envJobs, 10))) {
+    makeJobs = Math.max(1, parseInt(envJobs, 10));
+  } else {
+    const memInfo = getMemoryInfo();
+    const cpus = (os.cpus() && os.cpus().length) || 2;
+    const totalRam = memInfo.effectiveTotalMb || memInfo.totalMb || 4096;
+    makeJobs = totalRam < 4096 ? 1 : (totalRam < 8192 ? Math.min(2, cpus) : Math.min(4, cpus));
+  }
 
   console.log(`[Build] Compiling native Bionic binary with clang (make -j${makeJobs})...`);
   spawnSync('make', [`-j${makeJobs}`], { cwd: buildDir, stdio: 'inherit' });
@@ -1022,6 +1053,131 @@ async function generate(options) {
 
   const presets = listPresets();
   const steps = options.steps || (presets[model] ? presets[model].default_steps : 10);
+  const VALID_SAMPLERS = new Set([
+    'euler', 'euler_a', 'heun', 'dpm2', 'dpm++2s_a', 'dpm++2m', 'dpm++2mv2', 'ipndm', 'ipndm_v', 'lcm'
+  ]);
+  const VALID_SCHEDULERS = new Set([
+    'default', 'discrete', 'karras', 'exponential', 'ays', 'gits'
+  ]);
+
+  const rawSampler = options.samplingMethod || options.sampling_method || options.sampler;
+  let effectiveSampler = null;
+  if (rawSampler && String(rawSampler).trim()) {
+    const sm = String(rawSampler).toLowerCase().trim();
+    if (VALID_SAMPLERS.has(sm)) {
+      effectiveSampler = sm;
+    } else {
+      console.warn(`[termux-diffusion] Invalid sampling_method '${rawSampler}'; falling back to engine default ('euler_a'). Valid: ${Array.from(VALID_SAMPLERS).join(', ')}`);
+    }
+  }
+
+  const rawSchedule = options.schedule;
+  let effectiveSchedule = null;
+  if (rawSchedule && String(rawSchedule).trim()) {
+    const sc = String(rawSchedule).toLowerCase().trim();
+    if (VALID_SCHEDULERS.has(sc)) {
+      effectiveSchedule = sc;
+    } else {
+      console.warn(`[termux-diffusion] Invalid schedule '${rawSchedule}'; falling back to engine default ('default'). Valid: ${Array.from(VALID_SCHEDULERS).join(', ')}`);
+    }
+  }
+
+  const vaeTiling = !!(options.vaeTiling || options.vae_tiling);
+
+  const rawInitImg = options.initImg || options.init_img;
+  let effectiveInitPath = null;
+  let effectiveStrength = null;
+  if (rawInitImg && String(rawInitImg).trim()) {
+    effectiveInitPath = path.resolve(String(rawInitImg).trim());
+    if (!fs.existsSync(effectiveInitPath)) {
+      throw new Error(`[termux-diffusion] Img2Img source image file does not exist: ${effectiveInitPath}`);
+    }
+
+    const rawStrength = options.strength;
+    if (rawStrength !== undefined && rawStrength !== null) {
+      const sNum = parseFloat(rawStrength);
+      if (isNaN(sNum) || sNum < 0.0) {
+        console.warn(`[termux-diffusion] Img2Img strength (${rawStrength}) is below 0.0; auto-clamping to 0.0.`);
+        effectiveStrength = 0.0;
+      } else if (sNum > 1.0) {
+        console.warn(`[termux-diffusion] Img2Img strength (${rawStrength}) is above 1.0; auto-clamping to 1.0.`);
+        effectiveStrength = 1.0;
+      } else {
+        effectiveStrength = sNum;
+      }
+    } else {
+      effectiveStrength = 0.75;
+    }
+  }
+
+  const rawLoraDir = options.loraDir || options.lora_dir;
+  let effectiveLoraPath = null;
+  if (rawLoraDir && String(rawLoraDir).trim()) {
+    effectiveLoraPath = path.resolve(String(rawLoraDir).trim());
+    if (!fs.existsSync(effectiveLoraPath)) {
+      throw new Error(`[termux-diffusion] LoRA directory does not exist: ${effectiveLoraPath}`);
+    }
+  }
+
+  const rawClipSkip = options.clipSkip || options.clip_skip;
+  let effectiveClipSkip = null;
+  if (rawClipSkip !== undefined && rawClipSkip !== null) {
+    const csNum = parseInt(rawClipSkip, 10);
+    if (isNaN(csNum) || csNum < 1) {
+      console.warn(`[termux-diffusion] clip_skip (${rawClipSkip}) is below 1; auto-clamping to 1.`);
+      effectiveClipSkip = 1;
+    } else if (csNum > 2) {
+      console.warn(`[termux-diffusion] clip_skip (${rawClipSkip}) is above standard 2; auto-clamping to 2.`);
+      effectiveClipSkip = 2;
+    } else {
+      effectiveClipSkip = csNum;
+    }
+  }
+
+  const rawControlNet = options.controlNet || options.control_net;
+  let effectiveCnetPath = null;
+  let effectiveCimgPath = null;
+  let effectiveCstrength = null;
+  if (rawControlNet && String(rawControlNet).trim()) {
+    effectiveCnetPath = path.resolve(String(rawControlNet).trim());
+    if (!fs.existsSync(effectiveCnetPath)) {
+      throw new Error(`[termux-diffusion] ControlNet model file does not exist: ${effectiveCnetPath}`);
+    }
+
+    const rawControlImage = options.controlImage || options.control_image;
+    if (rawControlImage && String(rawControlImage).trim()) {
+      effectiveCimgPath = path.resolve(String(rawControlImage).trim());
+      if (!fs.existsSync(effectiveCimgPath)) {
+        throw new Error(`[termux-diffusion] ControlNet control image does not exist: ${effectiveCimgPath}`);
+      }
+    }
+
+    const rawCstrength = options.controlStrength || options.control_strength;
+    if (rawCstrength !== undefined && rawCstrength !== null) {
+      const csNum = parseFloat(rawCstrength);
+      if (isNaN(csNum) || csNum < 0.0) {
+        console.warn(`[termux-diffusion] ControlNet strength (${rawCstrength}) is below 0.0; auto-clamping to 0.0.`);
+        effectiveCstrength = 0.0;
+      } else if (csNum > 2.0) {
+        console.warn(`[termux-diffusion] ControlNet strength (${rawCstrength}) is above 2.0; auto-clamping to 2.0.`);
+        effectiveCstrength = 2.0;
+      } else {
+        effectiveCstrength = csNum;
+      }
+    } else {
+      effectiveCstrength = 0.9;
+    }
+  }
+
+  const rawTaesd = options.taesd;
+  let effectiveTaesdPath = null;
+  if (rawTaesd && String(rawTaesd).trim()) {
+    effectiveTaesdPath = path.resolve(String(rawTaesd).trim());
+    if (!fs.existsSync(effectiveTaesdPath)) {
+      throw new Error(`[termux-diffusion] TAESD model file does not exist: ${effectiveTaesdPath}`);
+    }
+  }
+
   // Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
   let sdCli = locateSdCli();
 
@@ -1062,22 +1218,27 @@ async function generate(options) {
   }
   if (seed >= 0) cmdArgs.push('-s', String(seed));
 
+  if (effectiveSampler) cmdArgs.push('--sampling-method', effectiveSampler);
+  if (effectiveSchedule && effectiveSchedule !== 'default') cmdArgs.push('--scheduler', effectiveSchedule);
+  if (vaeTiling) cmdArgs.push('--vae-tiling');
+  if (effectiveInitPath) {
+    cmdArgs.push('-i', effectiveInitPath);
+    cmdArgs.push('--strength', String(effectiveStrength));
+  }
+  if (effectiveLoraPath) cmdArgs.push('--lora-model-dir', effectiveLoraPath);
+  if (effectiveClipSkip) cmdArgs.push('--clip-skip', String(effectiveClipSkip));
+  if (effectiveCnetPath) {
+    cmdArgs.push('--control-net', effectiveCnetPath);
+    if (effectiveCimgPath) cmdArgs.push('--control-image', effectiveCimgPath);
+    cmdArgs.push('--control-strength', String(effectiveCstrength));
+  }
+  if (effectiveTaesdPath) cmdArgs.push('--taesd', effectiveTaesdPath);
+
   const gpuArgs = getSdCliGpuArgs(effectiveDevice, nglLayers);
   cmdArgs.push(...gpuArgs);
 
   console.log(`[Render] [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
   const startTime = Date.now();
-
-  // Pre-flight memory safety check
-  if (!options.force) {
-    const memSafety = checkMemorySafety(1200);
-    if (!memSafety.safe) {
-      console.warn(`[termux-diffusion] Memory Warning: ${memSafety.message}`);
-      if (options.strictMemory) {
-        throw new Error(`Insufficient memory to safely run diffusion model: ${memSafety.message}`);
-      }
-    }
-  }
 
   let wakeLockAcquired = false;
   if (isAndroidTermux()) {
@@ -1094,18 +1255,35 @@ async function generate(options) {
   function safeKillProcess(proc, timeoutMs = 2000) {
     if (!proc || proc.killed || proc.exitCode !== null) return;
     const pid = proc.pid;
+    if (!pid) return;
     console.warn(`[termux-diffusion] Initiating child process termination (PID: ${pid})...`);
 
     try {
-      // Step 1: Attempt graceful SIGTERM
-      proc.kill('SIGTERM');
+      // Step 1: Attempt graceful SIGTERM (to process group if POSIX)
+      if (process.platform !== 'win32') {
+        try {
+          process.kill(-pid, 'SIGTERM');
+        } catch (_) {
+          proc.kill('SIGTERM');
+        }
+      } else {
+        proc.kill('SIGTERM');
+      }
 
       // Step 2: Escalate to SIGKILL if still running
       const forceKillTimer = setTimeout(() => {
         if (proc.exitCode === null && !proc.killed) {
           console.warn(`[termux-diffusion] Child process (PID: ${pid}) did not exit within ${timeoutMs}ms, escalating to SIGKILL...`);
           try {
-            proc.kill('SIGKILL');
+            if (process.platform !== 'win32') {
+              try {
+                process.kill(-pid, 'SIGKILL');
+              } catch (_) {
+                proc.kill('SIGKILL');
+              }
+            } else {
+              proc.kill('SIGKILL');
+            }
           } catch (err) {
             console.error(`[termux-diffusion] Error sending SIGKILL to PID ${pid}:`, err.message);
           }
@@ -1120,7 +1298,9 @@ async function generate(options) {
 
   try {
     await new Promise((resolve, reject) => {
-      const proc = spawn(sdCli, cmdArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+      const spawnOpts = { stdio: ['ignore', 'pipe', 'pipe'] };
+      if (process.platform !== 'win32') spawnOpts.detached = true;
+      const proc = spawn(sdCli, cmdArgs, spawnOpts);
       let stderrBuffer = '';
 
       let onAbort = null;
@@ -1223,8 +1403,19 @@ async function generate(options) {
     prompt: prompt,
     model: model,
     steps: steps,
-    cfgScale: cfgScale,
-    elapsedSec: elapsedSec
+    cfgScale: options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0),
+    elapsedSec: elapsedSec,
+    samplingMethod: effectiveSampler,
+    schedule: effectiveSchedule,
+    vaeTiling: !!vaeTiling,
+    initImg: effectiveInitPath,
+    strength: effectiveStrength,
+    loraDir: effectiveLoraPath,
+    clipSkip: effectiveClipSkip,
+    controlNet: effectiveCnetPath,
+    controlImage: effectiveCimgPath,
+    controlStrength: effectiveCstrength,
+    taesd: effectiveTaesdPath
   };
 }
 

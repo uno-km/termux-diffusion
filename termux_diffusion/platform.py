@@ -43,31 +43,66 @@ def get_default_cache_dir() -> Path:
 
 
 def get_galaxy_gallery_dir() -> Path:
-    """Return the designated Samsung Galaxy / Android photo gallery save directory."""
+    """Return the designated Samsung Galaxy / Android photo gallery save directory.
+    
+    Gracefully degrades to app-private cache (~/.cache/termux-diffusion/outputs)
+    if Android external storage permission (~/storage) has not been granted.
+    """
     termux_storage = Path.home() / "storage" / "pictures" / "TermuxDiffusion"
     if (Path.home() / "storage" / "pictures").is_dir():
-        termux_storage.mkdir(parents=True, exist_ok=True)
-        return termux_storage
+        try:
+            termux_storage.mkdir(parents=True, exist_ok=True)
+            return termux_storage
+        except (PermissionError, OSError):
+            pass
 
     sdcard_pictures = Path("/sdcard/Pictures/TermuxDiffusion")
     if Path("/sdcard/Pictures").is_dir():
-        sdcard_pictures.mkdir(parents=True, exist_ok=True)
-        return sdcard_pictures
+        try:
+            sdcard_pictures.mkdir(parents=True, exist_ok=True)
+            return sdcard_pictures
+        except (PermissionError, OSError):
+            pass
 
     fallback = get_default_cache_dir() / "outputs"
     fallback.mkdir(parents=True, exist_ok=True)
     return fallback
 
 
-def export_to_android_gallery(image_path: Path) -> Path:
-    """Copy generated image to Samsung Gallery and broadcast media scanner intent."""
-    gallery_dir = get_galaxy_gallery_dir()
-    dest = gallery_dir / image_path.name
-    if dest != image_path:
-        shutil.copy2(image_path, dest)
+def export_to_android_gallery(image_path: Path) -> Optional[Path]:
+    """Copy generated image to Samsung Gallery and broadcast media scanner intent.
+    
+    Returns:
+        Optional[Path]: Destination path in gallery if successful, None if storage permission denied.
+    """
+    try:
+        gallery_dir = get_galaxy_gallery_dir()
+        fallback_dir = get_default_cache_dir() / "outputs"
+        
+        # If gallery dir is fallback (app-private sandbox), notify user if permission is missing
+        if gallery_dir == fallback_dir and is_android_termux() and not (Path.home() / "storage").exists():
+            logger.warning(
+                "Android storage permission not granted. Image saved to app cache: %s. "
+                "To export to Samsung Gallery automatically, run 'termux-setup-storage'.",
+                image_path
+            )
+            _broadcast_media_scanner(image_path)
+            return image_path
 
-    _broadcast_media_scanner(dest)
-    return dest
+        dest = gallery_dir / image_path.name
+        if dest.resolve() != image_path.resolve():
+            shutil.copy2(image_path, dest)
+
+        _broadcast_media_scanner(dest)
+        return dest
+    except (PermissionError, OSError) as exc:
+        logger.warning(
+            "Could not export image to Android Gallery due to permission restrictions (%s). "
+            "Image is safely preserved at local path: %s. "
+            "Please run 'termux-setup-storage' to grant external gallery access.",
+            exc, image_path
+        )
+        return None
 
 
 def _broadcast_media_scanner(image_path: Path) -> None:

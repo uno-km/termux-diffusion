@@ -166,12 +166,18 @@ async function runTests() {
   });
 
   // 11. Cancellation Propagation (AbortSignal)
+  const dummyModelGguf = path.join(os.tmpdir(), `dummy_test_model_${Date.now()}.gguf`);
+  const headerBuf = Buffer.alloc(128);
+  headerBuf.write('GGUF', 0, 4, 'utf-8');
+  headerBuf.writeUInt32LE(3, 4);
+  fs.writeFileSync(dummyModelGguf, headerBuf);
+
   await it('generate respects pre-aborted AbortSignal immediately', async () => {
     const controller = new AbortController();
     controller.abort();
     let caught = false;
     try {
-      await generate({ prompt: 'test prompt', signal: controller.signal });
+      await generate({ prompt: 'test prompt', model: dummyModelGguf, signal: controller.signal });
     } catch (err) {
       caught = true;
       assert(err.message.includes('aborted'));
@@ -183,13 +189,38 @@ async function runTests() {
   await it('generate fails fast when engine missing without autoProvision', async () => {
     let caught = false;
     try {
-      await generate({ prompt: 'test prompt', autoProvision: false });
+      await generate({ prompt: 'test prompt', model: dummyModelGguf, autoProvision: false });
     } catch (err) {
       caught = true;
-      assert(err.message.includes('sd-cli') || err.message.includes('not found') || err.message.includes('termux-diffusion'));
+      assert(err.message.includes('sd-cli') || err.message.includes('not found') || err.message.includes('termux-diffusion') || err.message.includes('Engine failed') || err.message.includes('spawn'));
     }
     assert.strictEqual(caught, true, 'Should not compile without explicit autoProvision: true');
   });
+
+  // 13. Advanced Parameter Validation (Fail-fast for missing Img2Img / ControlNet files)
+  await it('generate fails fast when initImg or controlNet file is missing', async () => {
+    let caughtInit = false;
+    try {
+      await generate({ prompt: 'test img2img', model: dummyModelGguf, initImg: '/non_existent_img_123.png', autoProvision: false });
+    } catch (err) {
+      caughtInit = true;
+      assert(err.message.includes('Img2Img source image file does not exist'));
+    }
+    assert.strictEqual(caughtInit, true, 'Should reject non-existent initImg file');
+
+    let caughtCnet = false;
+    try {
+      await generate({ prompt: 'test cnet', model: dummyModelGguf, controlNet: '/non_existent_cnet_123.gguf', autoProvision: false });
+    } catch (err) {
+      caughtCnet = true;
+      assert(err.message.includes('ControlNet model file does not exist'));
+    }
+    assert.strictEqual(caughtCnet, true, 'Should reject non-existent controlNet file');
+  });
+
+  if (fs.existsSync(dummyModelGguf)) {
+    fs.unlinkSync(dummyModelGguf);
+  }
 
   console.log(`\n[RESULT] Node.js Test Results: ${passed}/${total} Passed.`);
   if (passed !== total) {

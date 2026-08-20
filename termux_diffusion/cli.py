@@ -36,6 +36,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("prompt", type=str, help="Text description of image")
     gen_parser.add_argument("-m", "--model", type=str, default="realistic", help="Model preset or .gguf path (default: realistic)")
     gen_parser.add_argument("-n", "--negative", type=str, default=None, help="Negative prompt")
+    gen_parser.add_argument("-d", "--device", type=str, default="cpu", help="Computing device (cpu, gpu, vulkan, opencl, auto)")
     gen_parser.add_argument("-s", "--steps", type=int, default=None, help="Denoising steps")
     gen_parser.add_argument("-c", "--cfg", type=float, default=None, help="CFG guidance scale")
     gen_parser.add_argument("-W", "--width", type=int, default=512, help="Image width (default: 512)")
@@ -43,6 +44,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("-t", "--threads", type=int, default=None, help="CPU threads")
     gen_parser.add_argument("--seed", type=int, default=-1, help="RNG seed (-1 for random, 0 to 4294967295)")
     gen_parser.add_argument("-o", "--output", type=str, default=None, help="Output file path")
+    gen_parser.add_argument("--sampler", type=str, default=None, help="Sampler algorithm (euler, euler_a, heun, dpm2, dpm++2s_a, dpm++2m, lcm)")
+    gen_parser.add_argument("--schedule", type=str, default=None, help="Noise schedule (default, discrete, karras, exponential, ays, gits)")
+    gen_parser.add_argument("--vae-tiling", action="store_true", help="Enable VAE tiling for ~70% lower peak memory")
+    gen_parser.add_argument("-i", "--init-img", type=str, default=None, help="Source image for Img2Img synthesis")
+    gen_parser.add_argument("--strength", type=float, default=None, help="Img2Img denoising strength (0.0 to 1.0, default: 0.75)")
+    gen_parser.add_argument("--lora-dir", type=str, default=None, help="Directory path containing LoRA weights")
+    gen_parser.add_argument("--clip-skip", type=int, default=None, help="CLIP layers to skip (1 or 2)")
+    gen_parser.add_argument("--control-net", type=str, default=None, help="Path to ControlNet model")
+    gen_parser.add_argument("--control-image", type=str, default=None, help="Path to ControlNet guide image")
+    gen_parser.add_argument("--control-strength", type=float, default=None, help="ControlNet strength (0.0 to 2.0, default: 0.9)")
+    gen_parser.add_argument("--taesd", type=str, default=None, help="Path to Tiny AutoEncoder (TAESD) model")
 
     # install command
     subparsers.add_parser("install", help="Provision and compile native Bionic C++ engine")
@@ -74,6 +86,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             prompt=args.prompt,
             model=args.model,
             negative_prompt=args.negative,
+            device=args.device,
             steps=args.steps,
             cfg_scale=args.cfg,
             width=args.width,
@@ -81,6 +94,17 @@ def main(argv: Optional[List[str]] = None) -> int:
             threads=args.threads,
             seed=args.seed,
             output=args.output,
+            sampling_method=args.sampler,
+            schedule=args.schedule,
+            vae_tiling=args.vae_tiling,
+            init_img=args.init_img,
+            strength=args.strength,
+            lora_dir=args.lora_dir,
+            clip_skip=args.clip_skip,
+            control_net=args.control_net,
+            control_image=args.control_image,
+            control_strength=args.control_strength,
+            taesd=args.taesd,
             auto_provision=True
         )
         return 0 if res.path.exists() else 1

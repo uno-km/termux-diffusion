@@ -26,6 +26,14 @@ from .platform import (
 logger = logging.getLogger("termux_diffusion.core")
 
 
+VALID_SAMPLERS = {
+    "euler", "euler_a", "heun", "dpm2", "dpm++2s_a", "dpm++2m", "dpm++2mv2", "ipndm", "ipndm_v", "lcm"
+}
+VALID_SCHEDULERS = {
+    "default", "discrete", "karras", "exponential", "ays", "gits"
+}
+
+
 @dataclass
 class GenerationResult:
     """Encapsulates the output and metadata of an AI diffusion generation task."""
@@ -41,22 +49,50 @@ class GenerationResult:
     height: int
     seed: int
     elapsed_sec: float
+    sampling_method: Optional[str] = None
+    schedule: Optional[str] = None
+    vae_tiling: bool = False
+    init_img: Optional[Path] = None
+    strength: Optional[float] = None
+    lora_dir: Optional[Path] = None
+    clip_skip: Optional[int] = None
+    control_net: Optional[Path] = None
+    control_image: Optional[Path] = None
+    control_strength: Optional[float] = None
+    taesd: Optional[Path] = None
 
     def __str__(self) -> str:
         return f"<GenerationResult path='{self.path}' device='{self.device}' elapsed={self.elapsed_sec:.1f}s>"
 
 
+import signal
+
 def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -> None:
-    """Safely terminate and reap child processes to prevent zombie handles and battery drain."""
-    if proc is None or proc.poll() is not None:
+    """Safely terminate and reap child process groups to prevent zombie handles."""
+    if proc is None:
+        return
+    try:
+        if proc.poll() is not None:
+            return
+    except Exception:
         return
 
     pid = getattr(proc, "pid", None)
+    if pid is None:
+        return
+
     logger.warning("Initiating child process termination (PID: %s)...", pid)
 
+    # Step 1: Attempt graceful SIGTERM to process group (POSIX) or single process (Windows)
     try:
-        # Step 1: Attempt graceful SIGTERM
-        proc.terminate()
+        if sys.platform != "win32":
+            try:
+                os.killpg(os.getpgid(pid), signal.SIGTERM)
+            except OSError:
+                proc.terminate()
+        else:
+            proc.terminate()
+
         try:
             proc.wait(timeout=timeout)
             logger.debug("Child process (PID: %s) gracefully exited on SIGTERM.", pid)
@@ -67,14 +103,24 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
                 pid,
                 timeout,
             )
+    except Exception as e:
+        logger.debug("SIGTERM dispatch note for PID %s: %s", pid, e)
 
-        # Step 2: Forceful SIGKILL if still alive
-        proc.kill()
+    # Step 2: Forceful SIGKILL to process group if still alive
+    try:
+        if sys.platform != "win32":
+            try:
+                os.killpg(os.getpgid(pid), signal.SIGKILL)
+            except OSError:
+                proc.kill()
+        else:
+            proc.kill()
+
         try:
             proc.wait(timeout=2.0)
             logger.debug("Child process (PID: %s) forcefully terminated and reaped.", pid)
         except subprocess.TimeoutExpired:
-            logger.error("Child process (PID: %s) could not be reaped after SIGKILL.", pid)
+            logger.error("Child process (PID: %s) did not exit after SIGKILL (kernel D-state or pending I/O).", pid)
     except Exception as exc:
         logger.error("Error during child process termination (PID: %s): %s", pid, exc)
 
@@ -121,6 +167,17 @@ def generate(
     seed: int = -1,
     threads: Optional[int] = None,
     output: Optional[Union[str, Path]] = None,
+    sampling_method: Optional[str] = None,
+    schedule: Optional[str] = None,
+    vae_tiling: bool = False,
+    init_img: Optional[Union[str, Path]] = None,
+    strength: Optional[float] = None,
+    lora_dir: Optional[Union[str, Path]] = None,
+    clip_skip: Optional[int] = None,
+    control_net: Optional[Union[str, Path]] = None,
+    control_image: Optional[Union[str, Path]] = None,
+    control_strength: Optional[float] = None,
+    taesd: Optional[Union[str, Path]] = None,
     export_gallery: bool = True,
     wake_lock: bool = True,
     low_ram_guard: bool = True,
@@ -143,10 +200,21 @@ def generate(
         seed: Sampling RNG seed (-1 for random).
         threads: Number of CPU threads (defaults to optimal big-core cluster count, e.g. 4).
         output: Destination output filename or path.
+        sampling_method: Sampler algorithm ('euler', 'euler_a', 'heun', 'dpm2', 'dpm++2s_a', 'dpm++2m', 'dpm++2mv2', 'ipndm', 'lcm').
+        schedule: Noise schedule algorithm ('default', 'discrete', 'karras', 'exponential', 'ays', 'gits').
+        vae_tiling: Whether to enable VAE tiling to reduce peak memory during final image decoding by ~70%.
+        init_img: Path to initial image for Img2Img synthesis.
+        strength: Img2Img denoising strength (0.0 to 1.0, default: 0.75).
+        lora_dir: Directory containing .gguf/.safetensors LoRA adapter weights.
+        clip_skip: Number of CLIP layers to skip (1 or 2, default: None).
+        control_net: Path to ControlNet model file.
+        control_image: Path to ControlNet hint/guide image (e.g. pose, edges).
+        control_strength: ControlNet influence strength (0.0 to 2.0, default: 0.9).
+        taesd: Path to Tiny AutoEncoder (TAESD) model for ultra-fast VAE decoding.
         export_gallery: Whether to copy image to Samsung Gallery and broadcast media scanner intent.
         wake_lock: Whether to acquire Android CPU WakeLock during generation.
-        low_ram_guard: Whether to verify available memory before starting inference. Raises OOMRiskError if RAM is below threshold.
-        auto_provision: Whether to automatically compile the native C++ engine if missing (default: False to respect library boundaries).
+        low_ram_guard: Whether to verify available memory before starting inference.
+        auto_provision: Whether to automatically compile the native C++ engine if missing.
         timeout: Maximum inference timeout in seconds (default: 1800s / 30m).
     
     Returns:
@@ -163,12 +231,11 @@ def generate(
     from .hardware import resolve_device_backend, get_sd_cli_gpu_args
     effective_device, ngl_layers = resolve_device_backend(device_mode)
 
-    # 1. Pre-flight Memory Safety Guard
+    # 1. Pre-flight Memory Safety Inspection (Informational only, non-blocking)
     if low_ram_guard:
         safe, msg = check_memory_safety(required_mb=1200)
         if not safe:
-            logger.error("Low RAM Guard triggered: %s", msg)
-            raise OOMRiskError(msg)
+            logger.warning("Low RAM Warning: %s", msg)
 
     # 2. Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
     sd_cli = locate_sd_cli()
@@ -232,6 +299,117 @@ def generate(
     # Append GPU offloading args from hardware detection
     cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
 
+    # --- Advanced TOP 7 Parameters Integration & Defense ---
+    effective_sampler = None
+    if sampling_method is not None and str(sampling_method).strip():
+        sm_clean = str(sampling_method).lower().strip()
+        if sm_clean in VALID_SAMPLERS:
+            effective_sampler = sm_clean
+            cmd.extend(["--sampling-method", sm_clean])
+        else:
+            logger.warning(
+                "Invalid sampling_method '%s'; falling back to engine default ('euler_a'). Valid: %s",
+                sampling_method, ", ".join(sorted(VALID_SAMPLERS))
+            )
+
+    effective_schedule = None
+    if schedule is not None and str(schedule).strip():
+        sc_clean = str(schedule).lower().strip()
+        if sc_clean in VALID_SCHEDULERS:
+            effective_schedule = sc_clean
+            if sc_clean != "default":
+                cmd.extend(["--scheduler", sc_clean])
+        else:
+            logger.warning(
+                "Invalid schedule '%s'; falling back to engine default ('default'). Valid: %s",
+                schedule, ", ".join(sorted(VALID_SCHEDULERS))
+            )
+
+    if vae_tiling:
+        cmd.append("--vae-tiling")
+
+    effective_init_path = None
+    effective_strength = None
+    if init_img is not None and str(init_img).strip():
+        effective_init_path = Path(init_img).resolve()
+        if not effective_init_path.is_file():
+            raise FileNotFoundError(f"Img2Img source image file does not exist: {effective_init_path}")
+        cmd.extend(["-i", str(effective_init_path)])
+        
+        # Denoising strength for Img2Img
+        if strength is not None:
+            raw_s = float(strength)
+            if raw_s < 0.0:
+                logger.warning("Img2Img strength (%s) is below 0.0; auto-clamping to 0.0 (minimal change).", raw_s)
+                effective_strength = 0.0
+            elif raw_s > 1.0:
+                logger.warning("Img2Img strength (%s) is above 1.0; auto-clamping to 1.0 (full regeneration).", raw_s)
+                effective_strength = 1.0
+            else:
+                effective_strength = raw_s
+        else:
+            effective_strength = 0.75  # Standard Img2Img default
+        cmd.extend(["--strength", str(effective_strength)])
+
+    effective_lora_path = None
+    if lora_dir is not None and str(lora_dir).strip():
+        effective_lora_path = Path(lora_dir).resolve()
+        if not effective_lora_path.is_dir():
+            raise FileNotFoundError(f"LoRA directory does not exist: {effective_lora_path}")
+        cmd.extend(["--lora-model-dir", str(effective_lora_path)])
+
+    effective_clip_skip = None
+    if clip_skip is not None:
+        try:
+            cs_val = int(clip_skip)
+            if cs_val < 1:
+                logger.warning("clip_skip (%s) is below 1; auto-clamping to 1.", cs_val)
+                effective_clip_skip = 1
+            elif cs_val > 2:
+                logger.warning("clip_skip (%s) is above standard maximum 2; auto-clamping to 2.", cs_val)
+                effective_clip_skip = 2
+            else:
+                effective_clip_skip = cs_val
+            cmd.extend(["--clip-skip", str(effective_clip_skip)])
+        except (ValueError, TypeError):
+            logger.warning("Invalid clip_skip value '%s'; skipping flag.", clip_skip)
+
+    effective_cnet_path = None
+    effective_cimg_path = None
+    effective_cstrength = None
+    if control_net is not None and str(control_net).strip():
+        effective_cnet_path = Path(control_net).resolve()
+        if not effective_cnet_path.is_file():
+            raise FileNotFoundError(f"ControlNet model file does not exist: {effective_cnet_path}")
+        cmd.extend(["--control-net", str(effective_cnet_path)])
+
+        if control_image is not None and str(control_image).strip():
+            effective_cimg_path = Path(control_image).resolve()
+            if not effective_cimg_path.is_file():
+                raise FileNotFoundError(f"ControlNet control image does not exist: {effective_cimg_path}")
+            cmd.extend(["--control-image", str(effective_cimg_path)])
+
+        if control_strength is not None:
+            raw_cs = float(control_strength)
+            if raw_cs < 0.0:
+                logger.warning("ControlNet strength (%s) is below 0.0; auto-clamping to 0.0.", raw_cs)
+                effective_cstrength = 0.0
+            elif raw_cs > 2.0:
+                logger.warning("ControlNet strength (%s) is above 2.0; auto-clamping to 2.0.", raw_cs)
+                effective_cstrength = 2.0
+            else:
+                effective_cstrength = raw_cs
+        else:
+            effective_cstrength = 0.9
+        cmd.extend(["--control-strength", str(effective_cstrength)])
+
+    effective_taesd_path = None
+    if taesd is not None and str(taesd).strip():
+        effective_taesd_path = Path(taesd).resolve()
+        if not effective_taesd_path.is_file():
+            raise FileNotFoundError(f"TAESD model file does not exist: {effective_taesd_path}")
+        cmd.extend(["--taesd", str(effective_taesd_path)])
+
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
     print(f"[termux-diffusion] Processing inference with model='{model}' (steps={steps}, threads={threads}, device={device_mode})...")
 
@@ -241,14 +419,17 @@ def generate(
     with TermuxWakeLock(enabled=wake_lock):
         process = None
         try:
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
-            )
+            popen_kwargs = {
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.STDOUT,
+                "text": True,
+                "bufsize": 1,
+                "universal_newlines": True,
+            }
+            if sys.platform != "win32":
+                popen_kwargs["start_new_session"] = True
+
+            process = subprocess.Popen(cmd, **popen_kwargs)
             if _proc_holder is not None:
                 _proc_holder.append(process)
             if _cancel_event and _cancel_event.is_set():
@@ -315,7 +496,18 @@ def generate(
         width=width,
         height=height,
         seed=seed,
-        elapsed_sec=elapsed
+        elapsed_sec=elapsed,
+        sampling_method=effective_sampler,
+        schedule=effective_schedule,
+        vae_tiling=vae_tiling,
+        init_img=effective_init_path,
+        strength=effective_strength,
+        lora_dir=effective_lora_path,
+        clip_skip=effective_clip_skip,
+        control_net=effective_cnet_path,
+        control_image=effective_cimg_path,
+        control_strength=effective_cstrength,
+        taesd=effective_taesd_path,
     )
 
 

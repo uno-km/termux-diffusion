@@ -417,6 +417,111 @@ table.matrix-table tr:nth-child(even) {
   background-color: #fafbfc;
 }
 
+/* ── Visual Showcase & Gallery Styling ────────────────────────────────────── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 24px 0 36px 0;
+}
+
+.gallery-card {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 68, 153, 0.12);
+  border-color: var(--primary-color);
+}
+
+.gallery-img-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* 1:1 Aspect Ratio */
+  background: #0b132b;
+  overflow: hidden;
+}
+
+.gallery-img-wrapper img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-card:hover .gallery-img-wrapper img {
+  transform: scale(1.03);
+}
+
+.gallery-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(11, 19, 43, 0.85);
+  color: var(--accent-cyan);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0, 245, 212, 0.3);
+}
+
+.gallery-info {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-title {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 8px 0;
+}
+
+.gallery-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.param-tag {
+  background: var(--bg-alt);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.78em;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.gallery-prompt {
+  background: var(--bg-surface);
+  border-left: 3px solid var(--primary-color);
+  padding: 8px 10px;
+  font-size: 0.84em;
+  color: var(--text-muted);
+  border-radius: 0 4px 4px 0;
+  line-height: 1.45;
+  margin-top: auto;
+}
+
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 footer {
   background-color: var(--bg-surface);

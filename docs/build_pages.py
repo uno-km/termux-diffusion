@@ -32,6 +32,7 @@ def get_sidebar(active_page):
         ('installation.html', 'common.nav.installation', 'Installation Guide'),
         ('quickstart.html', 'common.nav.quickstart', 'Quickstart & Recipes'),
         ('models.html', 'common.nav.models', 'Model Hub & Presets'),
+        ('gallery.html', 'common.nav.gallery', 'Visual Showcase & Gallery'),
         ('api-reference.html', 'common.nav.apiReference', '100% Full API Reference'),
         ('advanced-parameters.html', 'common.nav.advancedParams', 'High-Precision Parameters'),
         ('benchmarks.html', 'common.nav.benchmarks', 'Benchmarks & Hardware'),
@@ -532,6 +533,486 @@ generate("speedy sports car in city", model="speed", device="gpu")</code></pre>
 </body>
 </html>"""
 
+# 4-1. gallery.html
+gallery_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{get_head_meta(
+    "Visual Showcase & Render Gallery | Termux-Diffusion",
+    "Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations."
+)}
+</head>
+<body>
+{get_header('gallery.html')}
+
+    <div class="container">
+{get_sidebar('gallery.html')}
+
+        <main class="content">
+            <h2 data-i18n="gallery.title">Visual Showcase &amp; Render Gallery</h2>
+            <p data-i18n="gallery.subtitle">Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.</p>
+
+            <div class="alert alert-tip">
+                <span class="alert-title">📸 Real On-Device Generation Gallery</span>
+                <p>All images showcased below were generated natively on mobile ARM64 hardware using <code>termux-diffusion</code>. No remote cloud GPU was used.</p>
+            </div>
+
+            <!-- SECTION 1: UNIFIED PROMPT BENCHMARK -->
+            <h3>1. Unified Prompt Benchmark: Fast vs High-End (동일 프롬프트 비교)</h3>
+            <p><strong>Test Prompt:</strong> <em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></p>
+
+            <div class="gallery-grid">
+                <!-- SDXS Fast -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">SDXS &bull; FAST</span>
+                        <img src="assets/gallery/final_sdxs_fast.png" alt="SDXS Fast" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">SDXS Tiny Distilled (Fast)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: sdxs (Q8_0)</span>
+                            <span class="param-tag">Steps: 1</span>
+                            <span class="param-tag">CFG: 1.0</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, tired expression, replaced by AI..."</div>
+                    </div>
+                </div>
+
+                <!-- SDXS High-End -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">SDXS &bull; HIGH-END</span>
+                        <img src="assets/gallery/final_sdxs_highend.png" alt="SDXS High-End" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">SDXS Tiny Distilled (High-End)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: sdxs (Q8_0)</span>
+                            <span class="param-tag">Steps: 2</span>
+                            <span class="param-tag">CFG: 1.0</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, sharp focus, 8k uhd..."</div>
+                    </div>
+                </div>
+
+                <!-- ANIME Fast -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">ANIME &bull; FAST</span>
+                        <img src="assets/gallery/final_anime_fast.png" alt="Anime Fast" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">DreamShaper 8 LCM (Fast)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: anime (Q4_0)</span>
+                            <span class="param-tag">Steps: 4</span>
+                            <span class="param-tag">CFG: 1.5</span>
+                            <span class="param-tag">Sampler: lcm</span>
+                        </div>
+                        <div class="gallery-prompt">"1man, anime style, weary 30s Korean Asian man wearing glasses and a white t-shirt, tired facial expression, masterpiece..."</div>
+                    </div>
+                </div>
+
+                <!-- ANIME High-End -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">ANIME &bull; HIGH-END</span>
+                        <img src="assets/gallery/final_anime_highend.png" alt="Anime High-End" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">DreamShaper 8 LCM (High-End)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: anime (Q4_0)</span>
+                            <span class="param-tag">Steps: 8</span>
+                            <span class="param-tag">CFG: 1.8</span>
+                            <span class="param-tag">Sampler: lcm (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"1man, anime style, weary 30s Korean Asian man wearing glasses, replaced by AI automation, masterpiece, sharp lineart..."</div>
+                    </div>
+                </div>
+
+                <!-- TURBO Fast -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">TURBO &bull; FAST</span>
+                        <img src="assets/gallery/final_turbo_fast.png" alt="Turbo Fast" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">SD1.5 Pruned Base (Fast)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: turbo (Q4_0)</span>
+                            <span class="param-tag">Steps: 12</span>
+                            <span class="param-tag">CFG: 6.0</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, sitting alone in modern room..."</div>
+                    </div>
+                </div>
+
+                <!-- TURBO High-End -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">TURBO &bull; HIGH-END</span>
+                        <img src="assets/gallery/final_turbo_highend.png" alt="Turbo High-End" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">SD1.5 Pruned Base (High-End)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: turbo (Q4_0)</span>
+                            <span class="param-tag">Steps: 20</span>
+                            <span class="param-tag">CFG: 7.0</span>
+                            <span class="param-tag">Sampler: dpm++2m (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed, cinematic lighting, 8k..."</div>
+                    </div>
+                </div>
+
+                <!-- SPEED Fast -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">SPEED &bull; FAST</span>
+                        <img src="assets/gallery/final_speed_fast.png" alt="Speed Fast" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">SD1.5 Base Q4_1 (Fast)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: speed (Q4_1)</span>
+                            <span class="param-tag">Steps: 12</span>
+                            <span class="param-tag">CFG: 6.0</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, tired facial expression..."</div>
+                    </div>
+                </div>
+
+                <!-- SPEED High-End -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">SPEED &bull; HIGH-END</span>
+                        <img src="assets/gallery/final_speed_highend.png" alt="Speed High-End" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">SD1.5 Base Q4_1 (High-End)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: speed (Q4_1)</span>
+                            <span class="param-tag">Steps: 20</span>
+                            <span class="param-tag">CFG: 7.0</span>
+                            <span class="param-tag">Sampler: dpm++2m (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed and replaced by AI, 8k uhd..."</div>
+                    </div>
+                </div>
+
+                <!-- REALISTIC Fast -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">REALISTIC &bull; FAST</span>
+                        <img src="assets/gallery/final_realistic_fast.png" alt="Realistic Fast" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Realistic Vision V6.0 (Fast)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: realistic (Q4_K)</span>
+                            <span class="param-tag">Steps: 12</span>
+                            <span class="param-tag">CFG: 6.0</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, cinematic lighting..."</div>
+                    </div>
+                </div>
+
+                <!-- REALISTIC High-End -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">REALISTIC &bull; HIGH-END</span>
+                        <img src="assets/gallery/final_realistic_highend.png" alt="Realistic High-End" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Realistic Vision V6.0 (High-End)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: realistic (Q4_K)</span>
+                            <span class="param-tag">Steps: 20</span>
+                            <span class="param-tag">CFG: 7.0</span>
+                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed, sharp focus, 8k uhd..."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: USER PHOTO IMG2IMG -->
+            <h3>2. User Photo Img2Img Transformation (인물 사진 변환)</h3>
+            <p>Demonstration of native Img2Img synthesis preserving facial contour and gaze direction with custom style transfer.</p>
+
+            <div class="gallery-grid">
+                <!-- Source -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">INPUT &bull; SOURCE</span>
+                        <img src="assets/gallery/user_source_photo_512.png" alt="Source Photo" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">User Source Portrait (Input)</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Format: PNG 512x512</span>
+                            <span class="param-tag">Type: Initial Image</span>
+                        </div>
+                        <div class="gallery-prompt">Original input portrait photograph used for Img2Img image-to-image synthesis pipeline.</div>
+                    </div>
+                </div>
+
+                <!-- Cyberpunk -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">IMG2IMG &bull; CYBERPUNK</span>
+                        <img src="assets/gallery/user_photo_cyberpunk_transformed.png" alt="Cyberpunk Transform" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Cyberpunk Style Transformation</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: sdxs</span>
+                            <span class="param-tag">Steps: 2</span>
+                            <span class="param-tag">CFG: 1.0</span>
+                            <span class="param-tag">Strength: 0.55</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                        </div>
+                        <div class="gallery-prompt">"cyberpunk style portrait of a Korean man, glowing neon cybernetic implants, holographic HUD, sharp focus, 8k"</div>
+                    </div>
+                </div>
+
+                <!-- Hyperrealistic -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">IMG2IMG &bull; HIGH-END</span>
+                        <img src="assets/gallery/user_photo_hyperrealistic_rendered.png" alt="Hyperrealistic Render" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Hyperrealistic Studio Rendering</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: sdxs</span>
+                            <span class="param-tag">Steps: 4</span>
+                            <span class="param-tag">CFG: 1.0</span>
+                            <span class="param-tag">Strength: 0.65</span>
+                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"photorealistic portrait of a young Korean software engineer smiling in high-tech research lab, cinematic lighting, 8k uhd"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: CREATIVE THEMATIC SHOWCASE -->
+            <h3>3. Creative Thematic Showcase (테마별 고해상도 렌더링)</h3>
+
+            <div class="gallery-grid">
+                <!-- Anime Heroine -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">ANIME &bull; HEROINE</span>
+                        <img src="assets/gallery/model_anime_max_quality.png" alt="Anime Heroine" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Anime Heroine with Magical Runes</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: anime</span>
+                            <span class="param-tag">Steps: 8</span>
+                            <span class="param-tag">CFG: 2.0</span>
+                            <span class="param-tag">Sampler: lcm (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"1girl, anime heroine with silver hair and glowing blue eyes, floating magical runes, dynamic angle, masterpiece"</div>
+                    </div>
+                </div>
+
+                <!-- Mars Astronaut -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">REALISTIC &bull; MARS</span>
+                        <img src="assets/gallery/model_realistic_max_quality.png" alt="Mars Astronaut" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Mars Astronaut Cinematic Close-up</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: realistic</span>
+                            <span class="param-tag">Steps: 10</span>
+                            <span class="param-tag">CFG: 7.0</span>
+                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"hyperrealistic cinematic close-up portrait of an astronaut on Mars looking into the camera, detailed visor reflections, 8k"</div>
+                    </div>
+                </div>
+
+                <!-- Cyberpunk Sports Car -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">SDXS &bull; CYBERPUNK</span>
+                        <img src="assets/gallery/model_sdxs_max_quality.png" alt="Cyberpunk Car" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Cyberpunk Sports Car in Neo Seoul</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: sdxs</span>
+                            <span class="param-tag">Steps: 4</span>
+                            <span class="param-tag">CFG: 1.0</span>
+                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"a futuristic sleek cyberpunk sports car cruising through neo seoul at midnight, neon reflections, highly detailed"</div>
+                    </div>
+                </div>
+
+                <!-- Robotic Kitten -->
+                <div class="gallery-card">
+                    <div class="gallery-img-wrapper">
+                        <span class="gallery-badge">SPEED &bull; KITTEN</span>
+                        <img src="assets/gallery/model_speed_max_quality.png" alt="Robotic Kitten" loading="lazy">
+                    </div>
+                    <div class="gallery-info">
+                        <h4 class="gallery-title">Cute Robotic Kitten with Glowing Yarn</h4>
+                        <div class="gallery-params">
+                            <span class="param-tag">Model: speed</span>
+                            <span class="param-tag">Steps: 8</span>
+                            <span class="param-tag">CFG: 6.5</span>
+                            <span class="param-tag">Sampler: dpm++2s_a (karras)</span>
+                        </div>
+                        <div class="gallery-prompt">"a cute robotic kitten playing with a neon glowing yarn ball, high detail, studio lighting"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: FULL PARAMETER & PROMPT MATRIX TABLE -->
+            <h3>4. Full Parameter &amp; Prompt Matrix (전수 설정값 및 프롬프트 표)</h3>
+            <div style="overflow-x: auto;">
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Preview</th>
+                            <th>Category</th>
+                            <th>Model / Preset</th>
+                            <th>Steps</th>
+                            <th>CFG</th>
+                            <th>Sampler &amp; Schedule</th>
+                            <th>Prompt &amp; Detailed Configuration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><img src="assets/gallery/final_sdxs_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified Fast</span></td>
+                            <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong>1</strong></td>
+                            <td>1.0</td>
+                            <td><code>euler_a</code> (Default)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_sdxs_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong>2</strong></td>
+                            <td>1.0</td>
+                            <td><code>euler_a</code> (Default)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_anime_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified Fast</span></td>
+                            <td><code>anime</code> (LCM Distilled)</td>
+                            <td><strong>4</strong></td>
+                            <td>1.5</td>
+                            <td><code>lcm</code> (Default)</td>
+                            <td><em>"1man, anime style, weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, tired facial expression, replaced by AI automation, masterpiece, highly detailed, sharp lineart"</em></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_anime_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><code>anime</code> (LCM Distilled)</td>
+                            <td><strong>8</strong></td>
+                            <td>1.8</td>
+                            <td><code>lcm</code> (Karras)</td>
+                            <td><em>"1man, anime style, weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, tired facial expression, replaced by AI automation, masterpiece, highly detailed, sharp lineart"</em><br><small style="color: var(--text-muted);">Negative: worst quality, low quality, deformed</small></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_turbo_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified Fast</span></td>
+                            <td><code>turbo</code> (SD1.5 Pruned)</td>
+                            <td><strong>12</strong></td>
+                            <td>6.0</td>
+                            <td><code>euler_a</code> (Default)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_turbo_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><code>turbo</code> (SD1.5 Pruned)</td>
+                            <td><strong>20</strong></td>
+                            <td>7.0</td>
+                            <td><code>dpm++2m</code> (Karras)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blurry, low quality, bad anatomy, deformed</small></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_speed_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified Fast</span></td>
+                            <td><code>speed</code> (SD1.5 Base)</td>
+                            <td><strong>12</strong></td>
+                            <td>6.0</td>
+                            <td><code>euler_a</code> (Default)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_speed_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><code>speed</code> (SD1.5 Base)</td>
+                            <td><strong>20</strong></td>
+                            <td>7.0</td>
+                            <td><code>dpm++2m</code> (Karras)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blurry, low quality, bad anatomy, deformed</small></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_realistic_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified Fast</span></td>
+                            <td><code>realistic</code> (Vision V6)</td>
+                            <td><strong>12</strong></td>
+                            <td>6.0</td>
+                            <td><code>euler_a</code> (Default)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/final_realistic_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Unified High-End</span></td>
+                            <td><code>realistic</code> (Vision V6)</td>
+                            <td><strong>20</strong></td>
+                            <td>7.0</td>
+                            <td><code>dpm2</code> (Karras)</td>
+                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blurry, bad anatomy, deformed, distorted, lowres</small></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/user_photo_cyberpunk_transformed.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Img2Img Style</span></td>
+                            <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong>2</strong></td>
+                            <td>1.0</td>
+                            <td><code>euler_a</code> (Strength: 0.55)</td>
+                            <td><em>"cyberpunk style portrait of a Korean man, glowing neon cybernetic implants, holographic HUD, sharp focus, 8k"</em><br><small style="color: var(--text-muted);">Input: user_source_photo_512.png</small></td>
+                        </tr>
+                        <tr>
+                            <td><img src="assets/gallery/user_photo_hyperrealistic_rendered.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
+                            <td><span class="param-tag">Img2Img Studio</span></td>
+                            <td><code>sdxs</code> (Distilled)</td>
+                            <td><strong>4</strong></td>
+                            <td>1.0</td>
+                            <td><code>dpm2</code> (Strength: 0.65, Karras)</td>
+                            <td><em>"photorealistic portrait of a young Korean software engineer smiling in high-tech research lab, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Input: user_source_photo_512.png</small></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+{get_footer()}
+</body>
+</html>"""
+
 # 5. api-reference.html
 api_reference_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -950,6 +1431,12 @@ sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
         <priority>0.9</priority>
     </url>
     <url>
+        <loc>https://uno-km.github.io/termux-diffusion/gallery.html</loc>
+        <lastmod>2026-08-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
         <loc>https://uno-km.github.io/termux-diffusion/quickstart.html</loc>
         <lastmod>2026-08-20</lastmod>
         <changefreq>weekly</changefreq>
@@ -1149,6 +1636,7 @@ pages = {
     'docs/index.html': index_html,
     'docs/installation.html': installation_html,
     'docs/models.html': models_html,
+    'docs/gallery.html': gallery_html,
     'docs/quickstart.html': quickstart_html,
     'docs/api-reference.html': api_reference_html,
     'docs/benchmarks.html': benchmarks_html,

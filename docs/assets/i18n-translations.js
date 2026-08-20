@@ -10,7 +10,7 @@
     "en": {
       "common": {
         "brand": "Termux-Diffusion",
-        "releaseTag": "v1.0.0 (Dual Engine)",
+        "releaseTag": "v1.1.1 (Dual Engine)",
         "pypiBtn": "PyPI Package",
         "npmBtn": "npm Package",
         "githubBtn": "GitHub Repo",
@@ -20,7 +20,10 @@
           "installation": "Installation Guide",
           "quickstart": "Quickstart & Recipes",
           "models": "Model Hub & Presets",
+          "gallery": "Visual Showcase & Gallery",
           "apiReference": "100% Full API Reference",
+          "advancedParams": "High-Precision Parameters",
+          "benchmarks": "Benchmarks & Hardware",
           "versions": "Version Archive",
           "advanced": "AI Agent Specifications"
         },
@@ -56,6 +59,10 @@
         "title": "Model Hub & GGUF Quantization Presets",
         "subtitle": "Curated mobile-optimized weights and custom Hugging Face repository streaming."
       },
+      "gallery": {
+        "title": "Visual Showcase & Render Gallery",
+        "subtitle": "Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations."
+      },
       "api": {
         "title": "100% Full API Reference Manual",
         "subtitle": "Complete parameter tables, storage routing APIs, memory diagnostics, and CLI tool matrix."
@@ -68,7 +75,7 @@
     "ko": {
       "common": {
         "brand": "Termux-Diffusion",
-        "releaseTag": "v1.0.0 (듀얼 엔진)",
+        "releaseTag": "v1.1.1 (듀얼 엔진)",
         "pypiBtn": "PyPI 패키지",
         "npmBtn": "npm 패키지",
         "githubBtn": "GitHub 저장소",
@@ -78,7 +85,10 @@
           "installation": "설치 가이드",
           "quickstart": "퀵스타트 & 레시피",
           "models": "모델 허브 & 프리셋",
+          "gallery": "실전 렌더 갤러리 & 쇼케이스",
           "apiReference": "100% 풀 API 명세",
+          "advancedParams": "고정밀 제어 인자",
+          "benchmarks": "벤치마크 & 하드웨어",
           "versions": "버전 아카이브",
           "advanced": "AI 에이전트 사양서"
         },
@@ -114,6 +124,10 @@
         "title": "모델 허브 & GGUF 프리셋",
         "subtitle": "5대 모바일 최적화 프리셋 및 허깅페이스 커스텀 가중치 자동 스트리밍."
       },
+      "gallery": {
+        "title": "실전 렌더 갤러리 & 비주얼 쇼케이스",
+        "subtitle": "전체 5종 모델 프리셋별 생성 이미지, 원본 사진 기반 Img2Img 변환, 그리고 파라미터별 실제 렌더링 결과 모음."
+      },
       "api": {
         "title": "100% 풀 API 공식 레퍼런스",
         "subtitle": "모든 파라미터 전수 명세표, 스토리지 캐시 라우팅, 메모리 진단 및 CLI 명령어 매트릭스."
@@ -126,7 +140,7 @@
     "ja": {
       "common": {
         "brand": "Termux-Diffusion",
-        "releaseTag": "v1.0.0 (デュアルエンジン)",
+        "releaseTag": "v1.1.1 (デュアルエンジン)",
         "pypiBtn": "PyPI パッケージ",
         "npmBtn": "npm パッケージ",
         "githubBtn": "GitHub リポジトリ",
@@ -136,29 +150,24 @@
           "installation": "インストールガイド",
           "quickstart": "クイックスタート & レシピ",
           "models": "モデルハブ & プリセット",
+          "gallery": "ビジュアルギャラリー & 生成結果",
           "apiReference": "100% 完全APIリファレンス",
+          "advancedParams": "高精度パラメータ",
+          "benchmarks": "ベンチマーク & ハードウェア",
           "versions": "バージョン履歴",
           "advanced": "AIエージェント仕様書"
         },
         "footerText": "© 2026 Termux-Diffusion Project (uno-km). MIT License."
       },
-      "home": {
-        "title": "Termux-Diffusion",
-        "subtitle": "Android Termux & Samsung Galaxy 向けオンデバイス ARM64 Bionic Stable Diffusion 画像生成基盤",
-        "quickInstallTitle": "ユーザー状況別クイックプレイブック",
-        "quickInstallDesc": "端末環境に合わせて1行コマンドを実行してください:",
-        "whyTitle": "モバイルオンデバイスAIの課題",
-        "whyText": "従来のデスクトップStable DiffusionはCUDAや8GB以上のVRAMを必要とし、PRoot仮想化はメモリ過消費とAndroid LMKによる強制終了を招きます。",
-        "solTitle": "アーキテクチャの突破口",
-        "solText": "Termux-Diffusionは仮想化なしでAndroid Bionic libc上でARM64 NEONベクトル演算とGGUF量子化テンソルを直接駆動し、CPUスリープ防止(WakeLock)やSamsung Gallery自動登録を実現します。",
-        "capTitle": "コア機能とモバイル堅牢性",
-        "codeExampleTitle": "標準コード例 (Python & Node.js)"
+      "gallery": {
+        "title": "ビジュアルギャラリー & 実写ショーケース",
+        "subtitle": "5大モデルプリセット、Img2Img変換、各種パラメータによる生成結果一覧。"
       }
     },
     "zh": {
       "common": {
         "brand": "Termux-Diffusion",
-        "releaseTag": "v1.0.0 (双引擎)",
+        "releaseTag": "v1.1.1 (双引擎)",
         "pypiBtn": "PyPI 软件包",
         "npmBtn": "npm 软件包",
         "githubBtn": "GitHub 仓库",
@@ -168,16 +177,20 @@
           "installation": "安装指南",
           "quickstart": "快速上手 & 最佳实践",
           "models": "模型中心 & 预设",
+          "gallery": "视觉画廊与生成示例",
           "apiReference": "100% 完整API参考",
+          "advancedParams": "高精度控制参数",
+          "benchmarks": "基准测试 & 硬件",
           "versions": "版本归档",
           "advanced": "AI智能体规范"
         },
         "footerText": "© 2026 Termux-Diffusion Project (uno-km). MIT License."
       },
-      "home": {
-        "title": "Termux-Diffusion",
-        "subtitle": "面向安卓 Termux 与三星 Galaxy 的端侧 Bionic ARM64 Stable Diffusion AI 图像生成框架",
-        "quickInstallTitle": "用户场景速查指南",
+      "gallery": {
+        "title": "视觉画廊与渲染展示",
+        "subtitle": "全系列 5 大模型预设、图生图 (Img2Img) 及各项参数设置的真实生成效果展示。"
+      }
+    }
         "quickInstallDesc": "根据您的环境选择对应的一键命令直接运行:",
         "whyTitle": "移动端设备工程挑战",
         "whyText": "传统桌面级Stable Diffusion依赖CUDA和8GB以上显存，PRoot虚拟化容器导致40%额外内存损耗并极易触发安卓LMK崩溃。",

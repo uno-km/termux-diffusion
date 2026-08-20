@@ -69,9 +69,10 @@ def test_gguf_validation_and_cached_models_lifecycle(temp_cache):
     assert len(list_cached_models(temp_cache)) == 0
     assert not is_model_cached("realistic", temp_cache)
 
-    # 1. Create valid GGUF file (first 4 bytes = b'GGUF')
+    # 1. Create valid GGUF file (magic 'GGUF' + uint32 version 3)
+    import struct
     valid_model = temp_cache / "realistic.gguf"
-    valid_content = b"GGUF" + b"\x00" * 256
+    valid_content = b"GGUF" + struct.pack("<I", 3) + b"\x00" * 256
     valid_model.write_bytes(valid_content)
 
     assert validate_gguf_file(valid_model) is True

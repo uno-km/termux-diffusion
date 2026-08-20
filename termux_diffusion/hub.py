@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import shutil
+import struct
 import subprocess
 import sys
 import threading
@@ -12,6 +13,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from types import MappingProxyType
 from typing import Callable, Dict, List, Optional, Union
 
 from .exceptions import ModelDownloadError, ModelNotFoundError
@@ -19,8 +21,8 @@ from .platform import get_default_cache_dir
 
 logger = logging.getLogger("termux_diffusion.hub")
 
-# Built-in Samsung Galaxy & Mobile optimized GGUF presets
-DEFAULT_PRESETS: Dict[str, Dict] = {
+# Built-in Samsung Galaxy & Mobile optimized GGUF presets (Immutable MappingProxy)
+DEFAULT_PRESETS = MappingProxyType({
     "realistic": {
         "repo_id": "second-state/Realistic_Vision_V6.0_B1-GGUF",
         "filename": "realisticVisionV60B1_v51HyperVAE-Q4_k.gguf",
@@ -66,7 +68,7 @@ DEFAULT_PRESETS: Dict[str, Dict] = {
         "default_steps": 10,
         "default_cfg": 4.5,
     },
-}
+})
 
 _registry_lock = threading.Lock()
 _custom_registry: Dict[str, Dict] = {}
@@ -77,17 +79,23 @@ GGUF_MAGIC = b"GGUF"
 
 
 def validate_gguf_file(file_path: Union[str, Path]) -> bool:
-    """Validate whether the file is a genuine GGUF binary format by inspecting the header magic bytes."""
+    """Validate whether the file is a genuine GGUF binary format by inspecting the header magic bytes & version."""
     path = Path(os.path.expanduser(str(file_path))).resolve()
     if not path.is_file():
         return False
 
     try:
-        if path.stat().st_size < 4:
+        if path.stat().st_size < 8:
             return False
         with open(path, "rb") as f:
             header = f.read(4)
-            return header == GGUF_MAGIC
+            if header != GGUF_MAGIC:
+                return False
+            version_bytes = f.read(4)
+            if len(version_bytes) < 4:
+                return False
+            version = struct.unpack("<I", version_bytes)[0]
+            return version in (1, 2, 3)
     except Exception as e:
         logger.debug("GGUF header validation error on %s: %s", path, e)
         return False

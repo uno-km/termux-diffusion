@@ -110,8 +110,11 @@ async function runTests() {
     const tempGguf = path.join(os.tmpdir(), `test_valid_${Date.now()}.gguf`);
     const tempInvalid = path.join(os.tmpdir(), `test_invalid_${Date.now()}.gguf`);
 
-    // Write real GGUF header ("GGUF" = 0x47 0x47 0x55 0x46)
-    fs.writeFileSync(tempGguf, Buffer.concat([Buffer.from('GGUF'), Buffer.alloc(128)]));
+    // Write real GGUF header ("GGUF" = 0x47 0x47 0x55 0x46 + uint32 version 3)
+    const validHeader = Buffer.alloc(128);
+    validHeader.write('GGUF', 0, 4, 'utf-8');
+    validHeader.writeUInt32LE(3, 4);
+    fs.writeFileSync(tempGguf, validHeader);
     fs.writeFileSync(tempInvalid, Buffer.from('NOT_GGUF_DATA'));
 
     assert.strictEqual(validateGgufFile(tempGguf), true, 'Valid GGUF header failed');

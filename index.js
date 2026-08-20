@@ -83,12 +83,25 @@ function validateGgufFile(filePath) {
     const resolved = path.resolve(filePath);
     if (!fs.existsSync(resolved)) return false;
     const stat = fs.statSync(resolved);
-    if (stat.size < 4) return false;
+    if (stat.size < 8) return false;
     const fd = fs.openSync(resolved, 'r');
-    const buf = Buffer.alloc(4);
-    fs.readSync(fd, buf, 0, 4, 0);
+    const buf = Buffer.alloc(8);
+    fs.readSync(fd, buf, 0, 8, 0);
     fs.closeSync(fd);
-    return buf.equals(GGUF_MAGIC);
+    if (!buf.subarray(0, 4).equals(GGUF_MAGIC)) return false;
+    const version = buf.readUInt32LE(4);
+    return version >= 1 && version <= 3;
+  } catch (_) {
+    return false;
+  }
+}
+
+function isExecutable(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return false;
+    if (process.platform === 'win32') return true;
+    fs.accessSync(filePath, fs.constants.X_OK);
+    return true;
   } catch (_) {
     return false;
   }
@@ -818,22 +831,23 @@ function locateSdCli() {
 
   for (const name of candidates) {
     const p = path.join(binDir, name);
-    if (fs.existsSync(p)) return p;
+    if (isExecutable(p)) return p;
   }
 
   const prefixBin = '/data/data/com.termux/files/usr/bin/sd-cli';
-  if (fs.existsSync(prefixBin)) return prefixBin;
+  if (isExecutable(prefixBin)) return prefixBin;
 
   for (const name of ['sd-cli', 'sd-cli.exe']) {
     const localBin = path.join(os.homedir(), '.local', 'bin', name);
-    if (fs.existsSync(localBin)) return localBin;
+    if (isExecutable(localBin)) return localBin;
   }
 
   const whichCmd = process.platform === 'win32' ? 'where' : 'which';
   for (const name of ['sd-cli', 'sd']) {
     const whichRes = spawnSync(whichCmd, [name], { encoding: 'utf-8' });
     if (whichRes.status === 0 && whichRes.stdout.trim()) {
-      return whichRes.stdout.trim().split('\r\n')[0].split('\n')[0];
+      const found = whichRes.stdout.trim().split('\r\n')[0].split('\n')[0];
+      if (isExecutable(found)) return found;
     }
   }
   return null;

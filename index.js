@@ -678,7 +678,7 @@ async function downloadModel(modelNameOrUrl, options = {}) {
   }
 
   const tempPath = path.join(targetDir, `${targetFilename}.part`);
-  console.log(`📥 [termux-diffusion] Downloading model '${targetFilename}' (${downloadUrl})...`);
+  console.log(`[Download] [termux-diffusion] Downloading model '${targetFilename}' (${downloadUrl})...`);
 
   await new Promise((resolve, reject) => {
     function fetchUrl(currentUrl) {
@@ -729,7 +729,7 @@ async function downloadModel(modelNameOrUrl, options = {}) {
             const pct = ((downloadedBytes / totalBytes) * 100).toFixed(1);
             const mbDone = (downloadedBytes / (1024 * 1024)).toFixed(1);
             const mbTotal = (totalBytes / (1024 * 1024)).toFixed(1);
-            process.stdout.write(`  ⏳ Progress: ${mbDone}MB / ${mbTotal}MB (${pct}%) [Resumed: ${isResumed ? 'Y' : 'N'}]\r`);
+            process.stdout.write(`  [Progress] Progress: ${mbDone}MB / ${mbTotal}MB (${pct}%) [Resumed: ${isResumed ? 'Y' : 'N'}]\r`);
           }
         });
 
@@ -737,7 +737,7 @@ async function downloadModel(modelNameOrUrl, options = {}) {
           fileStream.end(() => {
             process.stdout.write('\n');
             fs.renameSync(tempPath, finalPath);
-            console.log(`✅ [termux-diffusion] Model downloaded & cached at: ${finalPath}`);
+            console.log(`[OK] [termux-diffusion] Model downloaded & cached at: ${finalPath}`);
             resolve(finalPath);
           });
         });
@@ -835,10 +835,10 @@ function provisionEngine(force = false) {
   const existing = locateSdCli();
   if (existing && !force) return existing;
 
-  console.log('🚀 [termux-diffusion] Running automated provisioner for native Bionic C++ engine...');
+  console.log('[Start] [termux-diffusion] Running automated provisioner for native Bionic C++ engine...');
   const isTermux = isAndroidTermux();
   if (isTermux) {
-    console.log('📦 Checking required packages via pkg (clang, cmake, git, termux-api)...');
+    console.log('[Package] Checking required packages via pkg (clang, cmake, git, termux-api)...');
     try {
       spawnSync('pkg', ['install', '-y', 'clang', 'cmake', 'git', 'termux-api', 'wget'], { stdio: 'inherit' });
     } catch (e) {
@@ -851,18 +851,18 @@ function provisionEngine(force = false) {
   const repoDir = path.join(buildRoot, 'stable-diffusion.cpp');
 
   if (!fs.existsSync(repoDir)) {
-    console.log('📥 Cloning stable-diffusion.cpp repository...');
+    console.log('[Download] Cloning stable-diffusion.cpp repository...');
     spawnSync('git', ['clone', 'https://github.com/leejet/stable-diffusion.cpp', repoDir], { stdio: 'inherit' });
   }
 
-  console.log('🔧 Synchronizing submodules (ggml)...');
+  console.log('[Submodule] Synchronizing submodules (ggml)...');
   spawnSync('git', ['submodule', 'update', '--init', '--recursive'], { cwd: repoDir, stdio: 'inherit' });
 
   const buildDir = path.join(repoDir, 'build');
   if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
 
   const hw = detectHardwareProfile();
-  console.log(`⚙️ Configuring CMake build for SoC: ${hw.socName}, GPU: ${hw.gpuName}, Backend: ${hw.recommendedBackend}...`);
+  console.log(`[Config] Configuring CMake build for SoC: ${hw.socName}, GPU: ${hw.gpuName}, Backend: ${hw.recommendedBackend}...`);
 
   const cmakeArgs = [
     '..',
@@ -874,7 +874,7 @@ function provisionEngine(force = false) {
 
   spawnSync('cmake', cmakeArgs, { cwd: buildDir, stdio: 'inherit' });
 
-  console.log('🔨 Compiling native Bionic binary with clang (make -j4)...');
+  console.log('[Build] Compiling native Bionic binary with clang (make -j4)...');
   spawnSync('make', ['-j4'], { cwd: buildDir, stdio: 'inherit' });
 
   const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
@@ -885,7 +885,7 @@ function provisionEngine(force = false) {
   if (fs.existsSync(compiled)) {
     fs.copyFileSync(compiled, target);
     fs.chmodSync(target, 0o755);
-    console.log(`✨ [termux-diffusion] Engine provisioned successfully at: ${target}`);
+    console.log(`[Done] [termux-diffusion] Engine provisioned successfully at: ${target}`);
     return target;
   }
   throw new Error('Could not find compiled sd-cli binary in build directory.');
@@ -945,7 +945,7 @@ async function generate(options) {
   let sdCli = locateSdCli();
 
   if (!sdCli) {
-    console.log('🚀 [termux-diffusion] sd-cli binary not found in standard paths. Attempting auto-provisioning...');
+    console.log('[Start] [termux-diffusion] sd-cli binary not found in standard paths. Attempting auto-provisioning...');
     sdCli = provisionEngine();
   }
 
@@ -974,7 +974,7 @@ async function generate(options) {
   const gpuArgs = getSdCliGpuArgs(effectiveDevice, nglLayers);
   cmdArgs.push(...gpuArgs);
 
-  console.log(`🎨 [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
+  console.log(`[Render] [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
   const startTime = Date.now();
 
   // Acquire WakeLock
@@ -1017,7 +1017,7 @@ async function generate(options) {
       proc.stdout.on('data', (d) => {
         const str = d.toString();
         if (str.toLowerCase().includes('step') || str.includes('%')) {
-          process.stdout.write(`  ⚡ ${str.trim()}\n`);
+          process.stdout.write(`  [Step] ${str.trim()}\n`);
         }
       });
 
@@ -1069,9 +1069,9 @@ async function generate(options) {
     }
   }
 
-  console.log(`✨ [termux-diffusion] Image generated in ${elapsedSec.toFixed(1)}s -> ${outPath}`);
+  console.log(`[Done] [termux-diffusion] Image generated in ${elapsedSec.toFixed(1)}s -> ${outPath}`);
   if (galleryPath) {
-    console.log(`📱 [Samsung Gallery] Synchronized to: ${galleryPath}`);
+    console.log(`[Gallery] [Samsung Gallery] Synchronized to: ${galleryPath}`);
   }
 
   return {

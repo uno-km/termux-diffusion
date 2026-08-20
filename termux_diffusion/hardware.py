@@ -368,20 +368,20 @@ def format_hardware_report(profile: HardwareProfile) -> str:
         f"SoC: {profile.soc_name}",
         f"GPU Architecture: {profile.gpu_name}",
         f"CPU Architecture: {profile.cpu_arch} ({profile.cpu_cores} cores)",
-        f"ARM SIMD Extensions: DotProd={'✅' if profile.has_dotprod else '❌'} "
-        f"FP16={'✅' if profile.has_fp16 else '❌'} "
-        f"I8MM={'✅' if profile.has_i8mm else '❌'} "
-        f"SVE={'✅' if profile.has_sve else '❌'}",
-        f"GPU Vulkan: {'Available ✅' if profile.vulkan_available else 'Not Found ⚠️'}",
+        f"ARM SIMD Extensions: DotProd={'[OK]' if profile.has_dotprod else '[FAIL]'} "
+        f"FP16={'[OK]' if profile.has_fp16 else '[FAIL]'} "
+        f"I8MM={'[OK]' if profile.has_i8mm else '[FAIL]'} "
+        f"SVE={'[OK]' if profile.has_sve else '[FAIL]'}",
+        f"GPU Vulkan: {'Available [OK]' if profile.vulkan_available else 'Not Found [WARN]'}",
     ]
     if profile.vulkan_driver:
         lines.append(f"  ↳ Vulkan Lib: {profile.vulkan_driver.library_path}")
-    lines.append(f"GPU OpenCL: {'Available ✅' if profile.opencl_available else 'Not Found ⚠️'}")
+    lines.append(f"GPU OpenCL: {'Available [OK]' if profile.opencl_available else 'Not Found [WARN]'}")
     if profile.opencl_driver:
         lines.append(f"  ↳ OpenCL Lib: {profile.opencl_driver.library_path}")
     
     if profile.npu_profile and profile.npu_profile.available:
-        lines.append(f"NPU / TPU Hardware: Detected ℹ️ ({profile.npu_profile.dsp_architecture})")
+        lines.append(f"NPU / TPU Hardware: Detected [INFO] ({profile.npu_profile.dsp_architecture})")
         lines.append(f"  ↳ Peak Hardware Spec: {profile.npu_profile.tops_rating} TOPS")
         lines.append(f"  ↳ Driver Library: {profile.npu_profile.driver_library}")
         lines.append(f"  ↳ Runtime Status: Native QNN C++ execution scheduled for v2.0 (Active: Vulkan GPU & ARM NEON)")

@@ -195,7 +195,7 @@ def provision_engine(force: bool = False) -> Path:
 def run_doctor() -> bool:
     """Run comprehensive 8-tier pre-flight diagnostic checks for Samsung Galaxy Termux setup."""
     print("=" * 65)
-    print("🩺 [termux-diffusion] Pre-flight Diagnostic Doctor")
+    print("[Doctor] [termux-diffusion] Pre-flight Diagnostic Doctor")
     print("=" * 65)
 
     all_passed = True
@@ -203,32 +203,32 @@ def run_doctor() -> bool:
     # 1. Platform Check
     is_termux = is_android_termux()
     arm_arch = is_arm64()
-    print(f"1. Platform: {'Android Termux ✅' if is_termux else 'Non-Termux Host (Emulation Mode) ℹ️'}")
-    print(f"2. Architecture: {'ARM64 / aarch64 ✅' if arm_arch else f'Host {sys.platform} ({os.name}) ℹ️'}")
+    print(f"1. Platform: {'Android Termux [OK]' if is_termux else 'Non-Termux Host (Emulation Mode) [INFO]'}")
+    print(f"2. Architecture: {'ARM64 / aarch64 [OK]' if arm_arch else f'Host {sys.platform} ({os.name}) [INFO]'}")
 
     # 3. Memory & RAM Plus
     mem = get_memory_info()
     safe, msg = check_memory_safety(required_mb=1200)
-    print(f"3. System Memory: {mem['mem_total_mb']}MB RAM + {mem['swap_total_mb']}MB Swap ({'Safe ✅' if safe else 'Warning ⚠️'})")
+    print(f"3. System Memory: {mem['mem_total_mb']}MB RAM + {mem['swap_total_mb']}MB Swap ({'Safe [OK]' if safe else 'Warning [WARN]'})")
     if not safe:
         print(f"   ↳ {msg}")
 
     # 4. Storage & Samsung Gallery
     storage_ok = os.path.exists(os.path.expanduser("~/storage"))
-    print(f"4. Android Storage Permission: {'Configured ✅' if storage_ok else 'Missing ⚠️ (Run termux-setup-storage)'}")
+    print(f"4. Android Storage Permission: {'Configured [OK]' if storage_ok else 'Missing [WARN] (Run termux-setup-storage)'}")
 
     # 5. Compiler Toolchain
     clang_ok = bool(shutil.which("clang") or shutil.which("gcc") or shutil.which("clang++"))
     cmake_ok = bool(shutil.which("cmake"))
     git_ok = bool(shutil.which("git"))
-    print(f"5. Build Tools: clang ({'✅' if clang_ok else '❌'}), cmake ({'✅' if cmake_ok else '❌'}), git ({'✅' if git_ok else '❌'})")
+    print(f"5. Build Tools: clang ({'[OK]' if clang_ok else '[FAIL]'}), cmake ({'[OK]' if cmake_ok else '[FAIL]'}), git ({'[OK]' if git_ok else '[FAIL]'})")
     if not (clang_ok and cmake_ok and git_ok) and is_termux:
         all_passed = False
         print("   ↳ Run: pkg install clang cmake git termux-api -y")
 
     # 6. Engine Binary
     engine = locate_sd_cli()
-    print(f"6. Native C++ Engine (sd-cli): {str(engine) + ' ✅' if engine else 'Not Provisioned ❌ (Run termux-diffusion-install)'}")
+    print(f"6. Native C++ Engine (sd-cli): {str(engine) + ' [OK]' if engine else 'Not Provisioned [FAIL] (Run termux-diffusion-install)'}")
     if not engine:
         all_passed = False
 
@@ -237,7 +237,7 @@ def run_doctor() -> bool:
     cached = list_cached_models()
     print(f"7. Cached GGUF Models: {len(cached)} model(s) available locally.")
     for m in cached:
-        valid_tag = " [GGUF Valid ✅]" if m.get("is_valid_gguf") else " [Header ⚠️]"
+        valid_tag = " [GGUF Valid [OK]]" if m.get("is_valid_gguf") else " [Header [WARN]]"
         print(f"   ↳ {m['name']} ({m['size_mb']} MB){valid_tag}")
 
     # 8. Hardware Acceleration (GPU / NPU / TPU / Vulkan / OpenCL)
@@ -245,23 +245,23 @@ def run_doctor() -> bool:
     hw = detect_hardware_profile()
     print(f"8. Hardware Acceleration Profile:")
     print(f"   SoC: {hw.soc_name}, GPU Architecture: {hw.gpu_name}")
-    print(f"   GPU Vulkan: {'Available ✅' if hw.vulkan_available else 'Not Found ⚠️'}")
+    print(f"   GPU Vulkan: {'Available [OK]' if hw.vulkan_available else 'Not Found [WARN]'}")
     if hw.vulkan_driver:
         print(f"     ↳ Vulkan Driver: {hw.vulkan_driver.library_path}")
-    print(f"   GPU OpenCL: {'Available ✅' if hw.opencl_available else 'Not Found ⚠️'}")
+    print(f"   GPU OpenCL: {'Available [OK]' if hw.opencl_available else 'Not Found [WARN]'}")
     if hw.opencl_driver:
         print(f"     ↳ OpenCL Driver: {hw.opencl_driver.library_path}")
     if hw.npu_profile and hw.npu_profile.available:
-        print(f"   NPU / TPU Hardware: Detected ℹ️")
+        print(f"   NPU / TPU Hardware: Detected [INFO]")
         print(f"     ↳ Architecture: {hw.npu_profile.dsp_architecture} ({hw.npu_profile.tops_rating} TOPS)")
         print(f"     ↳ Driver: {hw.npu_profile.driver_library}")
         print(f"     ↳ Runtime: Native QNN C++ execution scheduled for v2.0")
     else:
-        print(f"   NPU / TPU Hardware: Not Detected ℹ️ (GPU Vulkan & CPU NEON Active)")
-    print(f"   CPU ISA SIMD: DotProd={'✅' if hw.has_dotprod else '❌'} "
-          f"FP16={'✅' if hw.has_fp16 else '❌'} "
-          f"I8MM={'✅' if hw.has_i8mm else '❌'} "
-          f"SVE={'✅' if hw.has_sve else '❌'}")
+        print(f"   NPU / TPU Hardware: Not Detected [INFO] (GPU Vulkan & CPU NEON Active)")
+    print(f"   CPU ISA SIMD: DotProd={'[OK]' if hw.has_dotprod else '[FAIL]'} "
+          f"FP16={'[OK]' if hw.has_fp16 else '[FAIL]'} "
+          f"I8MM={'[OK]' if hw.has_i8mm else '[FAIL]'} "
+          f"SVE={'[OK]' if hw.has_sve else '[FAIL]'}")
     print(f"   Active Compute Pipeline: {hw.recommended_backend.value.upper()} "
           f"(Offload Layers: {hw.recommended_ngl})")
 

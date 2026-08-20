@@ -30,7 +30,7 @@ const {
 } = require('../index.js');
 
 function runTests() {
-  console.log('🧪 Starting Node.js Engine Unit Tests...\n');
+  console.log('[TEST] Starting Node.js Engine Unit Tests...\n');
   let passed = 0;
   let total = 0;
 
@@ -38,10 +38,10 @@ function runTests() {
     total++;
     try {
       fn();
-      console.log(`  ✅ ${name}`);
+      console.log(`  [PASS] ${name}`);
       passed++;
     } catch (err) {
-      console.error(`  ❌ ${name}:`, err.message);
+      console.error(`  [FAIL] ${name}:`, err.message);
     }
   }
 
@@ -161,7 +161,7 @@ function runTests() {
     assert.strictEqual(getDefaultNegativePrompt(), null);
   });
 
-  console.log(`\n📊 Node.js Test Results: ${passed}/${total} Passed.`);
+  console.log(`\n[RESULT] Node.js Test Results: ${passed}/${total} Passed.`);
   if (passed !== total) {
     process.exit(1);
   }

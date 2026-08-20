@@ -88,10 +88,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0 if ok else 1
 
     elif args.command == "models":
-        print("\n--- 🌟 Available Presets ---")
+        print("\n--- [Presets] Available Presets ---")
         for k, v in list_presets().items():
             print(f"  • {k:12} : {v['description']} ({v.get('size_mb', 0)}MB)")
-        print("\n--- 💾 Locally Cached Models ---")
+        print("\n--- [Models] Locally Cached Models ---")
         cached = list_cached_models()
         if not cached:
             print("  (No models cached yet. Run 'termux-diffusion download <model>' or generate)")
@@ -106,7 +106,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     elif args.command == "clear-cache":
         removed = clear_cache()
-        print(f"🧹 Removed {removed} cached model files.")
+        print(f"[Clean] Removed {removed} cached model files.")
         return 0
 
     parser.print_help()

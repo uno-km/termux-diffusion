@@ -366,6 +366,15 @@ adb shell "/system/bin/device_config put activity_manager max_phantom_processes 
 
 ---
 
-## 9. License
+## 9. Disclaimer (면책 조항)
+
+> **Disclaimer:**  
+> *Termux-Diffusion is an independent open-source project developed for the Android Termux environment and is not officially affiliated with, endorsed by, or sponsored by the Termux project.*  
+> 
+> *(본 프로젝트는 안드로이드 Termux 환경을 위해 개발된 독립적인 오픈소스 라이브러리이며, Termux 공식 프로젝트와 직접적인 제휴 관계가 아닙니다.)*
+
+---
+
+## 10. License
 
 Released under the **MIT License**. Maintained by **uno-km (Eunho Kim)**.

@@ -784,7 +784,16 @@ async function downloadModel(modelNameOrUrl, options = {}) {
         res.on('end', () => {
           fileStream.end(() => {
             process.stdout.write('\n');
-            fs.renameSync(tempPath, finalPath);
+            try {
+              fs.renameSync(tempPath, finalPath);
+            } catch (err) {
+              if (fs.existsSync(finalPath)) {
+                try { fs.unlinkSync(finalPath); } catch (_) {}
+                fs.renameSync(tempPath, finalPath);
+              } else {
+                throw err;
+              }
+            }
             console.log(`[OK] [termux-diffusion] Model downloaded & cached at: ${finalPath}`);
             resolve(finalPath);
           });
@@ -963,8 +972,8 @@ async function generate(options) {
   if (typeof options === 'string') {
     options = { prompt: options };
   }
-  if (!options || !options.prompt) {
-    throw new Error('Prompt is required for generation');
+  if (!options || !options.prompt || !String(options.prompt).replace(/\x00/g, '').trim()) {
+    throw new Error('Prompt is required and cannot be empty.');
   }
 
   if (options.signal && options.signal.aborted) {
@@ -972,6 +981,7 @@ async function generate(options) {
   }
 
   const prompt = options.prompt;
+  const sanitizedPrompt = String(prompt).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
   const model = options.model || 'realistic';
   const rawDevice = options.device || 'cpu';
   const effectiveNegative = options.negativePrompt !== undefined
@@ -1022,16 +1032,17 @@ async function generate(options) {
 
   const cmdArgs = [
     '-m', modelPath,
-    '-p', prompt,
+    '-p', sanitizedPrompt,
     '-W', String(width),
     '-H', String(height),
     '-t', String(threads),
     '--steps', String(steps),
-    '--cfg-scale', String(cfgScale),
+    '--cfg-scale', String(options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0)),
     '-o', outPath
   ];
-  if (effectiveNegative && effectiveNegative.trim()) {
-    cmdArgs.push('-n', effectiveNegative.trim());
+  if (effectiveNegative) {
+    const sanitizedNeg = String(effectiveNegative).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
+    if (sanitizedNeg) cmdArgs.push('-n', sanitizedNeg);
   }
   if (seed >= 0) cmdArgs.push('-s', String(seed));
 

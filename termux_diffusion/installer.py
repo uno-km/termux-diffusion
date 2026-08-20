@@ -213,10 +213,12 @@ def provision_engine(force: bool = False) -> Path:
     if not compiled_bin:
         raise ProvisioningError("Could not locate compiled binary in build directory.")
 
-    # Install into cache bin directory
+    # Install into cache bin directory using atomic rename
     target_bin = get_engine_bin_dir() / "sd-cli"
-    shutil.copy2(compiled_bin, target_bin)
-    target_bin.chmod(0o755)
+    temp_bin = target_bin.with_name(f"sd-cli.{os.getpid()}.part")
+    shutil.copy2(compiled_bin, temp_bin)
+    temp_bin.chmod(0o755)
+    os.replace(temp_bin, target_bin)
 
     print(f"[termux-diffusion] Engine provisioned successfully at: {target_bin}")
     return target_bin.resolve()

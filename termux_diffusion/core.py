@@ -127,6 +127,7 @@ def generate(
     auto_provision: bool = False,
     timeout: int = 1800,
     _cancel_event: Optional[threading.Event] = None,
+    _proc_holder: Optional[list] = None,
 ) -> GenerationResult:
     """Generate an AI image on Samsung Galaxy / Android Termux using Bionic native C++ diffusion.
     
@@ -151,7 +152,7 @@ def generate(
     Returns:
         GenerationResult: Object containing local path, gallery path, and inference metrics.
     """
-    if not prompt or not prompt.strip():
+    if not prompt or not str(prompt).strip():
         raise ValueError("Prompt must not be empty.")
 
     device_mode = device.lower().strip()
@@ -176,31 +177,34 @@ def generate(
             logger.info("sd-cli binary not found in standard paths. Attempting auto-provisioning as requested...")
             sd_cli = provision_engine()
         else:
+            logger.error("sd-cli binary not found in standard paths and auto_provision=False.")
             raise ProvisioningError(
                 "Native 'sd-cli' binary not found on this system. "
-                "Please run 'termux-diffusion install' via CLI or pass auto_provision=True to generate()."
+                "Please run 'termux-diffusion doctor --install' or pass auto_provision=True to generate()."
             )
 
-    # 3. Resolve Model Path & Preset Hyperparameters
-    presets = list_presets()
+    # 3. Model Weight Resolution and Local Caching
     model_path = resolve_model_path(model)
 
+    # 4. Resolve CPU Thread Allocation and Sampling Steps
+    presets = list_presets()
+    preset_info = presets.get(model, {})
     if steps is None:
-        steps = presets.get(model, {}).get("default_steps", 10)
+        steps = preset_info.get("default_steps", 10)
     if cfg_scale is None:
-        cfg_scale = presets.get(model, {}).get("default_cfg", 4.0)
+        cfg_scale = preset_info.get("default_cfg", 4.0)
     if threads is None:
         threads = get_optimal_thread_count()
 
-    # Determine effective negative prompt
-    effective_negative = negative_prompt if negative_prompt is not None else _global_default_negative_prompt
-    if effective_negative and not effective_negative.strip():
-        effective_negative = None
+    # Determine default or explicit negative prompt
+    effective_negative = negative_prompt
+    if effective_negative is None:
+        effective_negative = get_default_negative_prompt()
 
     # 4. Determine Output Destination
     timestamp = int(time.time())
     if output:
-        out_path = Path(os.path.expanduser(str(output))).resolve()
+        out_path = Path(output).resolve()
     else:
         out_dir = get_galaxy_gallery_dir()
         out_path = out_dir / f"ai_gen_{timestamp}.png"
@@ -245,6 +249,8 @@ def generate(
                 bufsize=1,
                 universal_newlines=True
             )
+            if _proc_holder is not None:
+                _proc_holder.append(process)
 
             recent_logs = deque(maxlen=20)
             # Stream real-time progress to terminal
@@ -285,7 +291,7 @@ def generate(
     if not out_path.is_file():
         raise TermuxDiffusionError(f"Engine finished but output file was not created at: {out_path}")
 
-    # 7. Samsung Gallery Export & Media Scanner Broadcast
+    # 7. Android Gallery MediaStore Sync (Galaxy Gallery visibility)
     gallery_path = None
     if export_gallery:
         try:
@@ -313,11 +319,15 @@ def generate(
 async def async_generate(*args, **kwargs) -> GenerationResult:
     """Asynchronous wrapper for generate() with real cancellation propagation to child process."""
     cancel_event = threading.Event()
+    proc_holder = []
     kwargs["_cancel_event"] = cancel_event
+    kwargs["_proc_holder"] = proc_holder
     loop = asyncio.get_running_loop()
     task = loop.run_in_executor(None, lambda: generate(*args, **kwargs))
     try:
         return await task
     except asyncio.CancelledError:
         cancel_event.set()
+        if proc_holder:
+            _safe_kill_process(proc_holder[0])
         raise

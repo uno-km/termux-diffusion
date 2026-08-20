@@ -959,8 +959,10 @@ function provisionEngine(force = false) {
   const target = path.join(binDir, 'sd-cli');
 
   if (fs.existsSync(compiled)) {
-    fs.copyFileSync(compiled, target);
-    fs.chmodSync(target, 0o755);
+    const tempTarget = path.join(binDir, `sd-cli.${process.pid}.part`);
+    fs.copyFileSync(compiled, tempTarget);
+    fs.chmodSync(tempTarget, 0o755);
+    atomicReplaceFileSync(tempTarget, target);
     console.log(`[Done] [termux-diffusion] Engine provisioned successfully at: ${target}`);
     return target;
   }

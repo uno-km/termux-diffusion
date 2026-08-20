@@ -144,17 +144,24 @@ async function main() {
       process.exit(1);
     }
     let model = 'realistic';
-    let steps, cfg, output;
+    let steps, cfg, output, seed = -1;
 
     for (let i = 2; i < args.length; i++) {
       if (args[i] === '-m' || args[i] === '--model') model = args[++i];
       if (args[i] === '-s' || args[i] === '--steps') steps = parseInt(args[++i], 10);
       if (args[i] === '-c' || args[i] === '--cfg') cfg = parseFloat(args[++i]);
       if (args[i] === '-o' || args[i] === '--output') output = args[++i];
+      if (args[i] === '--seed') {
+        seed = parseInt(args[++i], 10);
+        if (isNaN(seed) || seed < -1 || seed > 4294967295) {
+          console.error('[FAIL] Error: --seed must be between -1 and 4294967295.');
+          process.exit(1);
+        }
+      }
     }
 
     try {
-      await generate({ prompt, model, steps, cfgScale: cfg, output, autoProvision: true });
+      await generate({ prompt, model, steps, cfgScale: cfg, seed, output, autoProvision: true });
     } catch (err) {
       console.error('[FAIL] Generation error:', err.message);
       process.exit(1);

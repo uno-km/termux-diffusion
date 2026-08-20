@@ -41,6 +41,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("-W", "--width", type=int, default=512, help="Image width (default: 512)")
     gen_parser.add_argument("-H", "--height", type=int, default=512, help="Image height (default: 512)")
     gen_parser.add_argument("-t", "--threads", type=int, default=None, help="CPU threads")
+    gen_parser.add_argument("--seed", type=int, default=-1, help="RNG seed (-1 for random, 0 to 4294967295)")
     gen_parser.add_argument("-o", "--output", type=str, default=None, help="Output file path")
 
     # install command
@@ -66,6 +67,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "generate":
+        if args.seed < -1 or args.seed > 4294967295:
+            parser.error("--seed must be between -1 and 4294967295.")
+
         res = generate(
             prompt=args.prompt,
             model=args.model,
@@ -75,6 +79,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             width=args.width,
             height=args.height,
             threads=args.threads,
+            seed=args.seed,
             output=args.output,
             auto_provision=True
         )

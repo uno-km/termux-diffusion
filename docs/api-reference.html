@@ -210,6 +210,12 @@
                         <td>Classifier-Free Guidance scale (optimal: 4.0 for quantized weights).</td>
                     </tr>
                     <tr>
+                        <td><code>negative_prompt</code></td>
+                        <td><code>str | None</code></td>
+                        <td><code>None</code></td>
+                        <td>Optional negative guidance describing elements to avoid (default: <code>None</code> for pure prompt fidelity).</td>
+                    </tr>
+                    <tr>
                         <td><code>seed</code></td>
                         <td><code>int</code></td>
                         <td><code>-1</code></td>
@@ -236,13 +242,20 @@
                     <tr>
                         <td><code>timeout</code></td>
                         <td><code>float</code></td>
-                        <td><code>3600.0</code></td>
-                        <td>Max allowed execution timeout in seconds.</td>
+                        <td><code>1800.0</code></td>
+                        <td>Max allowed execution timeout in seconds (default: 30 min).</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>2. Model &amp; Cache Management Functions</h3>
+            <h3>2. Negative Prompt Configuration APIs</h3>
+            <ul>
+                <li><strong><code>set_default_negative_prompt(prompt: str | None)</code></strong>: Globally configures or clears the default negative prompt across all <code>generate()</code> calls.</li>
+                <li><strong><code>get_default_negative_prompt() -> str | None</code></strong>: Inspects the active global negative prompt (returns <code>None</code> by default).</li>
+                <li><strong><code>get_quality_guard_negative_prompt() -> str</code></strong>: Returns the recommended quality-guard preset (<code>"lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"</code>).</li>
+            </ul>
+
+            <h3>3. Model &amp; Cache Management Functions</h3>
             <ul>
                 <li><strong><code>download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)</code></strong>: Streams GGUF weights with chunked resume.</li>
                 <li><strong><code>register_model(name, repo_id=None, filename=None, url=None, description=None)</code></strong>: Registers a custom alias for Hugging Face or URL models.</li>

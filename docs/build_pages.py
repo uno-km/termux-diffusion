@@ -597,6 +597,12 @@ api_reference_html = f"""<!DOCTYPE html>
                         <td>Classifier-Free Guidance scale (optimal: 4.0 for quantized weights).</td>
                     </tr>
                     <tr>
+                        <td><code>negative_prompt</code></td>
+                        <td><code>str | None</code></td>
+                        <td><code>None</code></td>
+                        <td>Optional negative guidance describing elements to avoid (default: <code>None</code> for pure prompt fidelity).</td>
+                    </tr>
+                    <tr>
                         <td><code>seed</code></td>
                         <td><code>int</code></td>
                         <td><code>-1</code></td>
@@ -623,13 +629,20 @@ api_reference_html = f"""<!DOCTYPE html>
                     <tr>
                         <td><code>timeout</code></td>
                         <td><code>float</code></td>
-                        <td><code>3600.0</code></td>
-                        <td>Max allowed execution timeout in seconds.</td>
+                        <td><code>1800.0</code></td>
+                        <td>Max allowed execution timeout in seconds (default: 30 min).</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>2. Model &amp; Cache Management Functions</h3>
+            <h3>2. Negative Prompt Configuration APIs</h3>
+            <ul>
+                <li><strong><code>set_default_negative_prompt(prompt: str | None)</code></strong>: Globally configures or clears the default negative prompt across all <code>generate()</code> calls.</li>
+                <li><strong><code>get_default_negative_prompt() -> str | None</code></strong>: Inspects the active global negative prompt (returns <code>None</code> by default).</li>
+                <li><strong><code>get_quality_guard_negative_prompt() -> str</code></strong>: Returns the recommended quality-guard preset (<code>"lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"</code>).</li>
+            </ul>
+
+            <h3>3. Model &amp; Cache Management Functions</h3>
             <ul>
                 <li><strong><code>download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)</code></strong>: Streams GGUF weights with chunked resume.</li>
                 <li><strong><code>register_model(name, repo_id=None, filename=None, url=None, description=None)</code></strong>: Registers a custom alias for Hugging Face or URL models.</li>
@@ -990,24 +1003,28 @@ generate("anime portrait", model="second-state/DreamShaper-8-GGUF/dreamshaper-8-
 ## Python API Canonical Pattern
 
 ```python
-from termux_diffusion import generate
+import termux_diffusion as td
 
-result = generate(
-    prompt="RAW photo, portrait of a happy young developer wearing hoodie in neon office, 8k, photorealistic",
-    model="realistic",   # Built-in presets: 'realistic', 'speed', 'sdxs', 'turbo', 'anime'
-    device="cpu",        # 'cpu' or 'gpu'
-    steps=10,            # 10 steps recommended for mobile
-    cfg_scale=4.0,       # 4.0 CFG optimal for quantized models
+# 1. Standard Generation (negative_prompt is None by default for pure prompt fidelity)
+result = td.generate(
+    prompt="RAW photo, portrait of a happy developer in neon office, 8k, photorealistic",
+    negative_prompt="blurry, deformed, low quality",  # Optional: custom negative guidance
+    model="realistic",   # Presets: 'realistic', 'speed', 'sdxs', 'turbo', 'anime'
+    device="auto",       # Auto-detects Vulkan GPU / ARM NEON
+    steps=10,            # 10 steps recommended
+    cfg_scale=4.0,       # 4.0 CFG optimal
     width=512,
     height=512,
     output="developer.png",
-    wake_lock=True,      # Prevents CPU sleep when screen is off
-    export_gallery=True  # Automatically syncs to Samsung Gallery / MediaStore
+    wake_lock=True,      # Prevents CPU sleep
+    export_gallery=True  # Automatically syncs to Samsung Gallery
 )
 
-print(f"Generated Image Path: {result.path}")
-print(f"Samsung Gallery Path: {result.gallery_path}")
-print(f"Generation Time: {result.elapsed_sec:.2f}s")
+# 2. Global Negative Prompt Helpers
+td.set_default_negative_prompt("bad anatomy, blur, extra limbs")
+active_neg = td.get_default_negative_prompt()
+guard_preset = td.get_quality_guard_negative_prompt()
+td.set_default_negative_prompt(None)  # Reset to None
 ```
 
 ---
@@ -1015,15 +1032,16 @@ print(f"Generation Time: {result.elapsed_sec:.2f}s")
 ## Node.js / TypeScript API Canonical Pattern
 
 ```javascript
-const { generate } = require('termux-diffusion');
+const td = require('termux-diffusion');
 
 async function main() {
-    const result = await generate({
+    const result = await td.generate({
         prompt: 'cyberpunk warrior cat with glowing eyes, 8k resolution, cinematic',
+        negativePrompt: 'dog, cartoon, low quality', // Optional (default: null)
         model: 'speed',
-        device: 'cpu',
+        device: 'auto',
         steps: 10,
-        cfg_scale: 4.0,
+        cfgScale: 4.0,
         output: 'cyber_cat.png',
         wakeLock: true,
         exportGallery: true
@@ -1031,11 +1049,18 @@ async function main() {
 
     console.log(`Generated: ${result.path}`);
     console.log(`Gallery: ${result.galleryPath}`);
-    console.log(`Latency: ${result.elapsedSec}s`);
 }
 
 main().catch(console.error);
 ```
+
+---
+
+## Android 12+ Background Stability Guard (Phantom Process Killer)
+When guiding users who experience background inference crashes on Android 12/13/14+:
+1. Enable `Developer Options > Disable child process restrictions`.
+2. Or run via ADB: `adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"`.
+3. Set Termux Battery usage to `Unrestricted`.
 """
 
 # 11. llms-full.txt
@@ -1048,30 +1073,42 @@ npm: https://www.npmjs.com/package/termux-diffusion
 ## Full Public API Specification
 
 ### Python (termux_diffusion)
-- `generate(prompt, negative_prompt=None, model='realistic', device='cpu', output=None, width=512, height=512, steps=10, cfg_scale=4.0, seed=-1, threads=None, wake_lock=True, export_gallery=True, timeout=3600.0, model_cache_dir=None)`
+- `generate(prompt, negative_prompt=None, model='realistic', device='cpu', output=None, width=512, height=512, steps=10, cfg_scale=4.0, seed=-1, threads=None, wake_lock=True, export_gallery=True, timeout=1800, low_ram_guard=True)`
+- `get_default_negative_prompt() -> Optional[str]`
+- `set_default_negative_prompt(prompt: Optional[str]) -> None`
+- `get_quality_guard_negative_prompt() -> str`
 - `download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)`
 - `register_model(name, repo_id=None, filename=None, url=None, description=None)`
 - `list_cached_models(cache_dir=None)`
-- `clear_cache(cache_dir=None)`
+- `clear_cache(cache_dir=None, model_name=None)`
 - `set_cache_dir(path)` / `get_cache_dir()`
 - `get_memory_info()`
+- `check_memory_safety(required_mb=1000)`
 - `get_optimal_thread_count()`
+- `detect_hardware_profile()`
+- `detect_npu_capabilities()`
+- `resolve_device_backend(device)`
 - `run_doctor()`
-- `export_to_android_gallery(image_path)`
+- `export_to_android_gallery(image_path, destination_name=None)`
 - `TermuxWakeLock(enabled=True)`
 
 ### Node.js (termux-diffusion)
 - `generate(options)`
+- `getDefaultNegativePrompt()`
+- `setDefaultNegativePrompt(prompt)`
+- `getQualityGuardNegativePrompt()`
 - `downloadModel(modelNameOrUrl, options)`
 - `registerModel(name, modelConfig)`
 - `listCachedModels(cacheDir)`
-- `clearCache(cacheDir)`
+- `clearCache(cacheDir, modelName)`
 - `setCacheDir(dirPath)` / `getCacheDir()`
-- `runDoctor()`
-- `exportToAndroidGallery(imagePath)`
-- `acquireWakeLock()` / `releaseWakeLock()`
+- `detectHardwareProfile()`
+- `detectNpuCapabilities()`
+- `resolveDeviceBackend(device)`
 - `getMemoryInfo()`
+- `checkMemorySafety(requiredMb)`
 - `getOptimalThreadCount()`
+- `exportToAndroidGallery(imagePath, destinationName)`
 """
 
 pages = {

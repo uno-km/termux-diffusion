@@ -503,7 +503,11 @@ function getMemoryInfo() {
       metrics.effective_total_mb = metrics.mem_total_mb + metrics.swap_total_mb;
       metrics.effective_available_mb = metrics.mem_available_mb + metrics.swap_free_mb;
       return metrics;
-    } catch (_) {}
+    } catch (err) {
+      if (process.env.DEBUG) {
+        console.debug('[termux-diffusion] /proc/meminfo parse note:', err.message);
+      }
+    }
   }
 
   const total = Math.floor(os.totalmem() / (1024 * 1024));
@@ -687,7 +691,11 @@ async function downloadModel(modelNameOrUrl, options = {}) {
           if (existingBytes > 0) {
             headers['Range'] = `bytes=${existingBytes}-`;
           }
-        } catch (_) {}
+        } catch (err) {
+          if (process.env.DEBUG) {
+            console.debug('[termux-diffusion] statSync tempPath note:', err.message);
+          }
+        }
       }
 
       const req = https.get(currentUrl, { headers }, (res) => {
@@ -695,7 +703,13 @@ async function downloadModel(modelNameOrUrl, options = {}) {
           return fetchUrl(res.headers.location);
         }
         if (res.statusCode === 416) {
-          if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+          if (fs.existsSync(tempPath)) {
+            try {
+              fs.unlinkSync(tempPath);
+            } catch (err) {
+              console.warn('[termux-diffusion] Notice: Failed removing invalid partial download file:', err.message);
+            }
+          }
           return fetchUrl(currentUrl);
         }
         if (res.statusCode !== 200 && res.statusCode !== 206) {

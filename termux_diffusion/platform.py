@@ -48,19 +48,14 @@ def get_default_cache_dir() -> Path:
 
 def get_galaxy_gallery_dir() -> Path:
     """Resolve and ensure the Samsung Galaxy / Android media pictures directory."""
-    # Preferred: ~/storage/pictures/TermuxDiffusion
-    user_pictures = Path(os.path.expanduser("~/storage/pictures/TermuxDiffusion"))
-    if user_pictures.parent.exists():
-        user_pictures.mkdir(parents=True, exist_ok=True)
-        return user_pictures
-
-    # Secondary: /storage/emulated/0/Pictures/TermuxDiffusion
-    sdcard_pictures = Path("/storage/emulated/0/Pictures/TermuxDiffusion")
     try:
-        sdcard_pictures.mkdir(parents=True, exist_ok=True)
-        return sdcard_pictures
-    except (PermissionError, OSError):
-        pass
+        gallery_dir = Path(os.path.expanduser("~/storage/pictures/TermuxDiffusion"))
+        if Path(os.path.expanduser("~/storage/pictures")).exists():
+            gallery_dir.mkdir(parents=True, exist_ok=True)
+            return gallery_dir
+    except (PermissionError, OSError) as e:
+        # Intentional fallback to local workspace cache when storage permission is absent
+        logger.debug("Android external storage pictures directory not accessible: %s", e)
 
     # Fallback to local workspace output directory
     fallback = get_default_cache_dir() / "outputs"
@@ -134,8 +129,8 @@ def get_optimal_thread_count() -> int:
                         val = f.read().strip()
                         if val.isdigit():
                             freqs.append(int(val))
-                except (OSError, IOError):
-                    pass
+                except (OSError, IOError) as err:
+                    logger.debug("Sysfs freq read note on '%s': %s", ff, err)
 
             if freqs:
                 max_f = max(freqs)

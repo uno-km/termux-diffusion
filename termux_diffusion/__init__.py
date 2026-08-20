@@ -54,7 +54,7 @@ from .npu import (
     get_optimal_heterogeneous_pipeline,
 )
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __author__ = "uno-km (쌩초보코딩단)"
 __license__ = "MIT"
 

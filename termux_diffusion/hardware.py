@@ -163,7 +163,15 @@ def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:
                     version="",
                     usable=True,
                 )
-            except OSError:
+            except PermissionError as pe:
+                logger.warning(
+                    "Vulkan driver found at '%s' but access was denied (SELinux permission): %s",
+                    lib_path,
+                    pe,
+                )
+                continue
+            except OSError as oe:
+                logger.debug("Vulkan driver stat note on '%s': %s", lib_path, oe)
                 continue
     return None
 
@@ -186,7 +194,15 @@ def _probe_opencl_driver() -> Optional[GPUDriverInfo]:
                     version="",
                     usable=True,
                 )
-            except OSError:
+            except PermissionError as pe:
+                logger.warning(
+                    "OpenCL driver found at '%s' but access was denied (SELinux permission): %s",
+                    lib_path,
+                    pe,
+                )
+                continue
+            except OSError as oe:
+                logger.debug("OpenCL driver stat note on '%s': %s", lib_path, oe)
                 continue
     return None
 

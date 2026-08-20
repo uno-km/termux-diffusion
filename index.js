@@ -115,27 +115,18 @@ const OPENCL_LIB_PATHS = [
   '/system/vendor/lib64/egl/libGLES_mali.so'
 ];
 
-const QUALCOMM_QNN_LIBS = [
+const NPU_DRIVER_SEARCH_PATHS = [
   '/vendor/lib64/libQnnHtp.so',
   '/vendor/lib64/libQnnHtpV75.so',
   '/vendor/lib64/libQnnHtpV73.so',
   '/vendor/lib64/libqnn-htp.so',
   '/vendor/lib64/libQnnSystem.so',
-  '/vendor/dsp/cdsp/libqnn_htp.so'
-];
-
-const SAMSUNG_EDEN_LIBS = [
+  '/vendor/dsp/cdsp/libqnn_htp.so',
   '/vendor/lib64/libenn_public_api.so',
   '/vendor/lib64/libeden_nn.so',
-  '/vendor/lib64/libenn_engine.so'
-];
-
-const GOOGLE_EDGETPU_LIBS = [
+  '/vendor/lib64/libenn_engine.so',
   '/vendor/lib64/libedgetpu.so',
-  '/vendor/lib64/libtflite_edgetpu.so'
-];
-
-const ANDROID_NNAPI_LIBS = [
+  '/vendor/lib64/libtflite_edgetpu.so',
   '/system/lib64/libneuralnetworks.so',
   '/apex/com.android.neuralnetworks/lib64/libneuralnetworks.so'
 ];
@@ -145,7 +136,11 @@ function probeFirstExistingLib(paths) {
     if (fs.existsSync(p)) {
       try {
         if (fs.statSync(p).size >= 1024) return p;
-      } catch (_) {}
+      } catch (err) {
+        if (err.code === 'EACCES' || err.code === 'EPERM') {
+          console.warn(`[termux-diffusion] Notice: Library found at '${p}' but read access was denied (${err.code}).`);
+        }
+      }
     }
   }
   return null;
@@ -163,7 +158,12 @@ function readCpuinfoFeatures() {
         }
       }
     }
-  } catch (_) {}
+  } catch (err) {
+    // Debug logging for cpuinfo parsing failures
+    if (process.env.DEBUG) {
+      console.debug('[termux-diffusion] Note: Could not parse /proc/cpuinfo:', err.message);
+    }
+  }
   return [];
 }
 
@@ -173,116 +173,152 @@ function getAndroidProp(key) {
     if (res.status === 0 && res.stdout.trim() && res.stdout.trim() !== 'unknown') {
       return res.stdout.trim();
     }
-  } catch (_) {}
+  } catch (err) {
+    if (process.env.DEBUG) {
+      console.debug(`[termux-diffusion] getprop '${key}' note:`, err.message);
+    }
+  }
   return null;
 }
 
 function detectNpuCapabilities() {
-  const socPlatform = (getAndroidProp('ro.board.platform') || '').toLowerCase();
-  const chipname = (getAndroidProp('ro.hardware.chipname') || '').toLowerCase();
-  const hardware = (getAndroidProp('ro.hardware') || '').toLowerCase();
-  const productBoard = (getAndroidProp('ro.product.board') || '').toLowerCase();
+  const socName = (
+    getAndroidProp('ro.hardware.chipname') ||
+    getAndroidProp('ro.board.platform') ||
+    getAndroidProp('ro.hardware') ||
+    getAndroidProp('ro.product.board') ||
+    'unknown'
+  ).toLowerCase();
 
-  const qnnLib = probeFirstExistingLib(QUALCOMM_QNN_LIBS);
-  const isQualcomm = ['qcom', 'snapdragon', 'sm8', 'sm7', 'lahaina', 'taro', 'kalama', 'pineapple'].some(q => socPlatform.includes(q) || hardware.includes(q));
+  const brand = (
+    getAndroidProp('ro.product.brand') ||
+    getAndroidProp('ro.product.manufacturer') ||
+    'unknown'
+  ).toLowerCase();
 
-  if (qnnLib || isQualcomm) {
-    let tops = 15.0;
-    let dspArch = 'Hexagon Vector Extensions (HVX)';
-    if (socPlatform.includes('sm8650') || socPlatform.includes('pineapple')) {
-      tops = 45.0;
-      dspArch = 'Hexagon v75 HTP (45 TOPS NPU)';
-    } else if (socPlatform.includes('sm8550') || socPlatform.includes('kalama')) {
-      tops = 35.0;
-      dspArch = 'Hexagon v73 HTP (35 TOPS NPU)';
-    }
+  const driver = probeFirstExistingLib(NPU_DRIVER_SEARCH_PATHS);
+
+  // 1. Qualcomm Snapdragon Hexagon NPU
+  if (
+    socName.includes('sm8') ||
+    socName.includes('sm7') ||
+    socName.includes('qcom') ||
+    socName.includes('snapdragon') ||
+    (driver && driver.toLowerCase().includes('qnn'))
+  ) {
+    const is8Gen3 = socName.includes('sm8650');
+    const is8Gen2 = socName.includes('sm8550');
+    const is8Gen1 = socName.includes('sm8450') || socName.includes('sm8475');
+
+    const tops = is8Gen3 ? 45.0 : is8Gen2 ? 34.0 : is8Gen1 ? 27.0 : 15.0;
+    const arch = is8Gen3 ? 'Hexagon v75' : is8Gen2 ? 'Hexagon v73' : 'Hexagon v69';
 
     return {
       available: true,
-      vendor: 'qualcomm_hexagon',
-      chipsetName: `Qualcomm Snapdragon (${socPlatform || hardware})`,
-      driverLibrary: qnnLib || '/vendor/lib64/libQnnHtp.so',
-      dspArchitecture: dspArch,
+      vendor: 'Qualcomm',
+      dspArchitecture: arch,
       topsRating: tops,
-      supportedPrecisions: ['INT4', 'INT8', 'FP16'],
-      delegateType: 'QNN_HTP_DELEGATE'
+      supportedPrecisions: ['INT8', 'INT16', 'FP16'],
+      driverLibrary: driver || '/vendor/lib64/libQnnHtp.so',
+      recommendedDelegate: 'qnn_htp'
     };
   }
 
-  const edenLib = probeFirstExistingLib(SAMSUNG_EDEN_LIBS);
-  const isSamsungExynos = chipname.includes('exynos') || socPlatform.includes('s5e') || hardware.includes('universal');
-  if (edenLib || isSamsungExynos) {
-    let tops = 17.0;
-    if (chipname.includes('2400')) tops = 42.0;
+  // 2. Samsung Exynos NPU
+  if (
+    socName.includes('s5e') ||
+    socName.includes('exynos') ||
+    brand.includes('samsung') ||
+    (driver && driver.toLowerCase().includes('eden'))
+  ) {
+    const is2400 = socName.includes('9945') || socName.includes('s5e9945');
+    const is2200 = socName.includes('9925') || socName.includes('s5e9925');
+    const is1380 = socName.includes('8835') || socName.includes('s5e8835');
+
+    const tops = is2400 ? 44.0 : is2200 ? 25.0 : is1380 ? 4.9 : 10.0;
+    const arch = is2400 ? 'Samsung NPU v4' : is2200 ? 'Samsung NPU v3' : 'Samsung NPU Lite';
+
     return {
       available: true,
-      vendor: 'samsung_eden',
-      chipsetName: `Samsung Exynos (${chipname || socPlatform})`,
-      driverLibrary: edenLib || '/vendor/lib64/libenn_public_api.so',
-      dspArchitecture: 'Samsung Exynos Dual-NPU',
+      vendor: 'Samsung',
+      dspArchitecture: arch,
       topsRating: tops,
       supportedPrecisions: ['INT8', 'FP16'],
-      delegateType: 'EXYNOS_ENN_DELEGATE'
+      driverLibrary: driver || '/vendor/lib64/libeden_nn.so',
+      recommendedDelegate: 'samsung_eden'
     };
   }
 
-  const tpuLib = probeFirstExistingLib(GOOGLE_EDGETPU_LIBS);
-  const isGoogleTensor = ['zuma', 'gs201', 'gs101', 'tensor'].some(t => hardware.includes(t) || productBoard.includes(t));
-  if (tpuLib || isGoogleTensor) {
+  // 3. Google Tensor TPU
+  if (
+    socName.includes('tensor') ||
+    socName.includes('gs101') ||
+    socName.includes('gs201') ||
+    socName.includes('zuma') ||
+    brand.includes('google')
+  ) {
+    const isG3 = socName.includes('zuma');
+    const isG2 = socName.includes('gs201');
+
     return {
       available: true,
-      vendor: 'google_edge_tpu',
-      chipsetName: `Google Tensor TPU (${hardware})`,
-      driverLibrary: tpuLib || '/vendor/lib64/libedgetpu.so',
-      dspArchitecture: 'Google Edge TPU Core',
-      topsRating: 20.0,
-      supportedPrecisions: ['INT8', 'FP16'],
-      delegateType: 'EDGETPU_DELEGATE'
+      vendor: 'Google',
+      dspArchitecture: isG3 ? 'EdgeTPU v3' : isG2 ? 'EdgeTPU v2' : 'EdgeTPU v1',
+      topsRating: isG3 ? 35.0 : 20.0,
+      supportedPrecisions: ['INT8', 'INT16'],
+      driverLibrary: driver || '/vendor/lib64/libgoogle_nn.so',
+      recommendedDelegate: 'google_edgetpu'
     };
   }
 
-  const nnapiLib = probeFirstExistingLib(ANDROID_NNAPI_LIBS);
-  if (nnapiLib) {
+  // 4. Generic NNAPI
+  if (driver && driver.includes('neuralnetworks')) {
     return {
       available: true,
-      vendor: 'android_nnapi',
-      chipsetName: 'Android Generic NNAPI',
-      driverLibrary: nnapiLib,
+      vendor: 'Generic',
       dspArchitecture: 'Android NNAPI HAL',
       topsRating: 5.0,
       supportedPrecisions: ['INT8', 'FP16'],
-      delegateType: 'NNAPI_DELEGATE'
+      driverLibrary: driver,
+      recommendedDelegate: 'android_nnapi'
     };
   }
 
   return {
     available: false,
-    vendor: 'none',
-    chipsetName: 'Generic Host',
-    driverLibrary: null,
-    dspArchitecture: 'No Dedicated NPU / TPU Detected',
+    vendor: 'Unknown',
+    dspArchitecture: 'None',
     topsRating: 0.0,
     supportedPrecisions: [],
-    delegateType: 'CPU_FALLBACK'
+    driverLibrary: null,
+    recommendedDelegate: 'cpu'
   };
 }
 
 function detectHardwareProfile() {
-  const arch = os.arch().toLowerCase();
-  const cores = os.cpus().length;
-  const features = readCpuinfoFeatures();
+  const isTermux = isAndroidTermux();
+  const cpuFeatures = readCpuinfoFeatures();
+  const cpuCores = os.cpus().length || 1;
+  const cpuArch = os.arch().toLowerCase();
 
-  const hasDotprod = features.includes('asimddp');
-  const hasFp16 = features.includes('fphp') || features.includes('asimdhp');
-  const hasI8mm = features.includes('i8mm');
-  const hasSve = features.includes('sve') || features.includes('sve2');
+  const hasDotprod = cpuFeatures.includes('asimddp');
+  const hasFp16 = cpuFeatures.includes('fphp') || cpuFeatures.includes('asimdhp');
+  const hasI8mm = cpuFeatures.includes('i8mm');
+  const hasSve = cpuFeatures.includes('sve') || cpuFeatures.includes('sve2');
 
-  const socName = getAndroidProp('ro.hardware.chipname') ||
-                  getAndroidProp('ro.board.platform') ||
-                  getAndroidProp('ro.hardware') ||
-                  'Unknown';
+  const socName = (
+    getAndroidProp('ro.hardware.chipname') ||
+    getAndroidProp('ro.board.platform') ||
+    getAndroidProp('ro.hardware') ||
+    getAndroidProp('ro.product.board') ||
+    'Unknown'
+  );
 
-  const gpuName = (getAndroidProp('ro.hardware.vulkan') || 'Unknown');
+  const gpuName = (
+    getAndroidProp('ro.hardware.egl') ||
+    getAndroidProp('ro.hardware.vulkan') ||
+    'Unknown'
+  );
 
   // Probe Vulkan
   let vulkanAvailable = false;
@@ -296,7 +332,11 @@ function detectHardwareProfile() {
           vulkanLibPath = p;
           break;
         }
-      } catch (_) {}
+      } catch (err) {
+        if (err.code === 'EACCES' || err.code === 'EPERM') {
+          console.warn(`[termux-diffusion] Notice: Vulkan library found at '${p}' but read access was denied (${err.code}).`);
+        }
+      }
     }
   }
 
@@ -312,7 +352,11 @@ function detectHardwareProfile() {
           openclLibPath = p;
           break;
         }
-      } catch (_) {}
+      } catch (err) {
+        if (err.code === 'EACCES' || err.code === 'EPERM') {
+          console.warn(`[termux-diffusion] Notice: OpenCL library found at '${p}' but read access was denied (${err.code}).`);
+        }
+      }
     }
   }
 
@@ -344,7 +388,7 @@ function detectHardwareProfile() {
   }
 
   const marchParts = ['armv8-a'];
-  if (arch === 'arm64' || arch === 'aarch64') {
+  if (cpuArch === 'arm64' || cpuArch === 'aarch64') {
     marchParts[0] = 'armv8.2-a';
     if (hasDotprod) marchParts.push('dotprod');
     if (hasFp16) marchParts.push('fp16');
@@ -361,8 +405,8 @@ function detectHardwareProfile() {
   }
 
   return {
-    cpuArch: arch,
-    cpuCores: cores,
+    cpuArch,
+    cpuCores,
     hasDotprod,
     hasFp16,
     hasI8mm,

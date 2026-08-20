@@ -1,5 +1,6 @@
 """Unit tests for core generation runner, argument validation, and mock execution."""
 
+import asyncio
 import os
 import subprocess
 import pytest
@@ -254,3 +255,45 @@ def test_generate_missing_engine_no_overreach(tmp_path):
                 wake_lock=False,
                 export_gallery=False
             )
+
+
+@pytest.mark.asyncio
+async def test_async_generate_cancellation_kills_child_process(tmp_path):
+    """Verify that cancelling an async_generate() task immediately terminates the child process."""
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    import time
+    def slow_stdout():
+        time.sleep(2.0)
+        yield "step 1\n"
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = slow_stdout()
+    mock_proc.returncode = 0
+    mock_proc.killed = False
+
+    with patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.hardware.resolve_device_backend", return_value=("cpu", 0)), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")), \
+         patch("termux_diffusion.core.subprocess.Popen", return_value=mock_proc), \
+         patch("termux_diffusion.core._safe_kill_process") as mock_kill:
+
+        task = asyncio.create_task(
+            async_generate(
+                prompt="test cancel",
+                model=str(dummy_model),
+                output=dummy_out,
+                wake_lock=False,
+                export_gallery=False
+            )
+        )
+        await asyncio.sleep(0.05)
+        task.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+        assert mock_kill.called

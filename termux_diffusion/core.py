@@ -251,6 +251,9 @@ def generate(
             )
             if _proc_holder is not None:
                 _proc_holder.append(process)
+            if _cancel_event and _cancel_event.is_set():
+                _safe_kill_process(process)
+                raise TermuxDiffusionError("Inference cancelled by caller.")
 
             recent_logs = deque(maxlen=20)
             # Stream real-time progress to terminal

@@ -447,19 +447,29 @@ function resolveDeviceBackend(requestedDevice) {
     if (profile.vulkanAvailable) {
       return { effectiveDevice: 'vulkan', nglLayers: 99 };
     }
-    console.warn('[termux-diffusion] Vulkan GPU requested but driver not found. Falling back to CPU.');
-    return { effectiveDevice: 'cpu', nglLayers: 0 };
+    throw new Error(
+      "[termux-diffusion] Vulkan GPU acceleration was explicitly requested (device='vulkan'), " +
+      "but no accessible Vulkan driver (.so) was found on this system. " +
+      "To allow automatic CPU fallback when GPU is missing, use device='auto'."
+    );
   }
 
   if (req === 'opencl') {
     if (profile.openclAvailable) {
       return { effectiveDevice: 'opencl', nglLayers: 32 };
     }
-    console.warn('[termux-diffusion] OpenCL requested but driver not found. Falling back to CPU.');
+    throw new Error(
+      "[termux-diffusion] OpenCL acceleration was explicitly requested (device='opencl'), " +
+      "but no accessible OpenCL driver (.so) was found on this system. " +
+      "To allow automatic CPU fallback when OpenCL is missing, use device='auto'."
+    );
+  }
+
+  if (req === 'cpu') {
     return { effectiveDevice: 'cpu', nglLayers: 0 };
   }
 
-  return { effectiveDevice: 'cpu', nglLayers: 0 };
+  throw new Error(`[termux-diffusion] Unknown computing device '${requestedDevice}'. Supported: 'auto', 'cpu', 'vulkan', 'opencl'.`);
 }
 
 function getSdCliGpuArgs(device, ngl) {

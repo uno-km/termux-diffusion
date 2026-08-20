@@ -53,13 +53,15 @@ def test_resolve_device_backend_auto():
     assert ngl >= 0
 
 
-def test_resolve_device_backend_vulkan_fallback():
-    """If Vulkan is requested but not available, must fall back to CPU (not crash)."""
-    device, ngl = resolve_device_backend("vulkan")
-    # Either Vulkan works or it falls back to CPU
-    assert device in ("vulkan", "cpu")
-    if device == "cpu":
-        assert ngl == 0
+def test_resolve_device_backend_vulkan_strict():
+    """If Vulkan is requested, it must resolve if available or raise PlatformNotSupportedError."""
+    from termux_diffusion.exceptions import PlatformNotSupportedError
+    try:
+        device, ngl = resolve_device_backend("vulkan")
+        assert device == "vulkan"
+        assert ngl == 99
+    except PlatformNotSupportedError as err:
+        assert "Vulkan GPU acceleration was explicitly requested" in str(err)
 
 
 def test_get_sd_cli_gpu_args_cpu():

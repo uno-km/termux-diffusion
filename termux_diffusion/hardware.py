@@ -334,23 +334,25 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
     if req in ("vulkan", "gpu"):
         if profile.vulkan_available:
             return "vulkan", 99
-        else:
-            logger.warning(
-                "Vulkan requested but no Vulkan driver found on device. Falling back to CPU."
-            )
-            print("[termux-diffusion] WARNING: Vulkan GPU requested but driver not found. Falling back to CPU mode.")
-            return "cpu", 0
+        raise PlatformNotSupportedError(
+            "Vulkan GPU acceleration was explicitly requested (device='vulkan'), "
+            "but no accessible Vulkan driver (.so) was found on this system. "
+            "To allow automatic CPU fallback when GPU is missing, use device='auto'."
+        )
     
     if req == "opencl":
         if profile.opencl_available:
             return "opencl", 32
-        else:
-            logger.warning("OpenCL requested but no OpenCL driver found. Falling back to CPU.")
-            print("[termux-diffusion] WARNING: OpenCL requested but driver not found. Falling back to CPU mode.")
-            return "cpu", 0
+        raise PlatformNotSupportedError(
+            "OpenCL acceleration was explicitly requested (device='opencl'), "
+            "but no accessible OpenCL driver (.so) was found on this system. "
+            "To allow automatic CPU fallback when OpenCL is missing, use device='auto'."
+        )
     
-    # Default: CPU with NEON
-    return "cpu", 0
+    if req == "cpu":
+        return "cpu", 0
+
+    raise ValueError(f"Unknown computing device '{requested_device}'. Supported: 'auto', 'cpu', 'vulkan', 'opencl'.")
 
 
 def get_sd_cli_gpu_args(device: str, ngl: int) -> List[str]:

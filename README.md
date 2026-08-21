@@ -6,6 +6,8 @@
 [![Official Documentation](https://img.shields.io/badge/Official_Docs-uno--km.vercel.app%2Flib%2Fdiffusion-004499?style=for-the-badge&logo=vercel&logoColor=white)](https://uno-km.vercel.app/lib/diffusion/)
 [![PyPI Version](https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue&style=for-the-badge)](https://pypi.org/project/termux-diffusion/)
 [![npm Version](https://img.shields.io/npm/v/termux-diffusion.svg?color=red&style=for-the-badge)](https://www.npmjs.com/package/termux-diffusion)
+[![Open Collective](https://img.shields.io/badge/Open_Collective-AOSF_Fund-004499?style=flat&logo=opencollective)](https://opencollective.com/ameva-foundation)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-uno--km-ea4aaa?style=flat&logo=githubsponsors)](https://github.com/sponsors/uno-km)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)](LICENSE)
 [![AMEVA Foundation](https://img.shields.io/badge/Foundation-AOSF_Tier_1-orange?style=for-the-badge)](https://uno-km.vercel.app/docs/foundation/)
 
@@ -381,3 +383,14 @@ adb shell "/system/bin/device_config put activity_manager max_phantom_processes 
 ## 10. License
 
 Released under the **MIT License**. Maintained by **uno-km (Eunho Kim)**.
+
+
+---
+
+## 💖 Sponsorship & Community Backing
+
+AMEVA is an independent open-source public good governed under the **AMEVA Open-Source Foundation (AOSF)**. All sponsorship funds are 100% publicly audited and dedicated to physical ARM64 testbeds and CI/CD GPU runners.
+
+- **Open Collective (Non-Profit 501(c)(6))**: [https://opencollective.com/ameva-foundation](https://opencollective.com/ameva-foundation)
+- **GitHub Sponsors**: [https://github.com/sponsors/uno-km](https://github.com/sponsors/uno-km)
+- **Official Foundation Portal**: [https://uno-km.vercel.app/docs/foundation/sponsorship.html](https://uno-km.vercel.app/docs/foundation/sponsorship.html)

@@ -360,7 +360,7 @@ adb shell "/system/bin/device_config put activity_manager max_phantom_processes 
 
 ## 8. The AMEVA Mobile AI & Automation Ecosystem
 
-* **[Termux-Playwright](https://github.com/uno-km/termux-playwright-demo)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [Official Docs](https://uno-km.github.io/termux-playwright-demo/)): Production headless Chromium browser automation for Android Termux.
+* **[Termux-Playwright](https://github.com/uno-km/termux-playwright)** ([PyPI](https://pypi.org/project/termux-playwright/) | [npm](https://www.npmjs.com/package/termux-playwright) | [Official Docs](https://uno-km.github.io/termux-playwright/)): Production headless Chromium browser automation for Android Termux.
   * **Python:** `pip install termux-playwright && termux-playwright-install`
   * **Node.js:** `npm install -g termux-playwright && npx termux-playwright install`
 

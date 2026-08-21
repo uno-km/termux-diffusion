@@ -3,12 +3,15 @@
 **Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy**  
 *Dual-Engine Architecture (Python & Node.js / TypeScript) with Native Bionic ARM64 Tensor Acceleration*
 
-[![PyPI Version](https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue)](https://pypi.org/project/termux-diffusion/)
-[![npm Version](https://img.shields.io/npm/v/termux-diffusion.svg?color=red)](https://www.npmjs.com/package/termux-diffusion)
-[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://pypi.org/project/termux-diffusion/)
-[![Node Version](https://img.shields.io/badge/node-16+-brightgreen.svg)](https://www.npmjs.com/package/termux-diffusion)
-[![Platform](https://img.shields.io/badge/platform-Android%20Termux%20(ARM64)-green.svg)](https://github.com/uno-km/termux-diffusion)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Official Documentation](https://img.shields.io/badge/Official_Docs-uno--km.vercel.app%2Flib%2Fdiffusion-004499?style=for-the-badge&logo=vercel&logoColor=white)](https://uno-km.vercel.app/lib/diffusion/)
+[![PyPI Version](https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue&style=for-the-badge)](https://pypi.org/project/termux-diffusion/)
+[![npm Version](https://img.shields.io/npm/v/termux-diffusion.svg?color=red&style=for-the-badge)](https://www.npmjs.com/package/termux-diffusion)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)](LICENSE)
+[![AMEVA Foundation](https://img.shields.io/badge/Foundation-AOSF_Tier_1-orange?style=for-the-badge)](https://uno-km.vercel.app/docs/foundation/)
+
+<br/>
+
+**[📖 Official Documentation Site (13 Languages)](https://uno-km.vercel.app/lib/diffusion/)** • **[🌌 AMEVA Foundation](https://uno-km.vercel.app/docs/foundation/)** • **[⚡ Quickstart](#1-quick-scenario-playbook)** • **[🏛️ Architecture](#2-why-termux-diffusion-architectural-pillars)** • **[📊 Benchmarks](#3-empirical-benchmarks)**
 
 ---
 

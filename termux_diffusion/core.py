@@ -318,7 +318,7 @@ def generate(
         if sc_clean in VALID_SCHEDULERS:
             effective_schedule = sc_clean
             if sc_clean != "default":
-                cmd.extend(["--scheduler", sc_clean])
+                cmd.extend(["--schedule", sc_clean])
         else:
             logger.warning(
                 "Invalid schedule '%s'; falling back to engine default ('default'). Valid: %s",

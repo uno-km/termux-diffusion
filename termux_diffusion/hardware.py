@@ -265,21 +265,33 @@ def detect_hardware_profile() -> HardwareProfile:
     return profile
 
 
-def _build_cmake_flags(profile: HardwareProfile) -> List[str]:
+def _build_cmake_flags(profile: HardwareProfile, backend: Optional[str] = None) -> List[str]:
     """Generate optimal CMake flags for ARM64 Android Bionic."""
     flags = []
     prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
     
-    if profile.vulkan_available and profile.vulkan_driver:
+    target_backend = backend.lower().strip() if backend else "auto"
+    
+    if target_backend == "cpu":
+        flags.append("-DSD_VULKAN=OFF")
+        flags.append("-DSD_OPENCL=OFF")
+    elif (target_backend in ("auto", "vulkan")) and profile.vulkan_available and profile.vulkan_driver:
         flags.append("-DSD_VULKAN=ON")
         flags.append(f"-DVulkan_LIBRARY={profile.vulkan_driver.library_path}")
         flags.append(f"-DVulkan_INCLUDE_DIR={prefix}/include")
+        flags.append("-DGGML_VULKAN_COOPMAT_GLSLC_SUPPORT=OFF")
+        flags.append("-DGGML_VULKAN_COOPMAT2_GLSLC_SUPPORT=OFF")
+        flags.append("-DGGML_VULKAN_COOPMAT2_DECODE_VECTOR_GLSLC_SUPPORT=OFF")
+        flags.append("-DGGML_VULKAN_BFLOAT16_GLSLC_SUPPORT=OFF")
         flags.append("-DCMAKE_EXE_LINKER_FLAGS=-L/system/lib64 -Wl,-rpath,/system/lib64 -L/vendor/lib64 -Wl,-rpath,/vendor/lib64")
-    elif profile.opencl_available and profile.opencl_driver:
+    elif (target_backend in ("auto", "opencl")) and profile.opencl_available and profile.opencl_driver:
         flags.append("-DSD_OPENCL=ON")
         flags.append(f"-DOpenCL_LIBRARY={profile.opencl_driver.library_path}")
         flags.append(f"-DOpenCL_INCLUDE_DIR={prefix}/include")
         flags.append("-DCMAKE_EXE_LINKER_FLAGS=-L/vendor/lib64 -Wl,-rpath,/vendor/lib64 -L/system/lib64 -Wl,-rpath,/system/lib64")
+    else:
+        flags.append("-DSD_VULKAN=OFF")
+        flags.append("-DSD_OPENCL=OFF")
     
     # CPU ISA optimization flags
     march_parts = ["armv8-a"]
@@ -294,11 +306,11 @@ def _build_cmake_flags(profile: HardwareProfile) -> List[str]:
     
     if len(march_parts) > 1:
         march_str = "+".join(march_parts)
-        flags.append(f"-DCMAKE_C_FLAGS=-O3 -march={march_str} -D_GNU_SOURCE")
-        flags.append(f"-DCMAKE_CXX_FLAGS=-O3 -march={march_str} -D_GNU_SOURCE")
+        flags.append(f"-DCMAKE_C_FLAGS=-O2 -march={march_str} -D_GNU_SOURCE")
+        flags.append(f"-DCMAKE_CXX_FLAGS=-O2 -march={march_str} -D_GNU_SOURCE -Wno-deprecated-literal-operator")
     else:
-        flags.append("-DCMAKE_C_FLAGS=-O3 -D_GNU_SOURCE")
-        flags.append("-DCMAKE_CXX_FLAGS=-O3 -D_GNU_SOURCE")
+        flags.append("-DCMAKE_C_FLAGS=-O2 -D_GNU_SOURCE")
+        flags.append("-DCMAKE_CXX_FLAGS=-O2 -D_GNU_SOURCE -Wno-deprecated-literal-operator")
     
     return flags
 

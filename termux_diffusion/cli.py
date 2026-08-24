@@ -46,7 +46,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("-o", "--output", type=str, default=None, help="Output file path")
     gen_parser.add_argument("--sampler", type=str, default=None, help="Sampler algorithm (euler, euler_a, heun, dpm2, dpm++2s_a, dpm++2m, lcm)")
     gen_parser.add_argument("--schedule", type=str, default=None, help="Noise schedule (default, discrete, karras, exponential, ays, gits)")
-    gen_parser.add_argument("--vae-tiling", action="store_true", help="Enable VAE tiling for ~70% lower peak memory")
+    gen_parser.add_argument("--vae-tiling", action="store_true", help="Enable VAE tiling for ~70%% lower peak memory")
     gen_parser.add_argument("-i", "--init-img", type=str, default=None, help="Source image for Img2Img synthesis")
     gen_parser.add_argument("--strength", type=float, default=None, help="Img2Img denoising strength (0.0 to 1.0, default: 0.75)")
     gen_parser.add_argument("--lora-dir", type=str, default=None, help="Directory path containing LoRA weights")
@@ -57,7 +57,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("--taesd", type=str, default=None, help="Path to Tiny AutoEncoder (TAESD) model")
 
     # install command
-    subparsers.add_parser("install", help="Provision and compile native Bionic C++ engine")
+    inst_parser = subparsers.add_parser("install", help="Provision and compile native Bionic C++ engine")
+    inst_parser.add_argument("-b", "--backend", type=str, default="auto", choices=["auto", "cpu", "vulkan", "opencl"], help="Target compute backend (default: auto)")
+    inst_parser.add_argument("-f", "--force", action="store_true", default=True, help="Force recompilation")
 
     # doctor command
     subparsers.add_parser("doctor", help="Run 7-tier pre-flight diagnostic checks")
@@ -110,7 +112,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0 if res.path.exists() else 1
 
     elif args.command == "install":
-        provision_engine(force=True)
+        provision_engine(force=args.force, backend=args.backend)
         return 0
 
     elif args.command == "doctor":

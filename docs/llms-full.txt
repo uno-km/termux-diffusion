@@ -1,45 +1,31 @@
-# Termux-Diffusion Full Technical Specification & Architecture Manual
+# Termux-Diffusion Full Technical Specification (v1.1.1)
+Official Documentation & Deep Architecture Reference for Autonomous AI Agents.
 
-Official Repository: https://github.com/uno-km/termux-diffusion
-PyPI: https://pypi.org/project/termux-diffusion/
-npm: https://www.npmjs.com/package/termux-diffusion
+## 1. System Overview
+Native On-Device Stable Diffusion Runtime for Android Termux & ARM64
+Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.
 
-## Full Public API Specification
+## 2. Package & Installation
+- PyPI: termux-diffusion
+- Command: pip install termux-diffusion
+# or: npm install termux-diffusion
+- Repository: https://github.com/uno-km/termux-diffusion
 
-### Python (termux_diffusion)
-- `generate(prompt, negative_prompt=None, model='realistic', device='cpu', output=None, width=512, height=512, steps=10, cfg_scale=4.0, seed=-1, threads=None, wake_lock=True, export_gallery=True, timeout=1800, low_ram_guard=True)`
-- `get_default_negative_prompt() -> Optional[str]`
-- `set_default_negative_prompt(prompt: Optional[str]) -> None`
-- `get_quality_guard_negative_prompt() -> str`
-- `download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)`
-- `register_model(name, repo_id=None, filename=None, url=None, description=None)`
-- `list_cached_models(cache_dir=None)`
-- `clear_cache(cache_dir=None, model_name=None)`
-- `set_cache_dir(path)` / `get_cache_dir()`
-- `get_memory_info()`
-- `check_memory_safety(required_mb=1000)`
-- `get_optimal_thread_count()`
-- `detect_hardware_profile()`
-- `detect_npu_capabilities()`
-- `resolve_device_backend(device)`
-- `run_doctor()`
-- `export_to_android_gallery(image_path, destination_name=None)`
-- `TermuxWakeLock(enabled=True)`
+## 3. Core Capabilities
+- **Zero-PRoot Native ARM64 Bionic**: Executes directly without root permissions, virtual machines, or PRoot Linux overhead.
+- **Dual Python & Node.js Engine**: Provides comprehensive CLI and programmatic APIs across both Python and JavaScript.
+- **Samsung Gallery Auto-Indexing**: Automatically broadcasts Android MEDIA_SCANNER intents to register generated art in Gallery.
 
-### Node.js (termux-diffusion)
-- `generate(options)`
-- `getDefaultNegativePrompt()`
-- `setDefaultNegativePrompt(prompt)`
-- `getQualityGuardNegativePrompt()`
-- `downloadModel(modelNameOrUrl, options)`
-- `registerModel(name, modelConfig)`
-- `listCachedModels(cacheDir)`
-- `clearCache(cacheDir, modelName)`
-- `setCacheDir(dirPath)` / `getCacheDir()`
-- `detectHardwareProfile()`
-- `detectNpuCapabilities()`
-- `resolveDeviceBackend(device)`
-- `getMemoryInfo()`
-- `checkMemorySafety(requiredMb)`
-- `getOptimalThreadCount()`
-- `exportToAndroidGallery(imagePath, destinationName)`
+## 4. Canonical Implementation
+```python
+import termux_diffusion as td
+
+# 1. Generate image on Android hardware
+image_path = td.generate(
+    prompt="Cyberpunk Seoul city at night, neon lights, 8k",
+    model="sd-turbo",
+    steps=4
+)
+print(f"Generated and saved to Gallery: {image_path}")
+
+```

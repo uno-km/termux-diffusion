@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
 authors = [
-    { name = "uno-km (쌩초보코딩단)", email = "hosequelbo@gmail.com" }
+    { name = "uno-km (AMEVA Foundation)", email = "hosequelbo@gmail.com" }
 ]
 keywords = [
     "stable-diffusion",

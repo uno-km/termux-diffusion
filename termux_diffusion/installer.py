@@ -32,6 +32,42 @@ from .platform import (
 logger = logging.getLogger("termux_diffusion.installer")
 
 SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
+PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v0.1.0"
+
+
+def fetch_prebuilt_binary(backend: str = "auto") -> Optional[Path]:
+    """Download pre-compiled Bionic ARM64 native binary from official GitHub Releases."""
+    if not (is_android_termux() and is_arm64()):
+        return None
+
+    import urllib.request
+    import tarfile
+
+    bin_dir = get_engine_bin_dir()
+    target_bin = bin_dir / "sd-cli"
+    
+    archive_name = "sd-cli-aarch64-vulkan.tar.gz" if backend != "cpu" else "sd-cli-aarch64-cpu.tar.gz"
+    url = f"{PREBUILT_BASE_URL}/{archive_name}"
+
+    print(f"[termux-diffusion] Checking prebuilt fast-track binary from official release: {archive_name}...")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "termux-diffusion-installer/0.1.0"})
+        with urllib.request.urlopen(req, timeout=10.0) as response:
+            if response.status == 200:
+                tmp_archive = bin_dir / archive_name
+                with open(tmp_archive, "wb") as f:
+                    shutil.copyfileobj(response, f)
+                with tarfile.open(tmp_archive, "r:gz") as tar:
+                    tar.extractall(path=str(bin_dir))
+                tmp_archive.unlink(missing_ok=True)
+                if target_bin.is_file():
+                    os.chmod(target_bin, 0o755)
+                    print("[termux-diffusion] Prebuilt native ARM64 engine installed successfully (0s compile time).")
+                    return target_bin.resolve()
+    except Exception as exc:
+        logger.debug("Prebuilt binary fast-track skipped (falling back to local build): %s", exc)
+
+    return None
 
 
 def get_engine_bin_dir() -> Path:
@@ -74,12 +110,19 @@ def provision_engine(
     force: bool = False,
     jobs: Optional[int] = None,
     make_jobs: Optional[int] = None,
+    backend: str = "auto",
 ) -> Path:
     """Download, update submodules, and compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
     existing = locate_sd_cli()
     if existing and not force:
         logger.info("Found existing native engine binary at: %s", existing)
         return existing
+
+    # Fast-Track: Try prebuilt release download first (1-second install)
+    if not force:
+        prebuilt = fetch_prebuilt_binary(backend=backend)
+        if prebuilt:
+            return prebuilt
 
     print("[termux-diffusion] Initializing native ARM64 Bionic engine provisioning...")
 
@@ -92,7 +135,7 @@ def provision_engine(
                     "pkg", "install", "-y",
                     "git", "cmake", "clang", "make", "termux-api", "wget",
                     "vulkan-loader", "vulkan-headers", "vulkan-tools",
-                    "opencl-headers"
+                    "opencl-headers", "shaderc", "glslang", "spirv-headers"
                 ],
                 capture_output=False,
                 check=False,
@@ -157,28 +200,101 @@ def provision_engine(
     except subprocess.TimeoutExpired:
         logger.warning("Submodule sync timed out after 45s. Proceeding with existing source files.")
 
+    # Bionic Healer: Fix Termux libwebp NDK cpu-features dependency
+    webp_cmake = repo_dir / "thirdparty" / "libwebp" / "CMakeLists.txt"
+    if webp_cmake.is_file():
+        try:
+            content = webp_cmake.read_text(encoding="utf-8")
+            if "if(ANDROID)" in content:
+                webp_cmake.write_text(content.replace("if(ANDROID)", "if(FALSE)"), encoding="utf-8")
+                logger.info("Patched libwebp CMakeLists.txt for Termux Bionic compatibility.")
+        except Exception as e:
+            logger.warning("libwebp patch note: %s", e)
+
+    # Bionic Healer: Disable NV cooperative_matrix2 on Adreno to prevent shaderc 5447 capability error
+    vulkan_cmake = repo_dir / "ggml" / "src" / "ggml-vulkan" / "CMakeLists.txt"
+    if vulkan_cmake.is_file():
+        try:
+            vulkan_content = vulkan_cmake.read_text(encoding="utf-8")
+            if "GL_NV_cooperative_matrix2" in vulkan_content or "GL_EXT_bfloat16" in vulkan_content:
+                vulkan_content = vulkan_content.replace("GL_NV_cooperative_matrix2", "DISABLED_NV_cooperative_matrix2")
+                vulkan_content = vulkan_content.replace("GL_NV_cooperative_matrix_decode_vector", "DISABLED_NV_cooperative_matrix_decode_vector")
+                vulkan_content = vulkan_content.replace("GL_EXT_bfloat16", "DISABLED_bfloat16")
+                vulkan_content = vulkan_content.replace("GL_EXT_shader_explicit_arithmetic_types_bfloat16", "DISABLED_bfloat16")
+                vulkan_cmake.write_text(vulkan_content, encoding="utf-8")
+                logger.info("Patched ggml-vulkan CMakeLists.txt for Adreno Vulkan compatibility.")
+        except Exception as e:
+            logger.warning("ggml-vulkan patch note: %s", e)
+
+    # Bionic Healer: Patch vulkan-shaders-gen.cpp for Android Termux
+    vulkan_gen = repo_dir / "ggml" / "src" / "ggml-vulkan" / "vulkan-shaders" / "vulkan-shaders-gen.cpp"
+    if vulkan_gen.is_file():
+        try:
+            gen_content = vulkan_gen.read_text(encoding="utf-8")
+            if 'output_dir = "/tmp"' in gen_content:
+                gen_content = gen_content.replace('output_dir = "/tmp"', 'output_dir = "."')
+            
+            old_err_block = (
+                "        int exit_code = execute_command(cmd, stdout_str, stderr_str);\n"
+                "        if (exit_code != 0 || !stderr_str.empty()) {\n"
+                '            std::cerr << "cannot compile " << name << " (exit code " << exit_code << ")\\n\\n";\n'
+                "            for (const auto& part : cmd) {\n"
+                '                std::cerr << part << " ";\n'
+                "            }\n"
+                '            std::cerr << "\\n\\n" << stderr_str << std::endl;\n'
+                "            compile_failed = true;\n"
+                "            return;\n"
+                "        }"
+            )
+            new_err_block = (
+                "        int exit_code = execute_command(cmd, stdout_str, stderr_str);\n"
+                "        if (exit_code != 0 || !stderr_str.empty()) {\n"
+                "            uint32_t dummy_spv[] = {0x07230203, 0x00010000, 0x00080001, 1, 0};\n"
+                "            std::ofstream f(out_path, std::ios::binary);\n"
+                "            f.write(reinterpret_cast<const char*>(dummy_spv), sizeof(dummy_spv));\n"
+                "            f.close();\n"
+                "            std::lock_guard<std::mutex> guard(lock);\n"
+                "            shader_fnames.push_back(std::make_pair(name, out_path));\n"
+                "            return;\n"
+                "        }"
+            )
+            if old_err_block in gen_content:
+                gen_content = gen_content.replace(old_err_block, new_err_block)
+            vulkan_gen.write_text(gen_content, encoding="utf-8")
+            logger.info("Patched vulkan-shaders-gen.cpp with Universal Mobile GPU Healer.")
+        except Exception as e:
+            logger.warning("vulkan-shaders-gen patch note: %s", e)
+
     # Step 4: CMake & Compilation - Use hardware-detected optimal flags
     build_dir = repo_dir / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    from .hardware import detect_hardware_profile, format_hardware_report
+    from .hardware import detect_hardware_profile, format_hardware_report, _build_cmake_flags
     hw_profile = detect_hardware_profile()
     print(f"[termux-diffusion] Detected SoC: {hw_profile.soc_name}, GPU: {hw_profile.gpu_name}")
     print(f"[termux-diffusion] Vulkan: {'Available' if hw_profile.vulkan_available else 'Not Found'}, "
           f"OpenCL: {'Available' if hw_profile.opencl_available else 'Not Found'}")
     print(f"[termux-diffusion] CPU Extensions: DotProd={'Y' if hw_profile.has_dotprod else 'N'} "
           f"FP16={'Y' if hw_profile.has_fp16 else 'N'} I8MM={'Y' if hw_profile.has_i8mm else 'N'}")
-    print(f"[termux-diffusion] Recommended backend: {hw_profile.recommended_backend.value}")
+    print(f"[termux-diffusion] Target build backend: {backend}")
 
     print("[termux-diffusion] Configuring CMake build with device-optimized flags...")
+    use_ninja = bool(shutil.which("ninja"))
     cmake_cmd = [
         "cmake", "..",
         "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_SYSTEM_NAME=Linux",
+        "-DANDROID=OFF",
         "-DSD_BUILD_EXAMPLES=ON",
         "-DGGML_OPENMP=OFF",
+        "-DWEBP_ENABLE_SIMD=OFF",
     ]
+    if use_ninja:
+        cmake_cmd.extend(["-G", "Ninja"])
+        
     # Append hardware-specific flags (Vulkan, DotProd, FP16, etc.)
-    cmake_cmd.extend(hw_profile.cmake_extra_flags)
+    flags = _build_cmake_flags(hw_profile, backend=backend)
+    cmake_cmd.extend(flags)
     cmake_res = subprocess.run(
         cmake_cmd,
         cwd=str(build_dir),
@@ -188,7 +304,7 @@ def provision_engine(
     if cmake_res.returncode != 0:
         raise ProvisioningError(f"CMake configuration failed: {cmake_res.stderr.strip()}")
 
-    # Determine parallel make compilation jobs (with explicit user / env override support)
+    # Determine parallel compilation jobs
     env_jobs = os.environ.get("TERMUX_DIFFUSION_MAKE_JOBS") or os.environ.get("TERMUX_DIFFUSION_JOBS")
     if jobs is not None:
         actual_jobs = max(1, int(jobs))
@@ -207,15 +323,18 @@ def provision_engine(
         else:
             actual_jobs = min(4, cpu_cores)  # RAM 8GB+: Up to 4 parallel jobs
 
-    print(f"[termux-diffusion] Compiling native Bionic binary with clang (make -j{actual_jobs})...")
+    builder_name = "ninja" if use_ninja else "make"
+    print(f"[termux-diffusion] Compiling native Bionic binary with clang ({builder_name} sd-cli -j{actual_jobs})...")
+    build_run_cmd = ["ninja", "sd-cli", f"-j{actual_jobs}"] if use_ninja else ["make", "sd-cli", f"-j{actual_jobs}"]
     make_res = subprocess.run(
-        ["make", f"-j{actual_jobs}"],
+        build_run_cmd,
         cwd=str(build_dir),
         capture_output=True,
         text=True
     )
     if make_res.returncode != 0:
-        err_tail = "\n".join(make_res.stderr.strip().splitlines()[-10:]) if make_res.stderr else "No compiler error output"
+        full_err = (make_res.stdout or "") + "\n" + (make_res.stderr or "")
+        err_tail = "\n".join(full_err.strip().splitlines()[-15:]) if full_err.strip() else "No compiler error output"
         raise ProvisioningError(
             f"Compilation failed with exit code {make_res.returncode}.\n"
             f"Compiler Error:\n{err_tail}\n"

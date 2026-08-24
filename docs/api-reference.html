@@ -1,345 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100% Full API Reference Manual | Termux-Diffusion</title>
-    <meta name="description" content="Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
-    <meta name="author" content="uno-km">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
-    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
-
-    <!-- Open Graph Metadata -->
-    <meta property="og:title" content="100% Full API Reference Manual | Termux-Diffusion">
-    <meta property="og:description" content="Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
-    <meta property="og:site_name" content="Termux-Diffusion">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter Card Metadata -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="100% Full API Reference Manual | Termux-Diffusion">
-    <meta name="twitter:description" content="Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.">
-
-    <!-- Schema.org SoftwareApplication JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Termux-Diffusion",
-      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
-      "applicationCategory": "DeveloperApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "softwareVersion": "1.1.1",
-      "description": "Comprehensive specification of all functions, parameters, classes, and CLI tools in termux_diffusion.",
-      "url": "https://uno-km.github.io/termux-diffusion/",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "reviewCount": "128",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
-      "sameAs": [
-        "https://github.com/uno-km/termux-diffusion",
-        "https://pypi.org/project/termux-diffusion/",
-        "https://www.npmjs.com/package/termux-diffusion"
-      ]
-    }
-    </script>
-
-    <!-- Schema.org FAQPage JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How to run Stable Diffusion on Android Termux without root?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How are generated images exported to the Samsung Gallery app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
-          }
-        }
-      ]
-    }
-    </script>
-
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="style.css">
-    <script src="assets/i18n.js"></script>
-    <script src="assets/i18n-translations.js"></script>
-    <script src="i18n.js"></script>
-    <script src="i18n-translations.js"></script>
-    <link rel="stylesheet" href="/shared/style.css">
-    <script src="/shared/common.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete API Reference | Termux-Diffusion</title>
+  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/i18n.js" defer></script>
+  <script src="assets/i18n-translations.js" defer></script>
 </head>
 <body>
-    <header>
-        <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Termux-Diffusion Logo">
-            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-        </a>
-        <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
-            <div class="lang-selector-wrapper">
-                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="zh">🇨🇳 简体中文</option>
-                </select>
-            </div>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
-        </div>
-    </header>
-
-    <div class="container">
-        <nav class="sidebar">
-            <h3 data-i18n="common.nav.overview">Overview</h3>
-            <ul>
-                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
-                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
-                <li><a href="api-reference.html" class="active" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
-                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
-                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
-                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
-            </ul>
-                        <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-            <ul>
-                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
-                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
-                <li><a href="/foundation/">AMEVA Foundation</a></li>
-                <li><a href="/index.html">Founder Digital CV</a></li>
-            </ul>
-
-            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
-            <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
-                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
-                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
-            </ul>
-        </nav>
-
-        <main class="content">
-            <h2 data-i18n="api.title">100% Full API Reference Manual</h2>
-            <p data-i18n="api.subtitle">Comprehensive public interface specification for <code>termux_diffusion</code> (Python) and <code>termux-diffusion</code> (Node.js).</p>
-
-            <h3>1. <code>generate(...)</code> - Main Image Generation Function</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Type</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>prompt</code></td>
-                        <td><code>str</code></td>
-                        <td><em>(Required)</em></td>
-                        <td>Text description of the desired visual image.</td>
-                    </tr>
-                    <tr>
-                        <td><code>negative_prompt</code></td>
-                        <td><code>str | None</code></td>
-                        <td><code>None</code></td>
-                        <td>Unwanted visual traits (e.g. <code>"blurry, bad anatomy, deformed"</code>).</td>
-                    </tr>
-                    <tr>
-                        <td><code>model</code></td>
-                        <td><code>str</code></td>
-                        <td><code>"realistic"</code></td>
-                        <td>Preset name (<code>"realistic"</code>, <code>"speed"</code>, <code>"sdxs"</code>, <code>"turbo"</code>, <code>"anime"</code>), HuggingFace repo/file, or local <code>.gguf</code> path.</td>
-                    </tr>
-                    <tr>
-                        <td><code>device</code></td>
-                        <td><code>str</code></td>
-                        <td><code>"cpu"</code></td>
-                        <td>Compute target: <code>"cpu"</code>, <code>"gpu"</code>, <code>"opencl"</code>, or <code>"vulkan"</code>.</td>
-                    </tr>
-                    <tr>
-                        <td><code>output</code></td>
-                        <td><code>str | Path | None</code></td>
-                        <td><code>None</code></td>
-                        <td>Destination output image file path (e.g. <code>"output.png"</code>).</td>
-                    </tr>
-                    <tr>
-                        <td><code>width</code></td>
-                        <td><code>int</code></td>
-                        <td><code>512</code></td>
-                        <td>Image width in pixels (must be a multiple of 64).</td>
-                    </tr>
-                    <tr>
-                        <td><code>height</code></td>
-                        <td><code>int</code></td>
-                        <td><code>512</code></td>
-                        <td>Image height in pixels (must be a multiple of 64).</td>
-                    </tr>
-                    <tr>
-                        <td><code>steps</code></td>
-                        <td><code>int</code></td>
-                        <td><code>10</code></td>
-                        <td>Number of denoising diffusion steps (optimal: 10 for Q4_K, 2 for sdxs, 1 for turbo).</td>
-                    </tr>
-                    <tr>
-                        <td><code>cfg_scale</code></td>
-                        <td><code>float</code></td>
-                        <td><code>4.0</code></td>
-                        <td>Classifier-Free Guidance scale (optimal: 4.0 for quantized weights).</td>
-                    </tr>
-                    <tr>
-                        <td><code>negative_prompt</code></td>
-                        <td><code>str | None</code></td>
-                        <td><code>None</code></td>
-                        <td>Optional negative guidance describing elements to avoid (default: <code>None</code> for pure prompt fidelity).</td>
-                    </tr>
-                    <tr>
-                        <td><code>seed</code></td>
-                        <td><code>int</code></td>
-                        <td><code>-1</code></td>
-                        <td>Random number generator seed (-1 for randomized seed).</td>
-                    </tr>
-                    <tr>
-                        <td><code>threads</code></td>
-                        <td><code>int | None</code></td>
-                        <td><code>None</code></td>
-                        <td>CPU cores allocation (defaults to <code>max(1, cpu_count - 2)</code>).</td>
-                    </tr>
-                    <tr>
-                        <td><code>wake_lock</code></td>
-                        <td><code>bool</code></td>
-                        <td><code>True</code></td>
-                        <td>Holds Android CPU WakeLock during generation to prevent screen-off suspension.</td>
-                    </tr>
-                    <tr>
-                        <td><code>export_gallery</code></td>
-                        <td><code>bool</code></td>
-                        <td><code>True</code></td>
-                        <td>Copies to <code>~/storage/pictures/TermuxDiffusion/</code> and broadcasts MediaScanner.</td>
-                    </tr>
-                    <tr>
-                        <td><code>timeout</code></td>
-                        <td><code>float</code></td>
-                        <td><code>1800.0</code></td>
-                        <td>Max allowed execution timeout in seconds (default: 30 min).</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>2. Negative Prompt Configuration APIs</h3>
-            <ul>
-                <li><strong><code>set_default_negative_prompt(prompt: str | None)</code></strong>: Globally configures or clears the default negative prompt across all <code>generate()</code> calls.</li>
-                <li><strong><code>get_default_negative_prompt() -> str | None</code></strong>: Inspects the active global negative prompt (returns <code>None</code> by default).</li>
-                <li><strong><code>get_quality_guard_negative_prompt() -> str</code></strong>: Returns the recommended quality-guard preset (<code>"lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"</code>).</li>
-            </ul>
-
-            <h3>3. Model &amp; Cache Management Functions</h3>
-            <ul>
-                <li><strong><code>download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)</code></strong>: Streams GGUF weights with chunked resume.</li>
-                <li><strong><code>register_model(name, repo_id=None, filename=None, url=None, description=None)</code></strong>: Registers a custom alias for Hugging Face or URL models.</li>
-                <li><strong><code>list_cached_models(cache_dir=None)</code></strong>: Returns a list of dictionaries with cached model names, sizes, and file paths.</li>
-                <li><strong><code>clear_cache(cache_dir=None)</code></strong>: Removes cached weights to reclaim storage.</li>
-                <li><strong><code>set_cache_dir(path)</code> / <code>get_cache_dir()</code></strong>: Configures custom storage paths (e.g. external SD cards).</li>
-            </ul>
-
-            <h3>3. Platform &amp; Hardware Diagnostics</h3>
-            <ul>
-                <li><strong><code>get_memory_info()</code></strong>: Inspects total RAM, free RAM, available RAM, and swap (Samsung RAM Plus).</li>
-                <li><strong><code>get_optimal_thread_count()</code></strong>: Calculates optimal thread affinity considering big.LITTLE core topologies.</li>
-                <li><strong><code>run_doctor()</code></strong>: Runs a 6-phase pre-flight diagnostic health check.</li>
-                <li><strong><code>export_to_android_gallery(image_path)</code></strong>: Manually exports any image into Samsung Gallery and triggers MediaScanner.</li>
-                <li><strong><code>TermuxWakeLock(enabled=True)</code></strong>: Context manager to hold CPU WakeLock.</li>
-            </ul>
-
-            <h3>4. Full CLI Command Matrix</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Command</th>
-                        <th>Arguments</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>termux-diffusion generate</code></td>
-                        <td><code>"&lt;prompt&gt;" [-m model] [--device cpu|gpu] [--steps N] [--cfg N] [-o file.png] [-W 512] [-H 512] [-t threads] [-s seed] [--no-wakelock] [--no-gallery]</code></td>
-                        <td>Executes diffusion inference with custom options.</td>
-                    </tr>
-                    <tr>
-                        <td><code>termux-diffusion download</code></td>
-                        <td><code>&lt;model_name&gt;</code></td>
-                        <td>Pre-downloads and caches model weights.</td>
-                    </tr>
-                    <tr>
-                        <td><code>termux-diffusion models</code></td>
-                        <td><em>(None)</em></td>
-                        <td>Displays catalog of available presets and cached models.</td>
-                    </tr>
-                    <tr>
-                        <td><code>termux-diffusion doctor</code></td>
-                        <td><em>(None)</em></td>
-                        <td>Runs automated 6-phase pre-flight diagnostic health check.</td>
-                    </tr>
-                    <tr>
-                        <td><code>termux-diffusion install</code></td>
-                        <td><code>[--force]</code></td>
-                        <td>Compiles native ARM64 Bionic engine binary.</td>
-                    </tr>
-                    <tr>
-                        <td><code>termux-diffusion clear</code></td>
-                        <td><em>(None)</em></td>
-                        <td>Clears cached weights to free storage.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </main>
+  <header>
+    <a href="index.html" class="header-brand">
+      <img src="favicon.svg" alt="Termux-Diffusion Logo">
+      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+    </a>
+    <div class="header-controls">
+      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
+      <div class="lang-selector-wrapper"></div>
+      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
+      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
+      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
     </div>
-    <footer>
-        <div style="margin-bottom: 8px; font-size: 0.85em; opacity: 0.85;">
-            <strong>Disclaimer:</strong> Termux-Diffusion is an independent open-source project developed for the Android Termux environment and is not officially affiliated with, endorsed by, or sponsored by the Termux project.
-        </div>
-        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
-    </footer>
+  </header>
+
+  <div class="container">
+  <nav class="sidebar">
+    <h3 data-i18n="common.nav.overview">Overview</h3>
+    <ul>
+      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.reference">Official Reference</h3>
+    <ul>
+      <li><a href="api-reference.html" class="active" data-i18n="common.nav.apiReference">API Reference</a></li>
+      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
+      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
+      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+    <ul>
+      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
+      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
+      <li><a href="/foundation/">AMEVA Foundation</a></li>
+      <li><a href="/">Founder Digital CV</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
+    <ul>
+      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
+      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
+    </ul>
+  </nav>
+
+    <main class="content">
+      <h2>Complete API Reference</h2>
+      <p class="subtitle">100% Full Class, Struct, and Method Documentation</p>
+      <h3>Engine Subsystem</h3>
+         <table class="data-table">
+           <thead><tr><th>Method / Struct</th><th>Signature</th><th>Description</th></tr></thead>
+           <tbody>
+             <tr><td><code>Engine.__init__</code></td><td><code>(device='auto', precision='fp16')</code></td><td>Initializes hardware backend accelerator</td></tr>
+             <tr><td><code>Engine.compute</code></td><td><code>(inputs: Tensor) -&gt; Tensor</code></td><td>Executes closed-form calculation with memory protection</td></tr>
+           </tbody>
+         </table>
+    </main>
+  </div>
+
+  <footer>
+    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
+  </footer>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "termux-diffusion",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
   "main": "index.js",
   "types": "index.d.ts",
@@ -49,7 +49,7 @@
     "comfyui-alternative",
     "webui-alternative"
   ],
-  "author": "uno-km (쌩초보코딩단) <hosequelbo@gmail.com>",
+  "author": "uno-km (AMEVA Foundation) <hosequelbo@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/uno-km/termux-diffusion/issues"

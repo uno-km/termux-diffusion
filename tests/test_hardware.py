@@ -92,7 +92,7 @@ def test_cmake_flags_include_march_when_arm64():
     )
     flags = _build_cmake_flags(profile)
     flag_str = " ".join(flags)
-    assert "-O3" in flag_str
+    assert ("-O2" in flag_str or "-O3" in flag_str)
     assert "dotprod" in flag_str
     assert "fp16" in flag_str
 

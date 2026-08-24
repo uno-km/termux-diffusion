@@ -1,200 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Version Archive & Changelog | Termux-Diffusion</title>
-    <meta name="description" content="Release history, changelog, and upgrade guides for Termux-Diffusion.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
-    <meta name="author" content="uno-km">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
-    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
-
-    <!-- Open Graph Metadata -->
-    <meta property="og:title" content="Version Archive & Changelog | Termux-Diffusion">
-    <meta property="og:description" content="Release history, changelog, and upgrade guides for Termux-Diffusion.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
-    <meta property="og:site_name" content="Termux-Diffusion">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter Card Metadata -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Version Archive & Changelog | Termux-Diffusion">
-    <meta name="twitter:description" content="Release history, changelog, and upgrade guides for Termux-Diffusion.">
-
-    <!-- Schema.org SoftwareApplication JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Termux-Diffusion",
-      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
-      "applicationCategory": "DeveloperApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "softwareVersion": "1.1.1",
-      "description": "Release history, changelog, and upgrade guides for Termux-Diffusion.",
-      "url": "https://uno-km.github.io/termux-diffusion/",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "reviewCount": "128",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
-      "sameAs": [
-        "https://github.com/uno-km/termux-diffusion",
-        "https://pypi.org/project/termux-diffusion/",
-        "https://www.npmjs.com/package/termux-diffusion"
-      ]
-    }
-    </script>
-
-    <!-- Schema.org FAQPage JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How to run Stable Diffusion on Android Termux without root?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How are generated images exported to the Samsung Gallery app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
-          }
-        }
-      ]
-    }
-    </script>
-
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="style.css">
-    <script src="assets/i18n.js"></script>
-    <script src="assets/i18n-translations.js"></script>
-    <script src="i18n.js"></script>
-    <script src="i18n-translations.js"></script>
-    <link rel="stylesheet" href="/shared/style.css">
-    <script src="/shared/common.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Version Archive & Changelog | Termux-Diffusion</title>
+  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/i18n.js" defer></script>
+  <script src="assets/i18n-translations.js" defer></script>
 </head>
 <body>
-    <header>
-        <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Termux-Diffusion Logo">
-            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-        </a>
-        <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
-            <div class="lang-selector-wrapper">
-                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="zh">🇨🇳 简体中文</option>
-                </select>
-            </div>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
-        </div>
-    </header>
-
-    <div class="container">
-        <nav class="sidebar">
-            <h3 data-i18n="common.nav.overview">Overview</h3>
-            <ul>
-                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
-                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
-                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
-                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
-                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
-                <li><a href="versions.html" class="active" data-i18n="common.nav.versions">Version Archive</a></li>
-            </ul>
-                        <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-            <ul>
-                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
-                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
-                <li><a href="/foundation/">AMEVA Foundation</a></li>
-                <li><a href="/index.html">Founder Digital CV</a></li>
-            </ul>
-
-            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
-            <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
-                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
-                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
-            </ul>
-        </nav>
-
-        <main class="content">
-            <h2 data-i18n="versions.title">Version Archive &amp; Changelog</h2>
-            <p data-i18n="versions.subtitle">Historical release logs and upgrade migration guides.</p>
-
-            <div class="card" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; color: var(--primary-color);">v1.1.1 - Production High-Precision &amp; Stability Release</h3>
-                    <span class="release-tag">2026-08-20</span>
-                </div>
-                <ul style="margin-top: 12px; line-height: 1.8;">
-                    <li><strong>TOP 7 High-Precision Advanced Parameters:</strong> 10 Samplers (<code>euler_a</code>, <code>dpm++2m</code>, <code>lcm</code>, etc.), 6 Schedulers (<code>karras</code>, <code>exponential</code>, <code>ays</code>, etc.), VAE Tiling (reduces peak RAM by ~70%), Img2Img (<code>init_img</code>, <code>strength</code>), LoRA adapter weights, CLIP-Skip, ControlNet, and TAESD support.</li>
-                    <li><strong>Fail-Fast Missing File Validation:</strong> Instant validation on missing files (<code>init_img</code>, <code>control_net</code>, etc.) before triggering 1.5GB model downloads.</li>
-                    <li><strong>Async Cancellation &amp; Process Reaping:</strong> Full asynchronous cancellation support (<code>async_generate()</code> in Python, <code>AbortSignal</code> in Node.js) with POSIX process group tree termination (<code>_safe_kill_process</code>).</li>
-                    <li><strong>Strict Hardware Acceleration:</strong> GPU/Vulkan backend fails fast if drivers are missing, preventing deceptive fallbacks.</li>
-                    <li><strong>Samsung RAM Plus &amp; Low-Memory Guidance:</strong> Removed library-level blocking OOM aborts; added comprehensive virtual swap / RAM Plus configuration guide in README.</li>
-                </ul>
-            </div>
-
-            <div class="card" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; color: var(--primary-color);">v1.0.0 - Genesis Release</h3>
-                    <span class="release-tag">2026-08-20</span>
-                </div>
-                <ul style="margin-top: 12px; line-height: 1.8;">
-                    <li><strong>Dual-Engine Architecture:</strong> Full feature parity across native Python (PyPI) and Node.js / TypeScript (npm).</li>
-                    <li><strong>Zero PRoot Execution:</strong> Native ARM64 Bionic libc compilation with -O3 NEON SIMD vectorization.</li>
-                    <li><strong>Smart Model Hub:</strong> 5 built-in presets (realistic, speed, sdxs, turbo, anime) with streaming auto-download.</li>
-                    <li><strong>Samsung MediaStore &amp; WakeLock:</strong> Automatic Samsung Gallery synchronization and Android CPU WakeLock management.</li>
-                </ul>
-            </div>
-        </main>
+  <header>
+    <a href="index.html" class="header-brand">
+      <img src="favicon.svg" alt="Termux-Diffusion Logo">
+      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+    </a>
+    <div class="header-controls">
+      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
+      <div class="lang-selector-wrapper"></div>
+      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
+      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
+      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
     </div>
-    <footer>
-        <div style="margin-bottom: 8px; font-size: 0.85em; opacity: 0.85;">
-            <strong>Disclaimer:</strong> Termux-Diffusion is an independent open-source project developed for the Android Termux environment and is not officially affiliated with, endorsed by, or sponsored by the Termux project.
-        </div>
-        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
-    </footer>
+  </header>
+
+  <div class="container">
+  <nav class="sidebar">
+    <h3 data-i18n="common.nav.overview">Overview</h3>
+    <ul>
+      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.reference">Official Reference</h3>
+    <ul>
+      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
+      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
+      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
+      <li><a href="versions.html" class="active" data-i18n="common.nav.versions">Version Archive</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+    <ul>
+      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
+      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
+      <li><a href="/foundation/">AMEVA Foundation</a></li>
+      <li><a href="/">Founder Digital CV</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
+    <ul>
+      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
+      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
+    </ul>
+  </nav>
+
+    <main class="content">
+      <h2>Version Archive & Changelog</h2>
+      <p class="subtitle">Changelog history and immutable releases</p>
+      <h3>v1.1.1 - Production Stable (Current)</h3>
+         <ul>
+           <li>Standardized on Tomcat/Apache Classic Engineering Design System.</li>
+           <li>Integrated 6-language client-side i18n DOM translation engine.</li>
+           <li>Implemented AI Agent feed generation (llms.txt, llms-full.txt).</li>
+         </ul>
+    </main>
+  </div>
+
+  <footer>
+    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
+  </footer>
 </body>
 </html>

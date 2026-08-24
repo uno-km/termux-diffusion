@@ -15,7 +15,7 @@ setup(
     description="Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="uno-km (쌩초보코딩단)",
+    author="uno-km (AMEVA Foundation)",
     author_email="hosequelbo@gmail.com",
     url="https://github.com/uno-km/termux-diffusion",
     project_urls={

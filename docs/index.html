@@ -1,242 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termux-Diffusion: Production On-Device AI Image Generation for Android Termux & Samsung Galaxy</title>
-    <meta name="description" content="Production-grade On-Device AI Image Generation framework for Samsung Galaxy and Android Termux without root or PRoot. Dual-engine Python and Node.js support.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
-    <meta name="author" content="uno-km">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
-    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
-
-    <!-- Open Graph Metadata -->
-    <meta property="og:title" content="Termux-Diffusion: Production On-Device AI Image Generation for Android Termux & Samsung Galaxy">
-    <meta property="og:description" content="Production-grade On-Device AI Image Generation framework for Samsung Galaxy and Android Termux without root or PRoot. Dual-engine Python and Node.js support.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
-    <meta property="og:site_name" content="Termux-Diffusion">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter Card Metadata -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Termux-Diffusion: Production On-Device AI Image Generation for Android Termux & Samsung Galaxy">
-    <meta name="twitter:description" content="Production-grade On-Device AI Image Generation framework for Samsung Galaxy and Android Termux without root or PRoot. Dual-engine Python and Node.js support.">
-
-    <!-- Schema.org SoftwareApplication JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Termux-Diffusion",
-      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
-      "applicationCategory": "DeveloperApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "softwareVersion": "1.1.1",
-      "description": "Production-grade On-Device AI Image Generation framework for Samsung Galaxy and Android Termux without root or PRoot. Dual-engine Python and Node.js support.",
-      "url": "https://uno-km.github.io/termux-diffusion/",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "reviewCount": "128",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
-      "sameAs": [
-        "https://github.com/uno-km/termux-diffusion",
-        "https://pypi.org/project/termux-diffusion/",
-        "https://www.npmjs.com/package/termux-diffusion"
-      ]
-    }
-    </script>
-
-    <!-- Schema.org FAQPage JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How to run Stable Diffusion on Android Termux without root?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How are generated images exported to the Samsung Gallery app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
-          }
-        }
-      ]
-    }
-    </script>
-
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="style.css">
-    <script src="assets/i18n.js"></script>
-    <script src="assets/i18n-translations.js"></script>
-    <script src="i18n.js"></script>
-    <script src="i18n-translations.js"></script>
-    <link rel="stylesheet" href="/shared/style.css">
-    <script src="/shared/common.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termux-Diffusion | Official Documentation</title>
+  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/i18n.js" defer></script>
+  <script src="assets/i18n-translations.js" defer></script>
 </head>
 <body>
-    <header>
-        <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Termux-Diffusion Logo">
-            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-        </a>
-        <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
-            <div class="lang-selector-wrapper">
-                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="zh">🇨🇳 简体中文</option>
-                </select>
-            </div>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
-        </div>
-    </header>
-
-    <div class="container">
-        <nav class="sidebar">
-            <h3 data-i18n="common.nav.overview">Overview</h3>
-            <ul>
-                <li><a href="index.html" class="active" data-i18n="common.nav.home">Home / Architecture</a></li>
-                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
-                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
-                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
-                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
-                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
-                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
-            </ul>
-                        <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-            <ul>
-                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
-                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
-                <li><a href="/foundation/">AMEVA Foundation</a></li>
-                <li><a href="/index.html">Founder Digital CV</a></li>
-            </ul>
-
-            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
-            <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
-                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
-                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
-            </ul>
-        </nav>
-
-        <main class="content">
-            <h2 data-i18n="home.title">Production On-Device AI Image Generation on Android Termux</h2>
-            <p data-i18n="home.subtitle">A unified dual-engine (Python &amp; Node.js) diffusion framework designed for Samsung Galaxy and Android ARM64 hardware without container virtualization or root privileges.</p>
-
-                                    <div class="badges-bar">
-                <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=blue" alt="PyPI Version"></a>
-                <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/v/termux-diffusion.svg?color=red" alt="npm Version"></a>
-                <a href="https://pepy.tech/projects/termux-diffusion" target="_blank"><img src="https://img.shields.io/pepy/dt/termux-diffusion?color=orange" alt="Total Downloads"></a>
-                <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python Version">
-                <img src="https://img.shields.io/badge/node-16+-brightgreen.svg" alt="Node Version">
-                <img src="https://img.shields.io/badge/platform-Android%20Termux%20(aarch64)-green.svg" alt="Platform">
-                <img src="https://img.shields.io/badge/tests-48%20passed%20%7C%20100%25-success" alt="Tests">
-            </div>
-
-                                    <!-- 1. 초고속 설치 (Installation First) -->
-            <div class="alert alert-tip">
-                <span class="alert-title" data-i18n="home.quickInstallTitle">1-Line Quick Installation (Choose Language)</span>
-                <p data-i18n="home.quickInstallDesc">Select your runtime and run the 1-line installation in Termux:</p>
-                <div style="margin-top: 12px;">
-                    <h4 style="margin: 8px 0 4px 0; color: #0055cc;">🐍 Python Edition (PyPI):</h4>
-                    <pre><code>pip install termux-diffusion && termux-diffusion-install</code></pre>
-                    <h4 style="margin: 14px 0 4px 0; color: #cb3837;">☕ Node.js / TypeScript Edition (npm):</h4>
-                    <pre><code>npm install -g termux-diffusion && npx termux-diffusion install</code></pre>
-                </div>
-            </div>
-
-            <!-- 4. 상세 매뉴얼 및 서브페이지 이동 안내 (Deep Documentation Navigation Cards) -->
-            <h3 style="margin-top: 32px;">4. Detailed Documentation &amp; Manuals</h3>
-            <div class="features-grid">
-                <a href="installation.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[Docs] Installation Guide</h4>
-                        <p>Step-by-step setup guides for fresh installs, CLI drafting, and custom models.</p>
-                    </div>
-                </a>
-                <a href="quickstart.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[Instant] Quickstart &amp; Recipes</h4>
-                        <p>Production recipes for photorealism, ultra-low latency mobile prototyping, and GPU acceleration.</p>
-                    </div>
-                </a>
-                <a href="models.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[Models] Model Hub &amp; Presets</h4>
-                        <p>5 curated mobile GGUF presets, custom alias registration, and SD card cache routing.</p>
-                    </div>
-                </a>
-                <a href="advanced-parameters.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[Advanced] High-Precision Controls</h4>
-                        <p>Samplers (dpm++2m, lcm), VAE Tiling, Img2Img, LoRA, ControlNet, and TAESD handbook.</p>
-                    </div>
-                </a>
-                <a href="api-reference.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[API] 100% Full API Reference</h4>
-                        <p>Comprehensive parameter specifications, zRAM diagnostics, and CLI command matrix.</p>
-                    </div>
-                </a>
-                <a href="benchmarks.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[Metrics] Benchmarks &amp; Profiling</h4>
-                        <p>Real-device latency benchmarks across Exynos 1380 and Snapdragon 8 Gen 3 chipsets.</p>
-                    </div>
-                </a>
-                <a href="versions.html" style="text-decoration: none; color: inherit;">
-                    <div class="feature-card" style="border: 1px solid var(--primary-color); cursor: pointer;">
-                        <h4 style="color: var(--primary-color);">[Versions] Version Archive</h4>
-                        <p>v1.1.1 production changelog and Genesis release archive.</p>
-                    </div>
-                </a>
-            </div>
-        </main>
+  <header>
+    <a href="index.html" class="header-brand">
+      <img src="favicon.svg" alt="Termux-Diffusion Logo">
+      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+    </a>
+    <div class="header-controls">
+      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
+      <div class="lang-selector-wrapper"></div>
+      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
+      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
+      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
     </div>
-    <footer>
-        <div style="margin-bottom: 8px; font-size: 0.85em; opacity: 0.85;">
-            <strong>Disclaimer:</strong> Termux-Diffusion is an independent open-source project developed for the Android Termux environment and is not officially affiliated with, endorsed by, or sponsored by the Termux project.
+  </header>
+
+  <div class="container">
+  <nav class="sidebar">
+    <h3 data-i18n="common.nav.overview">Overview</h3>
+    <ul>
+      <li><a href="index.html" class="active" data-i18n="common.nav.home">Home / Architecture</a></li>
+      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.reference">Official Reference</h3>
+    <ul>
+      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
+      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
+      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
+      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+    <ul>
+      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
+      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
+      <li><a href="/foundation/">AMEVA Foundation</a></li>
+      <li><a href="/">Founder Digital CV</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
+    <ul>
+      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
+      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
+    </ul>
+  </nav>
+
+    <main class="content">
+      <!-- Section 1: Main Title & Subtitle -->
+      <h2 data-i18n="home.title">Termux-Diffusion</h2>
+      <p class="subtitle" data-i18n="home.subtitle">Native On-Device Stable Diffusion Runtime for Android Termux & ARM64</p>
+
+      <!-- Section 2: Badges Bar -->
+      <div class="badges-bar">
+        <a href="https://pypi.org/project/termux-diffusion/" target="_blank"><img src="https://img.shields.io/pypi/v/termux-diffusion.svg?color=004499" alt="PyPI Version"></a>
+        <a href="https://pypistats.org/packages/termux-diffusion" target="_blank"><img src="https://img.shields.io/pypi/dm/termux-diffusion.svg?color=2563eb&label=PyPI%20Downloads" alt="PyPI Downloads"></a>
+        <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/v/termux-diffusion.svg?color=cb3837" alt="npm Version"></a>
+        <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank"><img src="https://img.shields.io/npm/dm/termux-diffusion.svg?color=2563eb&label=npm%20Downloads" alt="npm Downloads"></a>
+        <img src="https://img.shields.io/badge/license-Apache-2.0-success.svg" alt="License">
+        <img src="https://img.shields.io/badge/tests-100%25_PASS-success.svg" alt="Tests">
+        <img src="https://img.shields.io/badge/platform-Android_ARM64_/_Samsung_Galaxy-blueviolet.svg" alt="Platform">
+      </div>
+
+      <!-- Section 3: 1-Line Quick Installation Alert -->
+      <div class="alert alert-tip">
+        <span class="alert-title" data-i18n="home.quickInstallTitle">1-Line Quick Installation</span>
+        <p data-i18n="home.quickInstallDesc">Install the official package directly into your runtime:</p>
+        <pre><code>pip install termux-diffusion
+# or: npm install termux-diffusion</code></pre>
+      </div>
+
+      <!-- Section 4: Engineering Challenge & Architectural Breakthrough -->
+      <h3 data-i18n="home.challengeTitle">The Engineering Challenge</h3>
+      <p data-i18n="home.challengeText">Generating AI images on mobile devices typically requires cloud API dependencies or heavy virtualized container layers (PRoot) that quickly exceed RAM limits.</p>
+
+      <h3 data-i18n="home.breakthroughTitle">The Architectural Breakthrough</h3>
+      <p data-i18n="home.breakthroughText">Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.</p>
+
+      <!-- Section 5: Key Capabilities Grid -->
+      <h3 data-i18n="home.featuresTitle">Key Capabilities &amp; Built-in Hardening</h3>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h4 data-i18n="home.features.0.title">Zero-PRoot Native ARM64 Bionic</h4>
+          <p data-i18n="home.features.0.desc">Executes directly without root permissions, virtual machines, or PRoot Linux overhead.</p>
         </div>
-        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
-    </footer>
+        <div class="feature-card">
+          <h4 data-i18n="home.features.1.title">Dual Python & Node.js Engine</h4>
+          <p data-i18n="home.features.1.desc">Provides comprehensive CLI and programmatic APIs across both Python and JavaScript.</p>
+        </div>
+        <div class="feature-card">
+          <h4 data-i18n="home.features.2.title">Samsung Gallery Auto-Indexing</h4>
+          <p data-i18n="home.features.2.desc">Automatically broadcasts Android MEDIA_SCANNER intents to register generated art in Gallery.</p>
+        </div>
+      </div>
+
+      <!-- Section 6: Compute & Module Matrix -->
+      <h3 data-i18n="home.matrixTitle">Supported Compute Kernels &amp; Operations</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="home.matrixCol1">Subsystem Category</th>
+            <th data-i18n="home.matrixCol2">Operations &amp; Kernels</th>
+            <th data-i18n="home.matrixCol3">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Diffusion Engine</strong></td>
+            <td>SD 1.5, SD Turbo, LCM, Tiny-SD, GGML Quantized Weights</td>
+            <td><span class="status-badge active">Production</span></td>
+          </tr>
+          <tr>
+            <td><strong>Vector Acceleration</strong></td>
+            <td>ARM64 NEON SIMD, FP16 Compute, Multi-Threaded Tiling</td>
+            <td><span class="status-badge active">Production</span></td>
+          </tr>
+          <tr>
+            <td><strong>Media Integration</strong></td>
+            <td>PNG/WebP Export, Android MediaStore Intent Broadcast</td>
+            <td><span class="status-badge active">Production</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Section 7: Canonical Usage Example -->
+      <h3 data-i18n="home.codeExampleTitle">Canonical Usage Example</h3>
+      <div class="code-tab-group">
+        <div class="code-tabs-header">
+          <button class="code-tab-btn active" type="button">Python (pip)</button>
+          <button class="code-tab-btn" type="button">Node.js (npm)</button>
+        </div>
+        <div class="code-tab-content" style="display:block;">
+          <pre><code>import termux_diffusion as td
+
+# 1. Generate image on Android hardware
+image_path = td.generate(
+    prompt="Cyberpunk Seoul city at night, neon lights, 8k",
+    model="sd-turbo",
+    steps=4
+)
+print(f"Generated and saved to Gallery: {image_path}")
+</code></pre>
+        </div>
+        <div class="code-tab-content" style="display:none;">
+          <pre><code>import { generate } from "termux-diffusion";
+
+const result = await generate({
+  prompt: "Cyberpunk Seoul city at night, neon lights, 8k",
+  model: "sd-turbo",
+  steps: 4
+});
+console.log("Image created:", result.outputPath);
+</code></pre>
+        </div>
+      </div>
+
+      <!-- Section 8: Getting Started Navigation -->
+      <h3 data-i18n="home.nextStepsTitle">Getting Started &amp; Deep Guides</h3>
+      <ul>
+        <li><a href="installation.html" data-i18n="home.linkInstall">Detailed Installation Guide (Hardware dependencies, Termux setup, WebGPU flags)</a></li>
+        <li><a href="quickstart.html" data-i18n="home.linkQuickstart">Quickstart Recipes &amp; Common Execution Patterns</a></li>
+        <li><a href="api-reference.html" data-i18n="home.linkApi">100% Full API Reference &amp; Struct Definitions</a></li>
+      </ul>
+    </main>
+  </div>
+
+  <footer>
+    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
+  </footer>
 </body>
 </html>

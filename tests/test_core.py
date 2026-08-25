@@ -512,3 +512,38 @@ def test_clip_skip_clamping(tmp_path):
         assert "2" in captured_cmd
         assert res.clip_skip == 2
 
+
+def test_strict_vulkan_failure_raises(tmp_path):
+    dummy_model = tmp_path / "model.gguf"
+    dummy_model.write_bytes(b"GGUF" + b"\x00" * 32)
+    dummy_out = tmp_path / "out.png"
+
+    def fake_popen_no_devices(cmd, **kwargs):
+        mock_proc = MagicMock()
+        mock_proc.stdout = [
+            "[INFO] stable-diffusion.cpp:713 - loading model\n",
+            "ggml_vulkan: No devices found.\n",
+            "[INFO] sampling completed\n"
+        ]
+        mock_proc.returncode = 0
+        mock_proc.wait = lambda timeout=None: 0
+        return mock_proc
+
+    with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("vulkan", 99)), \
+         patch("termux_diffusion.core.resolve_model_path", return_value=dummy_model), \
+         patch("termux_diffusion.core.locate_sd_cli", return_value=Path("/usr/bin/sd-cli")), \
+         patch("termux_diffusion.core.check_memory_safety", return_value=(True, "OK")), \
+         patch("termux_diffusion.core.subprocess.Popen", side_effect=fake_popen_no_devices):
+
+        with pytest.raises(TermuxDiffusionError, match="Strict Vulkan execution mode requested"):
+            generate(
+                prompt="test prompt",
+                model=str(dummy_model),
+                device="vulkan",
+                output=dummy_out,
+                strict_vulkan=True,
+                wake_lock=False,
+                export_gallery=False
+            )
+
+

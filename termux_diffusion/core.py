@@ -182,6 +182,7 @@ def generate(
     wake_lock: bool = True,
     low_ram_guard: bool = True,
     auto_provision: bool = False,
+    strict_vulkan: bool = False,
     timeout: int = 1800,
     _cancel_event: Optional[threading.Event] = None,
     _proc_holder: Optional[list] = None,
@@ -452,6 +453,10 @@ def generate(
                             logger.debug("sd-cli: %s", line_str)
 
             process.wait(timeout=timeout)
+            if strict_vulkan and any("ggml_vulkan: No devices found" in l for l in recent_logs):
+                raise TermuxDiffusionError(
+                    "Strict Vulkan execution mode requested (--strict-vulkan), but Vulkan physical device discovery failed: 'ggml_vulkan: No devices found'."
+                )
             if process.returncode != 0:
                 err_detail = "\n".join(list(recent_logs)[-5:]) if recent_logs else "No engine output"
                 raise TermuxDiffusionError(

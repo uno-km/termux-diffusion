@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "release_manifest_urls": [
+    "https://raw.githubusercontent.com/uno-km/termux-diffusion/main/manifest.json"
+  ],
+  "allowed_hosts": [
+    "raw.githubusercontent.com",
+    "github.com",
+    "objects.githubusercontent.com"
+  ],
+  "trusted_key_ids": [
+    "release-key-2026-01"
+  ],
+  "channel": "stable"
+}

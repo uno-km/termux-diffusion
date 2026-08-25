@@ -35,37 +35,79 @@ SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
 PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v0.1.0"
 
 
-def fetch_prebuilt_binary(backend: str = "auto") -> Optional[Path]:
-    """Download pre-compiled Bionic ARM64 native binary from official GitHub Releases."""
+import uuid
+from .locking import InstallLock
+from .downloader import atomic_download_file
+from .selftest import run_binary_self_test
+
+
+def activate_binary(bin_dir: Path, target_name: str) -> Path:
+    """Atomically activate target_name symlink to sd-cli using os.replace in same directory."""
+    allowed = {
+        "sd-cli-vulkan",
+        "sd-cli-cpu",
+        "sd-cli-source-vulkan",
+        "sd-cli-source-cpu",
+        "sd-cli-source"
+    }
+    if target_name not in allowed:
+        raise ValueError(f"Unauthorized activation target: {target_name}")
+
+    target = bin_dir / target_name
+    active = bin_dir / "sd-cli"
+    temporary = bin_dir / f".sd-cli.{uuid.uuid4().hex}.tmp"
+
+    if not target.is_file() or target.is_symlink():
+        raise RuntimeError(f"Activation target {target_name} is not a valid regular file")
+
+    try:
+        try:
+            os.symlink(target_name, temporary)
+            os.replace(temporary, active)
+        except Exception:
+            # Fallback for OS where symlinks are restricted
+            shutil.copy2(target, active)
+        return active
+    finally:
+        if temporary.exists() or temporary.is_symlink():
+            try:
+                temporary.unlink()
+            except Exception:
+                pass
+
+
+def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-first") -> Optional[Path]:
+    """Try acquiring prebuilt Bionic ARM64 binary with integrity verification, self-test, and fallback."""
     if not (is_android_termux() and is_arm64()):
         return None
 
-    import urllib.request
-    import tarfile
-
     bin_dir = get_engine_bin_dir()
-    target_bin = bin_dir / "sd-cli"
-    
-    archive_name = "sd-cli-aarch64-vulkan.tar.gz" if backend != "cpu" else "sd-cli-aarch64-cpu.tar.gz"
-    url = f"{PREBUILT_BASE_URL}/{archive_name}"
+    lock_file = get_default_cache_dir() / "install.lock"
 
-    print(f"[termux-diffusion] Checking prebuilt fast-track binary from official release: {archive_name}...")
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "termux-diffusion-installer/0.1.0"})
-        with urllib.request.urlopen(req, timeout=10.0) as response:
-            if response.status == 200:
-                tmp_archive = bin_dir / archive_name
-                with open(tmp_archive, "wb") as f:
-                    shutil.copyfileobj(response, f)
-                with tarfile.open(tmp_archive, "r:gz") as tar:
-                    tar.extractall(path=str(bin_dir))
-                tmp_archive.unlink(missing_ok=True)
-                if target_bin.is_file():
-                    os.chmod(target_bin, 0o755)
-                    print("[termux-diffusion] Prebuilt native ARM64 engine installed successfully (0s compile time).")
-                    return target_bin.resolve()
-    except Exception as exc:
-        logger.debug("Prebuilt binary fast-track skipped (falling back to local build): %s", exc)
+    with InstallLock(lock_file, timeout_sec=5.0):
+        # 1. Try Vulkan Prebuilt
+        if backend in ("auto", "vulkan"):
+            vulkan_bin = bin_dir / "sd-cli-vulkan"
+            print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
+            try:
+                if vulkan_bin.is_file() and run_binary_self_test(vulkan_bin, expected_backend="vulkan").stage1_load_passed:
+                    active = activate_binary(bin_dir, "sd-cli-vulkan")
+                    print("[termux-diffusion] Fast-Track: Prebuilt Vulkan binary validated and activated.")
+                    return active
+            except Exception as exc:
+                logger.debug("Vulkan prebuilt attempt failed: %s", exc)
+
+        # 2. Try CPU Prebuilt
+        if backend in ("auto", "cpu") and install_mode != "source-only":
+            cpu_bin = bin_dir / "sd-cli-cpu"
+            print("[termux-diffusion] Attempting Prebuilt CPU Baseline Engine installation...")
+            try:
+                if cpu_bin.is_file() and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
+                    active = activate_binary(bin_dir, "sd-cli-cpu")
+                    print("[termux-diffusion] Fast-Track: Prebuilt CPU Baseline binary validated and activated.")
+                    return active
+            except Exception as exc:
+                logger.debug("CPU prebuilt attempt failed: %s", exc)
 
     return None
 
@@ -111,18 +153,21 @@ def provision_engine(
     jobs: Optional[int] = None,
     make_jobs: Optional[int] = None,
     backend: str = "auto",
+    install_mode: str = "prebuilt-first"
 ) -> Path:
-    """Download, update submodules, and compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
-    existing = locate_sd_cli()
-    if existing and not force:
-        logger.info("Found existing native engine binary at: %s", existing)
-        return existing
+    """Download, verify, or compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
+    bin_dir = get_engine_bin_dir()
 
-    # Fast-Track: Try prebuilt release download first (1-second install)
-    if not force:
-        prebuilt = fetch_prebuilt_binary(backend=backend)
+    # Prebuilt-First Pipeline
+    if not force or install_mode in ("prebuilt-first", "prebuilt-only"):
+        prebuilt = fetch_prebuilt_binary(backend=backend, install_mode=install_mode)
         if prebuilt:
             return prebuilt
+        if install_mode == "prebuilt-only":
+            raise ProvisioningError(
+                "E_PREBUILT_UNAVAILABLE: Prebuilt binary unavailable/failed, and --prebuilt-only mode prevented source build fallback.",
+                code="E_PREBUILT_UNAVAILABLE"
+            )
 
     print("[termux-diffusion] Initializing native ARM64 Bionic engine provisioning...")
 
@@ -205,9 +250,9 @@ def provision_engine(
     if webp_cmake.is_file():
         try:
             content = webp_cmake.read_text(encoding="utf-8")
-            if "if(ANDROID)" in content:
-                webp_cmake.write_text(content.replace("if(ANDROID)", "if(FALSE)"), encoding="utf-8")
-                logger.info("Patched libwebp CMakeLists.txt for Termux Bionic compatibility.")
+            content = content.replace("if(ANDROID)", "if(FALSE)").replace("if (ANDROID)", "if(FALSE)")
+            webp_cmake.write_text(content, encoding="utf-8")
+            logger.info("Patched libwebp CMakeLists.txt for Termux Bionic compatibility.")
         except Exception as e:
             logger.warning("libwebp patch note: %s", e)
 
@@ -267,6 +312,8 @@ def provision_engine(
 
     # Step 4: CMake & Compilation - Use hardware-detected optimal flags
     build_dir = repo_dir / "build"
+    if build_dir.exists():
+        shutil.rmtree(build_dir, ignore_errors=True)
     build_dir.mkdir(parents=True, exist_ok=True)
 
     from .hardware import detect_hardware_profile, format_hardware_report, _build_cmake_flags

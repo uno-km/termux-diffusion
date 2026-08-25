@@ -17,6 +17,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 from .core import generate
 from .hub import clear_cache, download_model, list_cached_models, list_presets
+from .exceptions import TermuxDiffusionError, ErrorCode, ExitCode
 from .installer import provision_engine, run_doctor
 
 
@@ -55,6 +56,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("--control-image", type=str, default=None, help="Path to ControlNet guide image")
     gen_parser.add_argument("--control-strength", type=float, default=None, help="ControlNet strength (0.0 to 2.0, default: 0.9)")
     gen_parser.add_argument("--taesd", type=str, default=None, help="Path to Tiny AutoEncoder (TAESD) model")
+    gen_parser.add_argument("--strict-vulkan", action="store_true", help="Disallow CPU fallback and fail if Vulkan physical GPU discovery fails")
 
     # install command
     inst_parser = subparsers.add_parser("install", help="Provision and compile native Bionic C++ engine")
@@ -107,6 +109,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             control_image=args.control_image,
             control_strength=args.control_strength,
             taesd=args.taesd,
+            strict_vulkan=args.strict_vulkan,
             auto_provision=True
         )
         return 0 if res.path.exists() else 1
@@ -145,9 +148,61 @@ def main(argv: Optional[List[str]] = None) -> int:
     return 0
 
 
-def run_install_cli():
-    """Entry point for termux-diffusion-install."""
-    provision_engine(force=True)
+def run_install_cli(argv: Optional[List[str]] = None):
+    """Entry point for termux-diffusion-install with CLI mutex validation and mode control."""
+    if argv is None:
+        argv = sys.argv[1:]
+
+    parser = argparse.ArgumentParser(
+        prog="termux-diffusion-install",
+        description="Provision native ARM64 engine binaries with Prebuilt-First pipeline, self-test, and fallback."
+    )
+    parser.add_argument("--prebuilt", action="store_true", help="Install pre-compiled binary (prebuilt-only mode)")
+    parser.add_argument("--prebuilt-only", action="store_true", help="Install pre-compiled binary (do not fall back to source build on failure)")
+    parser.add_argument("--build-from-source", action="store_true", help="Skip prebuilt binary and compile from source")
+    parser.add_argument("-b", "--backend", type=str, default="auto", choices=["auto", "cpu", "vulkan", "opencl"], help="Target compute backend")
+    parser.add_argument("-f", "--force", "--force-reinstall", dest="force", action="store_true", help="Force re-installation")
+    parser.add_argument("--print-diagnostics", action="store_true", help="Print system, ABI, CPU, and Vulkan diagnostic information and continue")
+    parser.add_argument("--diagnostics-only", action="store_true", help="Print system, ABI, CPU, and Vulkan diagnostic information and exit immediately")
+
+    args = parser.parse_args(argv)
+
+    # Mutually Exclusive Flag Check
+    is_prebuilt_flag = args.prebuilt or args.prebuilt_only
+    if is_prebuilt_flag and args.build_from_source:
+        print("[ERROR] E_CLI_EXCLUSIVE_MUTEX: --prebuilt / --prebuilt-only and --build-from-source are mutually exclusive options.", file=sys.stderr)
+        sys.exit(ExitCode.CLI_ERROR)
+
+    if is_prebuilt_flag:
+        install_mode = "prebuilt-only"
+    elif args.build_from_source:
+        install_mode = "source-only"
+    else:
+        install_mode = "prebuilt-first"
+
+    print(f"[termux-diffusion] Selected Install Mode: {install_mode}")
+
+    if getattr(args, "print_diagnostics", False) or getattr(args, "diagnostics_only", False):
+        print("\n=== [termux-diffusion] System Diagnostics ===")
+        from .hardware import detect_hardware_profile, format_hardware_report
+        hw = detect_hardware_profile()
+        print(format_hardware_report(hw))
+        print(f"Install Mode: {install_mode}")
+        print(f"Target Backend: {args.backend}")
+        print("=============================================\n")
+        if getattr(args, "diagnostics_only", False):
+            return ExitCode.SUCCESS
+
+    try:
+        provision_engine(force=args.force, backend=args.backend, install_mode=install_mode)
+    except TermuxDiffusionError as err:
+        print(f"[ERROR] [{err.code}]: {err}", file=sys.stderr)
+        if err.code == ErrorCode.MANIFEST_DOWNLOAD or "E_PREBUILT_FAILED" in str(err) or err.code == "E_PREBUILT_UNAVAILABLE":
+            sys.exit(ExitCode.INTEGRITY_ERROR)
+        elif err.code == ErrorCode.INSTALL_LOCKED:
+            sys.exit(ExitCode.CLI_ERROR)
+        else:
+            sys.exit(ExitCode.BUILD_ERROR)
 
 
 def run_doctor_cli():

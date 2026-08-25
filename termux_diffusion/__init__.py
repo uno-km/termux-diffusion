@@ -1,4 +1,4 @@
-"""termux-diffusion: On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy."""
+from ._version import __version__
 
 from .core import (
     GenerationResult,

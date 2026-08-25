@@ -17,6 +17,15 @@
 
 ---
 
+
+### Platform Support Matrix & Validation Scope
+
+| Scope Level | Hardware & OS Target | Backend Status | On-Device Compilation |
+| :--- | :--- | :--- | :--- |
+| **Validated** | **Galaxy S21 (Exynos 2100 / Android)** | **Prebuilt CPU (`armv8.2-a+dotprod+fp16`)** | **0 Processes (Instant)** |
+| **Candidate** | **Broad Android ARM64 (`arm64-v8a`)** | **Prebuilt CPU Baseline** | **0 Processes (Instant)** |
+| **Experimental** | **Mali-G78 Hardware GPU** | **Vulkan Playbook (`V0`-`V3` Hardware Enumerated)** | **Experimental Track** |
+
 ## 1. Quick Scenario Playbook
 
 ### [Install] Scenario 1: Clean Install (Fresh Setup on Android Termux)
@@ -133,7 +142,7 @@ Each model architecture has distinct mathematical requirements for denoising ste
 | **`"sdxs"`** | `sdxs-512-tinySDdistilled_Q8_0` (651 MB) | 1-Step Distilled | **1 ~ 2** | **1.0** | `euler_a` (default) | **Ultra-Fast Mobile (1-2s): Clean & crisp, zero noise** |
 | **`"anime"`** | `DreamShaper8_LCM_q4_0` (1.55 GB) | LCM 4~8-Step | **4 ~ 8** | **1.5 ~ 2.0** | `lcm` (default / karras) | **Sharp 2D/2.5D Anime: Clear line art & rich cel-shading** |
 | **`"realistic"`** | `realisticVisionV60B1_v51HyperVAE_Q4_k` (1.55 GB) | Full SD1.5 Photoreal | **20 ~ 25** | **6.5 ~ 7.5** | `dpm2` / `euler_a` (karras) | **Ultra-Detailed Realism: Skin pores, realistic eyes, cinematic** |
-| **`"speed"`** | `stable-diffusion-v1-5-Q4_1` (1.68 GB) | SD1.5 Base Q4_1 | **15 ~ 20** | **6.0 ~ 7.0** | `euler_a` / `dpm++2m` (karras) | **General Drafting: Balanced speed & composition fidelity** |
+| **`"standard"`** *(alias: `"speed"`)* | `stable-diffusion-v1-5-Q4_1` (1.68 GB) | SD1.5 Base Q4_1 | **15 ~ 20** | **6.0 ~ 7.0** | `euler_a` / `dpm++2m` (karras) | **General Drafting: Balanced speed & composition fidelity** |
 | **`"turbo"`** | `stable-diffusion-v1-5-pruned-emaonly_Q4_0` (1.49 GB) | SD1.5 Base Pruned | **15 ~ 20** | **6.0 ~ 7.0** | `euler_a` / `dpm++2m` (karras) | **Lightweight SD1.5: Fast base generation** |
 
 > ⚠️ **Golden Rule for Distilled Models (`sdxs`, `turbo` ADD, `anime` LCM):**  

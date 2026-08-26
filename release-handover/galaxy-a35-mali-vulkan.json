@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/uno-km/termux-diffusion.git",
+  "branch": "validation/galaxy-a35-vulkan",
+  "device": {
+    "model": "SM-A356N",
+    "codename": "a35x",
+    "soc": "Exynos 1380 (s5e8835)",
+    "gpu": "Mali-G68",
+    "android_version": "16",
+    "api_level": 36
+  },
+  "validation": {
+    "v10_ggml_matmul": "verified",
+    "v11_sdxs_vulkan": "verified",
+    "cli_e2e_auto_mode": "verified",
+    "cli_e2e_explicit_vulkan": "verified",
+    "cli_e2e_explicit_cpu": "verified",
+    "fallback_policy_auto": "verified",
+    "fallback_policy_fail_fast": "verified",
+    "png_audit": "verified"
+  },
+  "package": {
+    "reused_package": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+    "package_tag": "v1.3.1-vulkan-mali-experimental",
+    "package_sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+    "binary_sha256": "1f10b3c91b34764cbeb79bc2a8360c8e2f1580cbd41d7160b028a0b512ced6db",
+    "v10_self_test_sha256": "c60280d65e75e8c089325979973386754f6eff0b831d3d1eae91bb488f45e110"
+  },
+  "performance": {
+    "v10_matmul_max_abs_err": 9.39369e-05,
+    "v11_sdxs_vulkan_total_sec": 15.72,
+    "v11_sdxs_vulkan_sampling_sec": 9.22,
+    "v11_sdxs_vram_mb": 651.92,
+    "cpu_sdxs_sampling_sec": 10.41,
+    "speedup_ratio": 1.43
+  },
+  "publication": {
+    "publish_ready": true,
+    "recommended_profile_tag": "mali-vulkan",
+    "next_action": "proceed_to_galaxy_a34_validation_on_dedicated_branch"
+  }
+}

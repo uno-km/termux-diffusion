@@ -308,9 +308,11 @@ def generate(
         sanitized_neg = str(effective_negative).replace("\x00", "").replace("\r\n", " ").replace("\n", " ").strip()
         cmd.extend(["-n", sanitized_neg])
     if seed >= 0:
-        cmd.extend(["-s", str(seed)])
+        cmd.extend(["--seed", str(seed)])
     # Append GPU offloading args from hardware detection
     cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
+    if effective_device in ("vulkan", "gpu"):
+        cmd.extend(["--backend", "vulkan0"])
 
     # --- Advanced TOP 7 Parameters Integration & Defense ---
     effective_sampler = None
@@ -423,6 +425,20 @@ def generate(
             raise FileNotFoundError(f"TAESD model file does not exist: {effective_taesd_path}")
         cmd.extend(["--taesd", str(effective_taesd_path)])
 
+    # 5.1 Configure Environment with companion library search paths
+    env = os.environ.copy()
+    lib_dirs = [
+        str(sd_cli.parent),
+        str(sd_cli.parent.parent / "lib"),
+        str(sd_cli.parent / "lib"),
+        str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
+        str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
+    ]
+    cur_ld = env.get("LD_LIBRARY_PATH", "")
+    valid_dirs = [d for d in lib_dirs if Path(d).is_dir()]
+    if valid_dirs:
+        env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
+
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
     print(f"[termux-diffusion] Processing inference with model='{model}' (steps={steps}, threads={threads}, device={device_mode})...")
 
@@ -438,9 +454,8 @@ def generate(
                 "text": True,
                 "bufsize": 1,
                 "universal_newlines": True,
+                "env": env,
             }
-            if sys.platform != "win32":
-                popen_kwargs["start_new_session"] = True
 
             process = subprocess.Popen(cmd, **popen_kwargs)
             if _proc_holder is not None:
@@ -471,6 +486,41 @@ def generate(
                 )
             if process.returncode != 0:
                 err_detail = "\n".join(list(recent_logs)[-5:]) if recent_logs else "No engine output"
+                if device_mode == "auto" and effective_device != "cpu":
+                    logger.warning("[termux-diffusion] Auto-mode Vulkan execution failed (RC=%s): %s. Falling back to CPU...", process.returncode, err_detail)
+                    print(f"[termux-diffusion] [Auto Fallback] Vulkan acceleration failed (RC={process.returncode}); automatically falling back to CPU...")
+                    return generate(
+                        prompt=prompt,
+                        model=model,
+                        negative_prompt=negative_prompt,
+                        device="cpu",
+                        steps=steps,
+                        cfg_scale=cfg_scale,
+                        width=width,
+                        height=height,
+                        seed=seed,
+                        threads=threads,
+                        output=output,
+                        sampling_method=sampling_method,
+                        schedule=schedule,
+                        vae_tiling=vae_tiling,
+                        init_img=init_img,
+                        strength=strength,
+                        lora_dir=lora_dir,
+                        clip_skip=clip_skip,
+                        control_net=control_net,
+                        control_image=control_image,
+                        control_strength=control_strength,
+                        taesd=taesd,
+                        export_gallery=export_gallery,
+                        wake_lock=wake_lock,
+                        low_ram_guard=low_ram_guard,
+                        auto_provision=auto_provision,
+                        strict_vulkan=False,
+                        timeout=timeout,
+                        _cancel_event=_cancel_event,
+                        _proc_holder=_proc_holder,
+                    )
                 raise TermuxDiffusionError(
                     f"Engine process failed with return code {process.returncode}.\nDetails:\n{err_detail}"
                 )

@@ -1,0 +1,31 @@
+{
+  "auto_mode": {
+    "command": "python -m termux_diffusion.cli generate \"...\" --device auto -o a35-auto-vulkan.png",
+    "selected_backend": "vulkan",
+    "fallback_occurred": false,
+    "generation_time_sec": 18.65,
+    "sampling_time_sec": 9.1,
+    "exit_code": 0,
+    "output_file": "outputs/a35-auto-vulkan.png",
+    "verdict": "PASS"
+  },
+  "explicit_vulkan_mode": {
+    "command": "python -m termux_diffusion.cli generate \"...\" --device vulkan -o a35-explicit-vulkan.png",
+    "selected_backend": "vulkan",
+    "generation_time_sec": 18.41,
+    "sampling_time_sec": 8.86,
+    "exit_code": 0,
+    "output_file": "outputs/a35-explicit-vulkan.png",
+    "verdict": "PASS"
+  },
+  "explicit_cpu_mode": {
+    "command": "python -m termux_diffusion.cli generate \"...\" --device cpu -o a35-explicit-cpu.png",
+    "selected_backend": "cpu",
+    "generation_time_sec": 22.5,
+    "sampling_time_sec": 10.41,
+    "threads": 4,
+    "exit_code": 0,
+    "output_file": "outputs/a35-explicit-cpu.png",
+    "verdict": "PASS"
+  }
+}

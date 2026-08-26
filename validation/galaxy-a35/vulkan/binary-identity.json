@@ -1,0 +1,16 @@
+{
+  "device": "Galaxy A35 (SM-A356N)",
+  "v10_self_test_sha256": "c60280d65e75e8c089325979973386754f6eff0b831d3d1eae91bb488f45e110",
+  "sd_cli_vulkan_sha256": "1f10b3c91b34764cbeb79bc2a8360c8e2f1580cbd41d7160b028a0b512ced6db",
+  "libcxx_shared_sha256": "4e843755cda12ed65cd2b450be720b122d6657b24b690bf32de74fdc3f529447",
+  "libomp_sha256": "1e542457489e1355838573a303cb186ebd70c724fbddac0c739fa9a42e13fe75",
+  "compiler_abi": "aarch64-linux-android (Bionic / ARM64)",
+  "dynamic_libraries": [
+    "libc++_shared.so",
+    "libomp.so",
+    "libvulkan.so",
+    "libc.so",
+    "libm.so",
+    "libdl.so"
+  ]
+}

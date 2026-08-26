@@ -1,0 +1,11 @@
+{
+  "system_vulkan_loader_path": "/system/lib64/libvulkan.so",
+  "system_vulkan_loader_realpath": null,
+  "system_vulkan_loader_sha256": null,
+  "vendor_vulkan_driver_path": "/vendor/lib64/hw/vulkan.mali.so",
+  "vendor_vulkan_driver_realpath": null,
+  "vendor_vulkan_driver_sha256": null,
+  "vulkan_loader_source": "SYSTEM",
+  "vendor_driver_modified": false,
+  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+}

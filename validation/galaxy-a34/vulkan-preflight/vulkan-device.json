@@ -1,0 +1,18 @@
+{
+  "vulkan_instance_create_result": null,
+  "vulkan_physical_device_count": null,
+  "gpu_device_index": null,
+  "gpu_device_name": null,
+  "gpu_device_type": null,
+  "gpu_vendor_id": null,
+  "gpu_device_id": null,
+  "gpu_driver_version": null,
+  "vulkan_api_version": null,
+  "compute_queue_available": null,
+  "compute_queue_family_index": null,
+  "compute_queue_count": null,
+  "dedicated_compute_queue_available": null,
+  "transfer_queue_available": null,
+  "expected_gpu_family": "Mali-G68",
+  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+}

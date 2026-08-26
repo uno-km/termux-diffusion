@@ -1,0 +1,13 @@
+{
+  "termux_version": null,
+  "termux_prefix": null,
+  "termux_home": null,
+  "termux_package_manager": null,
+  "python_version": null,
+  "pip_version": null,
+  "git_version": null,
+  "cmake_version": null,
+  "ninja_version": null,
+  "clang_version": null,
+  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+}

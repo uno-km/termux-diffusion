@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/uno-km/termux-diffusion.git",
+  "branch": "validation/galaxy-a34-vulkan",
+  "worktree": "C:\\Users\\ATSAdmin\\Documents\\UNO\\small_prj\\termux-diffusion-a34",
+  "device": {
+    "model": "SM-A346N",
+    "codename": null,
+    "soc": "MediaTek Dimensity 1080 (MT6877V)",
+    "gpu": "Mali-G68 MC4",
+    "android_version": null,
+    "api_level": null
+  },
+  "vulkan": {
+    "api_version": null,
+    "driver_version": null,
+    "compute_queue": null,
+    "subgroup_size": null,
+    "max_workgroup_invocations": null,
+    "max_shared_memory_bytes": null,
+    "warmup_result": "blocked_device_unavailable"
+  },
+  "package": {
+    "candidate": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+    "sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+    "availability": "public",
+    "compatibility_assessment": "LIKELY_COMPATIBLE"
+  },
+  "readiness": {
+    "device_identity": "blocked_a34_device_identity_mismatch",
+    "vulkan_compute": "blocked_unmeasured",
+    "storage": "ready_manifest_validated",
+    "model": "ready_manifest_validated",
+    "cpu_protected": true,
+    "v10_v11_ready": false
+  },
+  "next_action": "wait_for_a35_result_then_run_a34_v10_v11"
+}

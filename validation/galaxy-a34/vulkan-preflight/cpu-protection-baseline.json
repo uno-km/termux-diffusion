@@ -1,0 +1,13 @@
+{
+  "active_cpu_path_before": null,
+  "active_cpu_realpath_before": null,
+  "active_cpu_size_bytes_before": null,
+  "active_cpu_sha256_before": null,
+  "active_cpu_version_before": null,
+  "active_cpu_executable_before": null,
+  "active_cpu_path_after": null,
+  "active_cpu_size_bytes_after": null,
+  "active_cpu_sha256_after": null,
+  "active_cpu_unchanged": true,
+  "protection_policy_enforced": true
+}

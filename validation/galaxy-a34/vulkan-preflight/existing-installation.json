@@ -1,0 +1,9 @@
+{
+  "termux_diffusion_installed": null,
+  "termux_diffusion_version": null,
+  "termux_diffusion_package_path": null,
+  "termux_diffusion_editable_install": null,
+  "termux_diffusion_command_path": null,
+  "cached_files": [],
+  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+}

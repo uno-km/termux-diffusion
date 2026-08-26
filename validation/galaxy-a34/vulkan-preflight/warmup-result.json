@@ -1,0 +1,17 @@
+{
+  "warmup_instance_result": null,
+  "warmup_device_enum_result": null,
+  "warmup_gpu_selected": null,
+  "warmup_queue_result": null,
+  "warmup_buffer_result": null,
+  "warmup_pipeline_create_result": null,
+  "warmup_dispatch_result": null,
+  "warmup_fence_result": null,
+  "warmup_numerical_result": null,
+  "warmup_cleanup_result": null,
+  "warmup_process_rc": null,
+  "last_successful_warmup_stage": null,
+  "first_failed_warmup_stage": "DEVICE_CONNECTION_GATE",
+  "first_warmup_error": "Device SM-A346N not detected on local network (172.17.252.0/24). Identity mismatch gate blocked replacement.",
+  "status": "BLOCKED_DEVICE_UNAVAILABLE"
+}

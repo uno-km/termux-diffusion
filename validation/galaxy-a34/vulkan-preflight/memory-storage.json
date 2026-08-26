@@ -1,0 +1,18 @@
+{
+  "total_ram_mib": null,
+  "available_ram_mib": null,
+  "swap_total_mib": null,
+  "swap_free_mib": null,
+  "termux_home_free_mib": null,
+  "termux_prefix_free_mib": null,
+  "tmp_free_mib": null,
+  "internal_storage_free_mib": null,
+  "estimated_mali_compressed_mib": 55.4,
+  "estimated_mali_extracted_mib": 145.0,
+  "estimated_sdxs_model_mib": 651.0,
+  "estimated_log_output_reserve_mib": 100.0,
+  "estimated_rollback_reserve_mib": 150.0,
+  "estimated_required_storage_mib": 1101.4,
+  "storage_ready_for_v10_v11": null,
+  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+}

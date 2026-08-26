@@ -1,0 +1,8 @@
+{
+  "worktree_path": "C:\\Users\\ATSAdmin\\Documents\\UNO\\small_prj\\termux-diffusion-a34",
+  "branch": "validation/galaxy-a34-vulkan",
+  "base_commit": "ba011e00e9db8e51df1fbfe366574fe7feaefa75",
+  "origin_url": "https://github.com/uno-km/termux-diffusion.git",
+  "isolation_status": "ISOLATED",
+  "a35_worktree_touched": false
+}

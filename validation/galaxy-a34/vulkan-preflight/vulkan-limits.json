@@ -1,0 +1,16 @@
+{
+  "max_compute_workgroup_invocations": null,
+  "max_compute_workgroup_size_x": null,
+  "max_compute_workgroup_size_y": null,
+  "max_compute_workgroup_size_z": null,
+  "max_compute_workgroup_count_x": null,
+  "max_compute_workgroup_count_y": null,
+  "max_compute_workgroup_count_z": null,
+  "max_compute_shared_memory_bytes": null,
+  "max_storage_buffer_range": null,
+  "min_storage_buffer_offset_alignment": null,
+  "max_memory_allocation_count": null,
+  "max_bound_descriptor_sets": null,
+  "subgroup_size": null,
+  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+}

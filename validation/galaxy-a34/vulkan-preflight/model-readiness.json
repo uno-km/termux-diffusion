@@ -1,0 +1,11 @@
+{
+  "model_available": false,
+  "model_download_required": true,
+  "model_family": "SDXS-512-0.9",
+  "model_quantization": "Q8_0",
+  "model_preset": "sdxs",
+  "model_url": "https://huggingface.co/leejet/SDXS-512-0.9-GGUF/resolve/main/sdxs-512-0.9-q8_0.gguf",
+  "model_expected_size_bytes": 682608480,
+  "model_expected_sha256": "4b4f53faee7b35bc45c92d5258385012586b610c3b313ef0611e9a3b6805176b",
+  "status": "MANIFEST_VERIFIED_DOWNLOAD_READY"
+}

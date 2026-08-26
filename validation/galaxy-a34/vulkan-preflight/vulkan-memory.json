@@ -1,7 +1,27 @@
 {
-  "device_local_memory_heaps": null,
-  "host_visible_memory_heaps": null,
-  "host_coherent_memory_types": null,
-  "uma_reported": null,
-  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+  "device_local_memory_heaps": [
+    {
+      "heap_index": 0,
+      "size_mib": 4333.6,
+      "device_local": true
+    },
+    {
+      "heap_index": 1,
+      "size_mib": 100.0,
+      "device_local": true
+    }
+  ],
+  "host_visible_memory_heaps": [
+    {
+      "heap_index": 0,
+      "size_mib": 4333.6
+    }
+  ],
+  "host_coherent_memory_types": [
+    0,
+    1,
+    2
+  ],
+  "uma_reported": true,
+  "status": "VERIFIED_UMA_MEMORY"
 }

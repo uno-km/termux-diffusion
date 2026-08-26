@@ -2,33 +2,33 @@
   "phases": [
     {
       "phase": 1,
-      "name": "A34 Device Identity Confirmation",
-      "description": "Confirm SM-A346N presence via getprop ro.product.model"
+      "name": "Device Identity Confirmation",
+      "description": "Verify SM-A536N/Mali-G68 hardware parameters"
     },
     {
       "phase": 2,
-      "name": "A35 Outcome and Driver Comparative Review",
-      "description": "Compare Mali driver versions and V10 outcomes between A35 and A34"
+      "name": "Comparative Review",
+      "description": "Compare Mali driver version (0x8001000) against S21/A35 benchmarks"
     },
     {
       "phase": 3,
-      "name": "Mali Tarball Retrieval",
+      "name": "Mali Package Retrieval",
       "description": "Download termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz into isolated staging"
     },
     {
       "phase": 4,
-      "name": "Cryptographic Integrity Check",
-      "description": "Verify SHA256 checksum against 65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+      "name": "SHA256 Verification",
+      "description": "Verify 65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
     },
     {
       "phase": 5,
-      "name": "Isolated Extraction",
-      "description": "Safe unpack to $HOME/tmp/termux-diffusion-a34-mali-vulkan-validation/staging"
+      "name": "Safe Staging Extraction",
+      "description": "Extract to $HOME/tmp/termux-diffusion-a34-mali-vulkan-validation/staging"
     },
     {
       "phase": 6,
       "name": "Binary Hash Verification",
-      "description": "Verify sd-cli-vulkan (1f10b3c9...) and v10-self-test (c60280d6...)"
+      "description": "Confirm sd-cli-vulkan (1f10b3c9...) and v10-self-test (c60280d6...)"
     },
     {
       "phase": 7,
@@ -42,8 +42,8 @@
     },
     {
       "phase": 9,
-      "name": "Image & Pixel Audit",
-      "description": "PNG header decode, dimensions, and non-trivial pixel variance audit"
+      "name": "Image Audit",
+      "description": "PNG header decode, dimensions, and pixel variance validation"
     },
     {
       "phase": 10,
@@ -72,8 +72,8 @@
     },
     {
       "phase": 15,
-      "name": "CPU Engine Immutability & Rollback",
-      "description": "Verify active CPU binary hash remains untouched and clean staging"
+      "name": "CPU Engine Immutability & Cleanup",
+      "description": "Verify active CPU binary remains untouched and workspace clean"
     }
   ]
 }

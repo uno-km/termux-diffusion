@@ -1,15 +1,27 @@
 {
-  "cpu_arch": null,
-  "cpu_core_count": null,
-  "cpu_implementer": null,
-  "cpu_parts": null,
-  "cpu_neon": null,
-  "cpu_fp16": null,
-  "cpu_dotprod": null,
-  "cpu_i8mm": null,
-  "cpu_sve": null,
-  "cpu_sve2": null,
-  "cpu_cluster_layout": null,
-  "cpu_max_frequencies": null,
-  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+  "cpu_arch": "aarch64",
+  "cpu_core_count": 8,
+  "cpu_implementer": "0x41",
+  "cpu_parts": [
+    "0xd05",
+    "0xd41"
+  ],
+  "cpu_neon": true,
+  "cpu_fp16": true,
+  "cpu_dotprod": true,
+  "cpu_i8mm": false,
+  "cpu_sve": false,
+  "cpu_sve2": false,
+  "cpu_cluster_layout": "2x Cortex-A78 (2.40 GHz) + 6x Cortex-A55 (2.00 GHz)",
+  "cpu_max_frequencies": {
+    "cpu0": "2002000",
+    "cpu1": "2002000",
+    "cpu2": "2002000",
+    "cpu3": "2002000",
+    "cpu4": "2002000",
+    "cpu5": "2002000",
+    "cpu6": "2400000",
+    "cpu7": "2400000"
+  },
+  "status": "VERIFIED_HARDWARE_PROBE"
 }

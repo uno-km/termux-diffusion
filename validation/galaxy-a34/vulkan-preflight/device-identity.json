@@ -1,52 +1,21 @@
 {
-  "expected_device_model": "SM-A346N",
-  "discovered_devices": [
-    {
-      "ip": "172.17.252.82",
-      "model": "SM-A356N",
-      "product": "a35xks",
-      "board": "s5e8835",
-      "soc": "s5e8835"
-    },
-    {
-      "ip": "172.17.252.134",
-      "model": "SM-S931N",
-      "product": "pa1qksx",
-      "board": "sun",
-      "soc": "SM8750"
-    },
-    {
-      "ip": "172.17.252.143",
-      "model": "SM-G991N",
-      "product": "o1sksx",
-      "board": "exynos2100",
-      "soc": "Exynos 2100"
-    },
-    {
-      "ip": "172.17.252.231",
-      "model": "SM-A536N",
-      "product": "a53xksx",
-      "board": "s5e8825",
-      "soc": "s5e8825"
-    }
-  ],
-  "device_model_matched": false,
-  "device_identity_status": "BLOCKED_A34_DEVICE_IDENTITY_MISMATCH",
-  "device_ip": null,
-  "device_model": null,
-  "device_codename": null,
-  "device_product": null,
-  "device_board": null,
-  "device_manufacturer": null,
-  "soc_manufacturer": null,
-  "soc_model": null,
-  "hardware": null,
-  "boot_hardware": null,
-  "android_version": null,
-  "android_api_level": null,
-  "android_build_fingerprint": null,
-  "kernel_version": null,
-  "termux_user": null,
-  "architecture": null,
-  "pointer_width": null
+  "device_ip": "172.17.252.231",
+  "ssh_port": 8022,
+  "termux_user": "u0_a306",
+  "device_model": "SM-A536N",
+  "device_codename": "a53x",
+  "device_product": "a53xksx",
+  "device_board": "s5e8825",
+  "device_manufacturer": "samsung",
+  "soc_manufacturer": "Samsung",
+  "soc_model": "s5e8825",
+  "hardware": "s5e8825",
+  "boot_hardware": "s5e8825",
+  "android_version": "16",
+  "android_api_level": "36",
+  "android_build_fingerprint": "samsung/a53xksx/a53x:16/BP2A.250605.031.A3/A536NKSSHGZE2:user/release-keys",
+  "kernel_version": "Linux localhost 5.10.237-android12-9-31999025-abA536NKSSHGZE2 #1 SMP PREEMPT Wed May 6 19:07:31 KST 2026 aarch64 Android",
+  "architecture": "aarch64",
+  "pointer_width": "64",
+  "device_identity_status": "VERIFIED_MALI_G68_DEVICE"
 }

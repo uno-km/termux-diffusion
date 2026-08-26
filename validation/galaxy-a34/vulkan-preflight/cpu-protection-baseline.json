@@ -9,5 +9,6 @@
   "active_cpu_size_bytes_after": null,
   "active_cpu_sha256_after": null,
   "active_cpu_unchanged": true,
-  "protection_policy_enforced": true
+  "protection_policy_enforced": true,
+  "status": "BASELINE_IMMUTABLE"
 }

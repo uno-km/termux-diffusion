@@ -1,13 +1,13 @@
 {
-  "termux_version": null,
-  "termux_prefix": null,
-  "termux_home": null,
-  "termux_package_manager": null,
-  "python_version": null,
-  "pip_version": null,
-  "git_version": null,
-  "cmake_version": null,
-  "ninja_version": null,
-  "clang_version": null,
-  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+  "termux_version": "googleplay.2026.06.21",
+  "termux_prefix": "/data/data/com.termux/files/usr",
+  "termux_home": "/data/data/com.termux/files/home",
+  "termux_package_manager": "apt/pkg",
+  "python_version": "Python 3.13.13",
+  "pip_version": "pip 26.1.2",
+  "git_version": "git version 2.54.0",
+  "cmake_version": "cmake version 4.3.4",
+  "ninja_version": "",
+  "clang_version": "clang version 21.1.8",
+  "status": "VERIFIED_TERMUX_ENV"
 }

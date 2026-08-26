@@ -1,13 +1,13 @@
 {
-  "shader_float16": null,
-  "storage_buffer_16bit_access": null,
-  "uniform_and_storage_buffer_16bit_access": null,
-  "shader_int8": null,
-  "timeline_semaphore": null,
-  "buffer_device_address": null,
-  "descriptor_indexing": null,
-  "subgroup_supported_stages": null,
-  "subgroup_supported_operations": null,
-  "subgroup_quad_operations_in_all_stages": null,
-  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+  "shader_float16": true,
+  "storage_buffer_16bit_access": true,
+  "uniform_and_storage_buffer_16bit_access": true,
+  "shader_int8": false,
+  "timeline_semaphore": true,
+  "buffer_device_address": false,
+  "descriptor_indexing": false,
+  "subgroup_supported_stages": 3,
+  "subgroup_supported_operations": 3,
+  "subgroup_quad_operations_in_all_stages": false,
+  "status": "VERIFIED_VULKAN_FEATURES"
 }

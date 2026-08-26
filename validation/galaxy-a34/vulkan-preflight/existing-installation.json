@@ -1,9 +1,15 @@
 {
-  "termux_diffusion_installed": null,
-  "termux_diffusion_version": null,
-  "termux_diffusion_package_path": null,
-  "termux_diffusion_editable_install": null,
-  "termux_diffusion_command_path": null,
-  "cached_files": [],
-  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+  "termux_diffusion_installed": true,
+  "termux_diffusion_version": "1.3.0",
+  "termux_diffusion_package_path": "/data/data/com.termux/files/usr/lib/python3.13/site-packages",
+  "termux_diffusion_editable_install": false,
+  "termux_diffusion_command_path": "/data/data/com.termux/files/usr/bin/termux-diffusion",
+  "cached_files": {
+    "sd-cli": false,
+    "sd-cli-cpu": false,
+    "sd-cli-vulkan": false,
+    "v10-self-test": false,
+    "sdxs-512-0.9-q8_0.gguf": false
+  },
+  "status": "VERIFIED_CLEAN_CACHE"
 }

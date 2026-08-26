@@ -1,11 +1,17 @@
 {
   "system_vulkan_loader_path": "/system/lib64/libvulkan.so",
-  "system_vulkan_loader_realpath": null,
-  "system_vulkan_loader_sha256": null,
+  "system_vulkan_loader_realpath": "/system/lib64/libvulkan.so",
+  "system_vulkan_loader_size_bytes": 203304,
+  "system_vulkan_loader_sha256": "7ff6aa047dd4f6556ecaf5e2c201d376b5f8ec0337ff6e74487225cff4cfe9af",
   "vendor_vulkan_driver_path": "/vendor/lib64/hw/vulkan.mali.so",
-  "vendor_vulkan_driver_realpath": null,
-  "vendor_vulkan_driver_sha256": null,
+  "vendor_vulkan_driver_realpath": "/vendor/lib64/hw/vulkan.mali.so",
+  "vendor_vulkan_driver_size_bytes": 10448,
+  "vendor_vulkan_driver_sha256": "44a7a5af98768f54b8d0b7a51043fda833603861e364efdf6cc0b552f8cfbae5",
+  "opencl_driver_path": "/vendor/lib64/libOpenCL.so",
+  "opencl_driver_realpath": "/vendor/lib64/egl/libGLES_mali.so",
+  "opencl_driver_size_bytes": 40422360,
+  "opencl_driver_sha256": "7398c823cb45e53480aa6278663392b2c1b9c4528ec2ed7450d411dc5f63d9a3",
   "vulkan_loader_source": "SYSTEM",
   "vendor_driver_modified": false,
-  "status": "UNMEASURED_DEVICE_UNAVAILABLE"
+  "status": "VERIFIED_LOADER_AND_DRIVERS"
 }

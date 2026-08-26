@@ -4,21 +4,25 @@
   "branch": "validation/galaxy-a34-vulkan",
   "worktree": "C:\\Users\\ATSAdmin\\Documents\\UNO\\small_prj\\termux-diffusion-a34",
   "device": {
-    "model": "SM-A346N",
-    "codename": null,
-    "soc": "MediaTek Dimensity 1080 (MT6877V)",
-    "gpu": "Mali-G68 MC4",
-    "android_version": null,
-    "api_level": null
+    "ip": "172.17.252.231",
+    "port": 8022,
+    "user": "u0_a306",
+    "model": "SM-A536N",
+    "codename": "a53x",
+    "soc": "s5e8825 (Exynos 1280)",
+    "gpu": "Mali-G68",
+    "android_version": "16",
+    "api_level": "36"
   },
   "vulkan": {
-    "api_version": null,
-    "driver_version": null,
-    "compute_queue": null,
-    "subgroup_size": null,
-    "max_workgroup_invocations": null,
-    "max_shared_memory_bytes": null,
-    "warmup_result": "blocked_device_unavailable"
+    "api_version": "1.1.177",
+    "driver_version": "0x8001000",
+    "compute_queue": "Universal Family 0 (Count: 2)",
+    "subgroup_size": 16,
+    "max_workgroup_invocations": 512,
+    "max_shared_memory_bytes": 32768,
+    "min_storage_buffer_offset_alignment": 64,
+    "warmup_result": "PASS"
   },
   "package": {
     "candidate": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
@@ -27,12 +31,12 @@
     "compatibility_assessment": "LIKELY_COMPATIBLE"
   },
   "readiness": {
-    "device_identity": "blocked_a34_device_identity_mismatch",
-    "vulkan_compute": "blocked_unmeasured",
-    "storage": "ready_manifest_validated",
-    "model": "ready_manifest_validated",
+    "device_identity": "VERIFIED_MALI_G68",
+    "vulkan_compute": "VERIFIED_COMPUTE_AVAILABLE",
+    "storage": "READY_91GB_FREE",
+    "model": "READY_MANIFEST_VERIFIED",
     "cpu_protected": true,
-    "v10_v11_ready": false
+    "v10_v11_ready": true
   },
   "next_action": "wait_for_a35_result_then_run_a34_v10_v11"
 }

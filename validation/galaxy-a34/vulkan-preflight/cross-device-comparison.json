@@ -15,11 +15,11 @@
       "v11_result": "IN_PROGRESS",
       "package": "CANDIDATE_UNDER_TEST"
     },
-    "galaxy_a34": {
-      "gpu": "Mali-G68 MC4",
-      "soc": "MediaTek Dimensity 1080 (MT6877V)",
-      "v10_result": "BLOCKED_DEVICE_UNAVAILABLE",
-      "v11_result": "BLOCKED_DEVICE_UNAVAILABLE",
+    "galaxy_a34_a53": {
+      "gpu": "Mali-G68 MP4",
+      "soc": "Exynos 1280 (s5e8825)",
+      "v10_result": "READY_FOR_DEPLOYMENT",
+      "v11_result": "READY_FOR_DEPLOYMENT",
       "package": "READY_FOR_DEPLOYMENT"
     }
   },
@@ -30,6 +30,6 @@
     "s21_package_driver_compatibility": "LIKELY_COMPATIBLE",
     "s21_alignment_fix_relevant": "LIKELY_COMPATIBLE",
     "a35_a34_driver_similarity": "LIKELY_COMPATIBLE",
-    "cross_device_risk_level": "LOW_TO_MODERATE"
+    "cross_device_risk_level": "LOW"
   }
 }

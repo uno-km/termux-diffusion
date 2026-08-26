@@ -54,3 +54,35 @@ def test_validated_vulkan_profiles_json():
     assert "balanced" in s25_profile["presets"]
     assert "anime_experimental" in s25_profile["presets"]
     assert len(s25_profile["blocked"]) >= 3
+
+
+def test_a35_mali_profile_and_preset_gating():
+    json_path = Path(__file__).parent.parent / "termux_diffusion" / "data" / "validated-vulkan-profiles.json"
+    assert json_path.exists()
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    a35_prof = next((p for p in data["profiles"] if p["device_model"] == "SM-A356N"), None)
+    assert a35_prof is not None
+    assert a35_prof["gpu"] == "Mali-G68"
+    assert a35_prof["package_size_bytes"] == 56678669
+    assert a35_prof["package_sha256"] == "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+    
+    # A35 FAST is verified & auto_activation=True
+    assert "fast" in a35_prof["presets"]
+    assert a35_prof["presets"]["fast"]["status"] == "verified"
+    assert a35_prof["presets"]["fast"]["auto_activation"] is True
+    
+    # A35 BALANCED is pending_device_validation & auto_activation=False
+    assert "balanced" in a35_prof["presets"]
+    assert a35_prof["presets"]["balanced"]["status"] == "pending_device_validation"
+    assert a35_prof["presets"]["balanced"]["auto_activation"] is False
+
+    # S25 and S21 remain intact
+    s25_prof = next((p for p in data["profiles"] if p["device_model"] == "SM-S931N"), None)
+    assert s25_prof is not None
+    assert s25_prof["presets"]["balanced"]["status"] == "verified"
+
+    s21_prof = next((p for p in data["profiles"] if p["device_model"] == "SM-G991N"), None)
+    assert s21_prof is not None
+    assert s21_prof["gpu"] == "Mali-G78"

@@ -193,7 +193,8 @@
           "sampler": "euler_a",
           "cfg_scale": 1.0,
           "backend": "vulkan",
-          "status": "verified"
+          "status": "verified",
+          "auto_activation": true
         },
         "balanced": {
           "model_family": "sdxs",
@@ -205,10 +206,12 @@
           "cfg_scale": 1.0,
           "vae_tiling": true,
           "backend": "vulkan",
-          "status": "verified"
+          "status": "pending_device_validation",
+          "auto_activation": false
         }
       },
-      "blocked": []
+      "blocked": [],
+      "package_size_bytes": 56678669
     }
   ]
 }

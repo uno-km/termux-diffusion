@@ -11,7 +11,7 @@
   ],
   "driver_version": "1.1.213",
   "backend": "vulkan",
-  "package_size_bytes": 58102374,
+  "package_size_bytes": 56678669,
   "package_sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
   "binaries": {
     "sd-cli-vulkan": {

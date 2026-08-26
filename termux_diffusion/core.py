@@ -243,12 +243,24 @@ def generate(
     if not sd_cli:
         if auto_provision:
             logger.info("sd-cli binary not found in standard paths. Attempting auto-provisioning as requested...")
-            sd_cli = provision_engine()
+            sd_cli = provision_engine(backend=effective_device)
         else:
             logger.error("sd-cli binary not found in standard paths and auto_provision=False.")
             raise ProvisioningError(
                 "Native 'sd-cli' binary not found on this system. "
                 "Please run 'termux-diffusion doctor --install' or pass auto_provision=True to generate()."
+            )
+
+    # 2.1 Strict Vulkan / GPU Validation (Fail-Fast: No Silent CPU Fallback)
+    if device_mode in ("vulkan", "gpu") or strict_vulkan:
+        from .selftest import run_binary_self_test
+        from .exceptions import PlatformNotSupportedError
+        test_res = run_binary_self_test(sd_cli, expected_backend="vulkan")
+        if not test_res.stage1_load_passed and test_res.error_message:
+            raise PlatformNotSupportedError(
+                f"Strict Vulkan execution mode requested (device='{device}'), "
+                f"but the active binary '{sd_cli.name}' failed Vulkan validation: {test_res.error_message}. "
+                "Execution halted strictly without silent CPU fallback."
             )
 
     # 3. Model Weight Resolution and Local Caching
@@ -453,9 +465,9 @@ def generate(
                             logger.debug("sd-cli: %s", line_str)
 
             process.wait(timeout=timeout)
-            if strict_vulkan and any("ggml_vulkan: No devices found" in l for l in recent_logs):
+            if (strict_vulkan or device_mode in ("vulkan", "gpu")) and any("ggml_vulkan: No devices found" in l for l in recent_logs):
                 raise TermuxDiffusionError(
-                    "Strict Vulkan execution mode requested (--strict-vulkan), but Vulkan physical device discovery failed: 'ggml_vulkan: No devices found'."
+                    "Strict Vulkan execution mode requested (--strict-vulkan or device='vulkan'), but Vulkan physical device discovery failed: 'ggml_vulkan: No devices found'."
                 )
             if process.returncode != 0:
                 err_detail = "\n".join(list(recent_logs)[-5:]) if recent_logs else "No engine output"

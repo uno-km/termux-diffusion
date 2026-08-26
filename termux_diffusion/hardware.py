@@ -109,6 +109,8 @@ def _read_cpuinfo_features() -> List[str]:
 def _detect_soc_name() -> str:
     """Identify the SoC model from Android system properties."""
     prop_keys = [
+        "ro.soc.model",
+        "ro.chipname",
         "ro.hardware.chipname",
         "ro.board.platform",
         "ro.hardware",
@@ -131,19 +133,35 @@ def _detect_soc_name() -> str:
 
 
 def _detect_gpu_name() -> str:
-    """Identify the GPU model from Android properties."""
-    try:
-        result = subprocess.run(
-            ["getprop", "ro.hardware.vulkan"],
-            capture_output=True,
-            text=True,
-            timeout=2.0,
-        )
-        val = result.stdout.strip()
-        if val:
-            return val.capitalize()
-    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
-        pass
+    """Identify the GPU model from Android properties and hardware nodes."""
+    # 1. Check Adreno kgsl sysfs node
+    kgsl_model = Path("/sys/class/kgsl/kgsl-3d0/gpu_model")
+    if kgsl_model.exists():
+        try:
+            val = kgsl_model.read_text(encoding="utf-8").strip()
+            if val:
+                return f"Adreno ({val})"
+        except Exception:
+            pass
+
+    # 2. Check Android system properties
+    for prop in ["ro.hardware.vulkan", "ro.hardware.egl", "ro.board.platform"]:
+        try:
+            result = subprocess.run(
+                ["getprop", prop],
+                capture_output=True,
+                text=True,
+                timeout=2.0,
+            )
+            val = result.stdout.strip()
+            if val and val != "unknown":
+                if "adreno" in val.lower():
+                    return f"Qualcomm Adreno ({val})"
+                if "mali" in val.lower():
+                    return f"ARM Mali ({val})"
+                return val.capitalize()
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+            continue
     return "Unknown"
 
 

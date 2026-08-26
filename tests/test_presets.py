@@ -86,3 +86,26 @@ def test_a35_mali_profile_and_preset_gating():
     s21_prof = next((p for p in data["profiles"] if p["device_model"] == "SM-G991N"), None)
     assert s21_prof is not None
     assert s21_prof["gpu"] == "Mali-G78"
+
+
+def test_a53_mali_profile_and_preset_gating():
+    json_path = Path(__file__).parent.parent / "termux_diffusion" / "data" / "validated-vulkan-profiles.json"
+    assert json_path.exists()
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    a53_prof = next((p for p in data["profiles"] if p["device_model"] == "SM-A536N"), None)
+    assert a53_prof is not None
+    assert a53_prof["gpu"] == "Mali-G68"
+    assert a53_prof["package_size_bytes"] == 56678669
+    assert a53_prof["package_sha256"] == "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+    
+    # A53 FAST is verified & auto_activation=True
+    assert "fast" in a53_prof["presets"]
+    assert a53_prof["presets"]["fast"]["status"] == "verified"
+    assert a53_prof["presets"]["fast"]["auto_activation"] is True
+    
+    # A53 BALANCED is pending_device_validation & auto_activation=False
+    assert "balanced" in a53_prof["presets"]
+    assert a53_prof["presets"]["balanced"]["status"] == "pending_device_validation"
+    assert a53_prof["presets"]["balanced"]["auto_activation"] is False

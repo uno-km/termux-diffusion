@@ -1,0 +1,11 @@
+
+--- [Presets] Available Presets ---
+  - realistic    : Realistic Vision V6.0 B1 (Q4_K) - Full SD1.5 photorealistic portraits (Needs 20-25 steps, CFG 7.0, DPM2 Karras) (1547MB)
+  - speed        : Stable Diffusion 1.5 Base (Q4_1) - General-purpose base model (Needs 15-20 steps, CFG 6.0) (1682MB)
+  - sdxs         : SDXS 512 Tiny SD Distilled (Q8_0) - Ultra-lightweight 1-2 step distilled model (CFG 1.0, Euler A) (651MB)
+  - turbo        : Stable Diffusion 1.5 Pruned (Q4_0) - High-efficiency SD1.5 base model (Needs 15-20 steps, CFG 6.0) (1494MB)
+  - anime        : DreamShaper 8 LCM (Q4_0) - Fast 4-8 step LCM stylized anime & illustration art (CFG 1.5, LCM) (1550MB)
+
+--- [Models] Locally Cached Models ---
+  (No models cached yet. Run 'termux-diffusion download <model>' or generate)
+

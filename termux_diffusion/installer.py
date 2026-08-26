@@ -32,7 +32,7 @@ from .platform import (
 logger = logging.getLogger("termux_diffusion.installer")
 
 SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
-PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v0.1.0"
+PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental"
 
 
 import uuid
@@ -85,11 +85,35 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
     lock_file = get_default_cache_dir() / "install.lock"
 
     with InstallLock(lock_file, timeout_sec=5.0):
-        # 1. Try Vulkan Prebuilt
+        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali)
         if backend in ("auto", "vulkan"):
             vulkan_bin = bin_dir / "sd-cli-vulkan"
             print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
             try:
+                if not vulkan_bin.is_file():
+                    from .hardware import detect_hardware_profile
+                    hw = detect_hardware_profile()
+                    is_mali = "mali" in hw.gpu_name.lower() or "exynos" in hw.soc_name.lower()
+                    
+                    if is_mali:
+                        # Galaxy S21 / S20 Mali Prebuilt
+                        pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz"
+                        pkg_sha256 = "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+                    else:
+                        # Galaxy S25 / Snapdragon Adreno Prebuilt
+                        pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
+                        pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
+
+                    tar_dest = bin_dir / "vulkan-prebuilt.tar.gz"
+                    try:
+                        atomic_download_file(pkg_url, tar_dest, expected_sha256=pkg_sha256)
+                        import tarfile
+                        with tarfile.open(tar_dest, "r:gz") as tar:
+                            tar.extractall(path=get_default_cache_dir())
+                        tar_dest.unlink(missing_ok=True)
+                    except Exception as dl_err:
+                        logger.debug("Vulkan prebuilt download skipped/failed: %s", dl_err)
+
                 if vulkan_bin.is_file() and run_binary_self_test(vulkan_bin, expected_backend="vulkan").stage1_load_passed:
                     active = activate_binary(bin_dir, "sd-cli-vulkan")
                     print("[termux-diffusion] Fast-Track: Prebuilt Vulkan binary validated and activated.")
@@ -119,11 +143,18 @@ def get_engine_bin_dir() -> Path:
     return bin_dir
 
 
-def locate_sd_cli() -> Optional[Path]:
+def locate_sd_cli(backend: Optional[str] = None) -> Optional[Path]:
     """Locate the compiled sd-cli executable binary across standard locations."""
-    # 1. Custom cached engine binary
-    for fname in ("sd-cli", "sd-cli.exe", "sd", "sd.exe"):
-        cached_bin = get_engine_bin_dir() / fname
+    bin_dir = get_engine_bin_dir()
+    if backend == "cpu":
+        candidates = ("sd-cli-cpu", "sd-cli-source-cpu", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
+    elif backend in ("vulkan", "gpu"):
+        candidates = ("sd-cli-vulkan", "sd-cli-source-vulkan", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
+    else:
+        candidates = ("sd-cli", "sd-cli.exe", "sd", "sd.exe", "sd-cli-vulkan", "sd-cli-cpu")
+
+    for fname in candidates:
+        cached_bin = bin_dir / fname
         if cached_bin.is_file() and (os.access(cached_bin, os.X_OK) or os.name == "nt"):
             return cached_bin.resolve()
 

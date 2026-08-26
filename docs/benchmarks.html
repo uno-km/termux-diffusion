@@ -1,334 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benchmarks & Hardware Telemetry | Termux-Diffusion</title>
-    <meta name="description" content="Empirical performance benchmarks across Samsung Galaxy A35 and Galaxy S21 with pure CPU baseline and SIMD DotProd vector acceleration.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
-    <meta name="author" content="uno-km">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
-    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
-
-    <!-- Open Graph Metadata -->
-    <meta property="og:title" content="Benchmarks & Hardware Telemetry | Termux-Diffusion">
-    <meta property="og:description" content="Empirical performance benchmarks across Samsung Galaxy A35 and Galaxy S21 with pure CPU baseline and SIMD DotProd vector acceleration.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
-    <meta property="og:site_name" content="Termux-Diffusion">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter Card Metadata -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Benchmarks & Hardware Telemetry | Termux-Diffusion">
-    <meta name="twitter:description" content="Empirical performance benchmarks across Samsung Galaxy A35 and Galaxy S21 with pure CPU baseline and SIMD DotProd vector acceleration.">
-
-    <!-- Schema.org SoftwareApplication JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Termux-Diffusion",
-      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
-      "applicationCategory": "DeveloperApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "softwareVersion": "1.3.0",
-      "description": "Empirical performance benchmarks across Samsung Galaxy A35 and Galaxy S21 with pure CPU baseline and SIMD DotProd vector acceleration.",
-      "url": "https://uno-km.github.io/termux-diffusion/",
-      "sameAs": [
-        "https://github.com/uno-km/termux-diffusion",
-        "https://pypi.org/project/termux-diffusion/",
-        "https://www.npmjs.com/package/termux-diffusion"
-      ]
-    }
-    </script>
-
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="style.css">
-    <script src="assets/i18n.js"></script>
-    <script src="assets/i18n-translations.js"></script>
-    <script src="i18n.js"></script>
-    <script src="i18n-translations.js"></script>
-    <link rel="stylesheet" href="/shared/style.css">
-    <script src="/shared/common.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benchmarks & Profiling | Termux-Diffusion</title>
+  <meta name="description" content="Empirical on-device benchmarks across Samsung Galaxy S25, Galaxy S21, and Galaxy A35 for Vulkan GPU and CPU Optimized backends.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/i18n.js" defer></script>
+  <script src="assets/i18n-translations.js" defer></script>
 </head>
 <body>
-        <header>
-        <a href="index.html" class="header-brand">
-            <img src="favicon.svg" alt="Termux-Diffusion Logo">
-            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-        </a>
-        <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
-            <div class="lang-selector-wrapper"></div>
-            <a href="/foundation/index.html" class="header-btn" style="border-color:#2563eb;color:#2563eb;font-weight:600;" data-i18n="common.foundationBtn">Foundation</a>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm</a>
-            <a href="https://github.com/sponsors/uno-km" target="_blank" class="header-btn" style="border-color: #ea4aaa; color: #ea4aaa; font-weight: 700;">Sponsor</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
-            <a href="/" class="header-btn" style="border-color:#004499;color:#004499;font-weight:600;" data-i18n="common.founderBtn">Founder CV</a>
-        </div>
-    </header>
-    <div class="container">
-                <nav class="sidebar">
-            <!-- Tier 1: Primary Navigation (Document / Foundation) -->
-            <h3 data-i18n="common.nav.docNav">문서 상세 목차</h3>
-            <ul>
-            <li><a href="index.html">Home / Architecture</a></li>
-            <li><a href="installation.html">Installation Guide</a></li>
-            <li><a href="quickstart.html">Quickstart & Recipes</a></li>
-            <li><a href="models.html">Model Hub & Presets</a></li>
-            <li><a href="gallery.html">Visual Showcase & Gallery</a></li>
-            <li><a href="api-reference.html">100% Full API Reference</a></li>
-            <li><a href="advanced-parameters.html">High-Precision Parameters</a></li>
-            <li><a href="benchmarks.html" class="active">Benchmarks & Hardware</a></li>
-            <li><a href="versions.html">Version Archive</a></li>
-            </ul>
-            <!-- Tier 2: Flagship Libraries -->
-            <h3 data-i18n="common.nav.libraries">플래그십 라이브러리</h3>
-            <ul>
-                <li><a href="/lib/sentinel/">AMEVA-Sentinel (Security SDK)</a></li>
-                <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-                <li><a href="/lib/aichain/">Termux-AIChain (Zero-Dep Agent)</a></li>
-                <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
-                <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
-                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-                <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
-            </ul>
-            <!-- Tier 3: AI Protocols & Specifications -->
-            <h3 data-i18n="common.nav.aiSpecs">AI 에이전트 프로토콜</h3>
-            <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
-                <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
-                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
-            </ul>
-        </nav>
-        <main class="content">
-            <h2 data-i18n="benchmarks.title">Benchmarks &amp; Hardware Telemetry</h2>
-            <p data-i18n="benchmarks.subtitle">Rigorous hardware profiling, empirical latency comparisons, and memory telemetry measured on physical Samsung Galaxy A35 and Galaxy S21 devices.</p>
-
-            <div class="alert alert-tip">
-                <span class="alert-title">📊 Baseline vs. Optimized Prebuilt Acceleration (1.98x Speedup)</span>
-                <p>On the Exynos 1380 (Galaxy A35), the <strong>ARMv8.2-A + DotProd + FP16 Optimized Prebuilt</strong> delivers a <strong>1.98x end-to-end speedup</strong> over standard ARMv8-A baseline binaries, slashing UNet sampling time by 53.2% and VAE decoding by 56.9%.</p>
-            </div>
-
-            <!-- SECTION 1: A35 vs S21 FULL BENCHMARK TABLE -->
-            <h3>1. Physical Hardware Comparison: Galaxy A35 vs. Galaxy S21</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Model / Preset</th>
-                            <th>Resolution &amp; Settings</th>
-                            <th>Galaxy S21 (Exynos 2100)</th>
-                            <th>Galaxy A35 (Exynos 1380)</th>
-                            <th>Hardware Performance Delta</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>SDXS (651 MB)</strong></td>
-                            <td>256×256, 1 Step, CFG 1.0</td>
-                            <td><strong>3.83 s</strong></td>
-                            <td><strong>4.08 s</strong></td>
-                            <td>+6.5% (Near Identical UX)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>SDXS (651 MB)</strong></td>
-                            <td>512×512, 2 Steps, CFG 1.0</td>
-                            <td><strong>24.12 s</strong></td>
-                            <td><strong>23.20 s ~ 29.53 s</strong></td>
-                            <td>+22.4%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>DreamShaper 8 LCM (1.55 GB)</strong></td>
-                            <td>512×512, 4 Steps, CFG 1.5</td>
-                            <td><strong>420.50 s</strong> (7.0 min)</td>
-                            <td><strong>565.59 s</strong> (9.4 min)</td>
-                            <td>+34.5%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>DreamShaper 8 LCM (1.55 GB)</strong></td>
-                            <td>512×512, 6 Steps, CFG 2.0 (Karras)</td>
-                            <td><strong>530.80 s</strong> (8.8 min)</td>
-                            <td><strong>422.34 s</strong> (7.0 min)</td>
-                            <td>-20.4% (Optimized Scheduler)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Realistic Vision V6.0 B1 (1.55 GB)</strong></td>
-                            <td>512×512, 6 Steps, CFG 4.0</td>
-                            <td><strong>360.20 s</strong> (6.0 min)</td>
-                            <td><strong>447.80 s ~ 543.10 s</strong></td>
-                            <td>+24.3%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Realistic Vision V6.0 B1 (1.55 GB)</strong></td>
-                            <td>512×512, 10 Steps, CFG 6.5</td>
-                            <td><strong>595.40 s</strong> (9.9 min)</td>
-                            <td><strong>743.96 s</strong> (12.4 min)</td>
-                            <td>+24.9%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- SECTION 2: BASELINE VS OPTIMIZED PIPELINE BREAKDOWN -->
-            <h3>2. Pipeline Stage Breakdown: Baseline vs. Optimized (Galaxy A35)</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Execution Phase</th>
-                            <th>Baseline (<code>arm64-v8a</code>)</th>
-                            <th>Optimized (<code>armv8.2a+dotprod+fp16</code>)</th>
-                            <th>Speedup Factor</th>
-                            <th>Hardware Optimization Used</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Text Conditioning (CLIP)</strong></td>
-                            <td>0.42 s</td>
-                            <td>0.60 s</td>
-                            <td>0.70x</td>
-                            <td>Scalar Float / String Tokenizer</td>
-                        </tr>
-                        <tr>
-                            <td><strong>UNet Tensor Sampling (1 Step)</strong></td>
-                            <td>4.98 s</td>
-                            <td>2.33 s</td>
-                            <td><strong>2.14x Faster</strong></td>
-                            <td><code>SDOT</code>, <code>UDOT</code> 4-way INT8 MatMul</td>
-                        </tr>
-                        <tr>
-                            <td><strong>VAE Latent Decode (TAESD)</strong></td>
-                            <td>2.67 s</td>
-                            <td>1.15 s</td>
-                            <td><strong>2.32x Faster</strong></td>
-                            <td>Native FP16 Vector Arithmetic</td>
-                        </tr>
-                        <tr style="background: rgba(0, 68, 153, 0.05); font-weight: 700;">
-                            <td><strong>Total End-to-End Latency</strong></td>
-                            <td><strong>8.07 s</strong></td>
-                            <td><strong>4.08 s</strong></td>
-                            <td><strong>1.98x Total Speedup</strong></td>
-                            <td>ARMv8.2-A Native Dual-Prebuilt</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- SECTION 3: VAE TILING MEMORY TELEMETRY -->
-            <h3>3. Memory Telemetry &amp; VAE Tiling Analysis</h3>
-            <p>Full-precision VAE decoding of a 512×512 latent grid creates intermediate tensor spikes up to 1.2 GB, which triggers Android LowMemoryKiller (LMK) on 6 GB RAM devices. <code>--vae-tiling</code> subdivides decoding into overlapping 256×256 spatial tiles.</p>
-            
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>VAE Mode</th>
-                            <th>Peak Memory Allocation</th>
-                            <th>RAM Reduction</th>
-                            <th>Android OOM Risk</th>
-                            <th>Tile Overlap Blend</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Standard Full VAE Decode</strong></td>
-                            <td>1,240 MB ~ 1,480 MB</td>
-                            <td>0% (Baseline)</td>
-                            <td><span style="color: #c62828; font-weight: 700;">HIGH (Crash on 6GB RAM)</span></td>
-                            <td>N/A (Monolithic)</td>
-                        </tr>
-                        <tr style="background: rgba(46, 125, 50, 0.05);">
-                            <td><strong><code>--vae-tiling</code> (Active)</strong></td>
-                            <td><strong>185 MB ~ 240 MB</strong></td>
-                            <td><strong>~70% ~ 82% Reduction</strong></td>
-                            <td><span style="color: #2e7d32; font-weight: 700;">ZERO (100% Stable)</span></td>
-                            <td>Gaussian Feathering (0 Seams)</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- SECTION 4: MALI GPU VULKAN VERIFICATION -->
-            <h3>4. Mali-G68 &amp; Mali-G78 Vulkan Compute Probe (Track B V0 ~ V9)</h3>
-            <p>Hardware-level verification of the ARM Mali-G68 MP5 (Galaxy A35) and Mali-G78 MP14 (Galaxy S21) via direct Android Bionic <code>libvulkan.so</code> invocation:</p>
-            
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Stage ID</th>
-                            <th>Vulkan Compute Target</th>
-                            <th>Galaxy A35 (Mali-G68 MP5)</th>
-                            <th>Galaxy S21 (Mali-G78 MP14)</th>
-                            <th>Verification Checksum</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>V0 ~ V1</strong></td>
-                            <td>Loader <code>dlopen</code> &amp; <code>vkCreateInstance</code></td>
-                            <td><strong>PASS</strong></td>
-                            <td><strong>PASS</strong></td>
-                            <td>Loader Handle Valid</td>
-                        </tr>
-                        <tr>
-                            <td><strong>V2 ~ V3</strong></td>
-                            <td>Device Enumeration &amp; Mali Detection</td>
-                            <td><strong>PASS</strong> (DevID: <code>0x92041010</code>)</td>
-                            <td><strong>PASS</strong> (DevID: <code>0x92020010</code>)</td>
-                            <td>Vendor <code>0x13B5</code> (ARM)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>V4 ~ V5</strong></td>
-                            <td>Compute Queue Family &amp; <code>VkDevice</code></td>
-                            <td><strong>PASS</strong> (Queue Index 0)</td>
-                            <td><strong>PASS</strong> (Queue Index 0)</td>
-                            <td>Flags <code>0x00000017</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>V6</strong></td>
-                            <td>64 KiB Storage Buffer Host-Visible Map</td>
-                            <td><strong>PASS</strong> (DeviceLocal+HostVisible)</td>
-                            <td><strong>PASS</strong> (DeviceLocal+HostVisible)</td>
-                            <td>0 Memory Faults</td>
-                        </tr>
-                        <tr>
-                            <td><strong>V7 ~ V8</strong></td>
-                            <td>SPIR-V Compute Shader Dispatch</td>
-                            <td><strong>PASS</strong> (256 Invocations)</td>
-                            <td><strong>PASS</strong> (256 Invocations)</td>
-                            <td>Fence Wait Return 0</td>
-                        </tr>
-                        <tr>
-                            <td><strong>V9</strong></td>
-                            <td>Tensor Arithmetic Checksum ($out = in 	imes 2 + 1$)</td>
-                            <td><strong>PASS</strong> (Expected: 65536 / Actual: 65536)</td>
-                            <td><strong>PASS</strong> (Expected: 65536 / Actual: 65536)</td>
-                            <td><strong>0 Mismatches (100% Exact)</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
-                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
-                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
-            </footer>
-        </main>
+  <header>
+    <a href="index.html" class="header-brand">
+      <img src="favicon.svg" alt="Termux-Diffusion Logo">
+      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+    </a>
+    <div class="header-controls">
+      <span class="release-tag" data-i18n="common.releaseTag">v1.3.1 (Multi-SoC Vulkan)</span>
+      <div class="lang-selector-wrapper"></div>
+      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
+      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
+      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
     </div>
+  </header>
+
+  <div class="container">
+  <nav class="sidebar">
+    <h3 data-i18n="common.nav.overview">Overview</h3>
+    <ul>
+      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.reference">Official Reference</h3>
+    <ul>
+      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
+      <li><a href="models.html" data-i18n="common.nav.models">Model Hub & GGUF</a></li>
+      <li><a href="benchmarks.html" class="active" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
+      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
+      <li><a href="gallery.html" data-i18n="common.nav.gallery">Render Gallery</a></li>
+      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+    <ul>
+      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
+      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
+      <li><a href="/foundation/">AMEVA Foundation</a></li>
+      <li><a href="/">Founder Digital CV</a></li>
+    </ul>
+    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
+    <ul>
+      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
+      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
+    </ul>
+  </nav>
+
+    <main class="content">
+      <h2>Benchmarks & Empirical Profiling</h2>
+      <p class="subtitle">Ground truth hardware metrics across Galaxy S25, S21, and A35 real devices</p>
+
+      <section class="doc-section">
+        <h3>1. Multi-Device Benchmark Matrix</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Target Device</th>
+              <th>SoC / GPU Architecture</th>
+              <th>Preset / Model</th>
+              <th>Backend</th>
+              <th>Latency</th>
+              <th>VRAM / Peak RAM</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Galaxy S25</strong> (SM-S931N)</td>
+              <td>Snapdragon 8 Elite / Adreno 830</td>
+              <td>FAST (SDXS 256p 1-step)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>4.39 s</strong></td>
+              <td>651 MB VRAM (0 MB RAM)</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S25</strong> (SM-S931N)</td>
+              <td>Snapdragon 8 Elite / Adreno 830</td>
+              <td>BALANCED (SDXS 512p 2-step)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>16.24 s</strong></td>
+              <td>651 MB VRAM + Tiling</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S25</strong> (SM-S931N)</td>
+              <td>Snapdragon 8 Elite / Adreno 830</td>
+              <td>ANIME (DreamShaper 512p 6-step)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>184.18 s</strong></td>
+              <td>1,550 MB VRAM</td>
+              <td><span class="badge badge-warning">Experimental</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S21</strong> (SM-G991N)</td>
+              <td>Exynos 2100 / Mali-G78 MP14</td>
+              <td>SDXS 512p 1-step (Node 1055 Fix)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>19.82 s</strong></td>
+              <td>710 MB VRAM</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy A35</strong> (SM-A356N)</td>
+              <td>Exynos 1380 / Mali-G68 MP5</td>
+              <td>SDXS 512p 1-step (ARMv8.2-A)</td>
+              <td><code>CPU Optimized</code></td>
+              <td><strong>4.08 s</strong></td>
+              <td>1.18 GB RAM (1.98x Speedup)</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="doc-section">
+        <h3>2. Subsystem Latency Breakdown</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Device & Pipeline</th>
+              <th>Text Conditioning</th>
+              <th>UNet Sampling</th>
+              <th>VAE Decoding</th>
+              <th>End-to-End Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Galaxy S25</strong> (Vulkan FAST 256p)</td>
+              <td>1.22 s</td>
+              <td>2.22 s (1-step)</td>
+              <td>0.94 s</td>
+              <td><strong>4.39 s</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S25</strong> (Vulkan BALANCED 512p)</td>
+              <td>1.30 s</td>
+              <td>9.46 s (2-step)</td>
+              <td>5.48 s (Tiled)</td>
+              <td><strong>16.24 s</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy A35</strong> (CPU Optimized 512p)</td>
+              <td>1.85 s</td>
+              <td>1.28 s (1-step)</td>
+              <td>0.95 s</td>
+              <td><strong>4.08 s</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="doc-section">
+        <h3>3. VAE Tiling Memory Defense</h3>
+        <p>Enabling <code>--vae-tiling</code> splits high-resolution 512x512 latent matrices into overlapping 64x64 tiles, preventing memory allocation spikes and protecting Android Bionic processes against LMK (Low Memory Killer) termination.</p>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
+  </footer>
 </body>
 </html>

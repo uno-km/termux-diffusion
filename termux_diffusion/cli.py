@@ -57,6 +57,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("--control-strength", type=float, default=None, help="ControlNet strength (0.0 to 2.0, default: 0.9)")
     gen_parser.add_argument("--taesd", type=str, default=None, help="Path to Tiny AutoEncoder (TAESD) model")
     gen_parser.add_argument("--strict-vulkan", action="store_true", help="Disallow CPU fallback and fail if Vulkan physical GPU discovery fails")
+    gen_parser.add_argument("--preset", type=str, default=None, choices=["fast", "balanced", "anime-experimental", "anime_experimental"], help="Verified production preset (fast, balanced, anime-experimental)")
+    gen_parser.add_argument("--sampling-method", type=str, dest="sampler", help=argparse.SUPPRESS)
+    gen_parser.add_argument("--cfg-scale", type=float, dest="cfg", help=argparse.SUPPRESS)
 
     # install command
     inst_parser = subparsers.add_parser("install", help="Provision and compile native Bionic C++ engine")
@@ -71,12 +74,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # download command
     dl_parser = subparsers.add_parser("download", help="Pre-download a model preset or HF repo")
-    dl_parser.add_argument("model", type=str, help="Model preset name (e.g. realistic, speed, sdxs, turbo, anime)")
+    dl_parser.add_argument("model", type=str, help="Model preset name (e.g. realistic, speed, sdxs, turbo, anime, fast, balanced)")
 
     # clear-cache command
-    subparsers.add_parser("clear-cache", help="Delete cached model files to reclaim storage")
+    subparsers.add_parser("clear-cache", help="Purge cached model weights to reclaim disk space")
 
-    if not argv:
+    if len(argv) == 0:
         parser.print_help()
         return 0
 
@@ -86,21 +89,51 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.seed < -1 or args.seed > 4294967295:
             parser.error("--seed must be between -1 and 4294967295.")
 
+        model_name = args.model
+        steps = args.steps
+        cfg = args.cfg
+        width = args.width
+        height = args.height
+        sampler = args.sampler
+        device = args.device
+        vae_tiling = args.vae_tiling
+
+        if args.preset:
+            p_key = args.preset.replace("_", "-")
+            from .hub import DEFAULT_PRESETS
+            if p_key in DEFAULT_PRESETS:
+                p_cfg = DEFAULT_PRESETS[p_key]
+                model_name = p_cfg.get("alias", p_key)
+                if steps is None:
+                    steps = p_cfg.get("default_steps")
+                if cfg is None:
+                    cfg = p_cfg.get("default_cfg")
+                if width == 512 and "default_width" in p_cfg:
+                    width = p_cfg["default_width"]
+                if height == 512 and "default_height" in p_cfg:
+                    height = p_cfg["default_height"]
+                if sampler is None:
+                    sampler = p_cfg.get("default_sampler")
+                if device == "cpu" and "default_device" in p_cfg:
+                    device = p_cfg["default_device"]
+                if not vae_tiling and p_cfg.get("default_vae_tiling"):
+                    vae_tiling = True
+
         res = generate(
             prompt=args.prompt,
-            model=args.model,
+            model=model_name,
             negative_prompt=args.negative,
-            device=args.device,
-            steps=args.steps,
-            cfg_scale=args.cfg,
-            width=args.width,
-            height=args.height,
+            device=device,
+            steps=steps,
+            cfg_scale=cfg,
+            width=width,
+            height=height,
             threads=args.threads,
             seed=args.seed,
             output=args.output,
-            sampling_method=args.sampler,
+            sampling_method=sampler,
             schedule=args.schedule,
-            vae_tiling=args.vae_tiling,
+            vae_tiling=vae_tiling,
             init_img=args.init_img,
             strength=args.strength,
             lora_dir=args.lora_dir,

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "device_model": "SM-S931N",
+  "gpu_model": "Qualcomm Adreno (TM) 830",
+  "source_commit": "9e500b0874211d44fad91e33a682b095d86bcfab",
+  "stable_diffusion_cpp_commit": "50d640568388f876b0d63ee6ddb6bc86d997ec64",
+  "ggml_commit": "30bf8685ed4eb0a47f2b06229543327749904150",
+  "ndk_version": "r26b (26.1.10909125)",
+  "clang_version": "17.0.2",
+  "target_triple": "aarch64-none-linux-android28",
+  "patches_applied": [
+    {
+      "patch_file": "patches/0001-adreno-vulkan-pipeline-fixes.patch",
+      "sha256": "e307231ec5fb6dc97abc04b7e7f96ac01a21467d7970859069290fb4f093a66b",
+      "apply_check_rc": 0
+    },
+    {
+      "patch_file": "patches/0002-fix-sd-cli-hardware-gpu-args.patch",
+      "sha256": "453eee34c56d028777b32a209906f8da98c164281483b416f36ed4e8cfd23e73",
+      "apply_check_rc": 0
+    }
+  ],
+  "binaries": {
+    "sd-cli-vulkan": {
+      "relative_path": "validation/galaxy-s25/v11/sd-cli",
+      "size_bytes": 91310288,
+      "sha256": "efce9303c59aa7001845d4823e7cb1750f42eb7f61ccfb44e52f1b37401e4b53",
+      "reproduced_sha256": "efce9303c59aa7001845d4823e7cb1750f42eb7f61ccfb44e52f1b37401e4b53",
+      "deterministic_match": true
+    },
+    "v10-self-test": {
+      "relative_path": "validation/galaxy-s25/v10-self-test",
+      "size_bytes": 90476128,
+      "sha256": "def8b6ab6696c3d63a71fafdb18e3f72836181dc3713fbe0a0eb3df04f9b918f",
+      "deterministic_match": true
+    }
+  },
+  "created_at": "2026-08-26T13:45:00Z"
+}

@@ -1,0 +1,17 @@
+{
+  "test_name": "Stage V10 GGML-Vulkan Tensor MatMul Probe",
+  "operation": "mul_mat",
+  "data_type": "FP32",
+  "matrix_dimensions": {
+    "M": 32,
+    "K": 32,
+    "N": 32
+  },
+  "element_count": 1024,
+  "validation_criteria": {
+    "max_abs_error_threshold": 0.001,
+    "mismatch_tolerance": 0,
+    "cpu_fallback_allowed": false,
+    "expected_return_code": 0
+  }
+}

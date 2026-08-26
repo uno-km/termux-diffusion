@@ -1,5 +1,5 @@
 # Internal Roadmap Backlog
-BACKLOG.md
+/BACKLOG.md
 
 # Python
 __pycache__/
@@ -7,19 +7,18 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
+/build/
+/build-*/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/parts/
+/sdist/
+/var/
+/wheels/
+/share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -35,16 +34,57 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Models & Local Cache
-models/*.gguf
+# Models and local cache
+/models/*.gguf
 *.gguf
 .cache/
-~/.cache/termux-diffusion/
 
-# IDE & OS
+# IDE and OS
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 *.tmp
 *.bak
+
+# Native build artifacts
+*.o
+*.obj
+*.exe
+*.so
+*.spv
+*.d
+*.rsp
+*.s
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+core
+core.*
+
+# Generated build directories
+/spv_out/
+/v10_objs/
+/build*/
+/tmp_build/
+
+# Vulkan release assets
+# Keep manifests, checksums, metadata, reports, and patches in Git.
+# Publish tarballs and native executables as GitHub Release assets.
+/dist_vulkan/*.tar.gz
+/dist_vulkan/pkg_adreno/
+/dist_vulkan/pkg_mali/
+/dist_vulkan/pkg_*/
+
+# Galaxy S25 large native executables
+/validation/galaxy-s25/v10-self-test
+/validation/galaxy-s25/v11/sd-cli
+
+# Local Vulkan package staging
+/validation/galaxy-s25/staging/
+/validation/galaxy-s25/package-extract/
+
+# Local temporary outputs
+*.log.tmp
+*.partial
+*.download

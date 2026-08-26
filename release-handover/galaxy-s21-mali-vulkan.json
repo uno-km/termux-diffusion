@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/uno-km/termux-diffusion.git",
+  "branch": "feature/gpu",
+  "device": {
+    "model": "SM-G991N",
+    "codename": "o1s",
+    "gpu": "Mali-G78"
+  },
+  "validation": {
+    "v0_v9": "verified",
+    "v10_ggml_matmul": "verified",
+    "v11_sdxs_vulkan": "blocked",
+    "strict_all_tensor": "pending"
+  },
+  "current_blocker": {
+    "stage": "diffusion_sampling",
+    "error": "vk_error_device_lost",
+    "first_failed_operation": "node_1055_diffusion_sampling"
+  },
+  "package": {
+    "status": "not_created",
+    "filename": null,
+    "size_bytes": null,
+    "sha256": null,
+    "tracked_in_git": false
+  },
+  "publication": {
+    "publish_ready": false,
+    "next_action": "resume_debugging_node_1055_split_dispatch"
+  }
+}

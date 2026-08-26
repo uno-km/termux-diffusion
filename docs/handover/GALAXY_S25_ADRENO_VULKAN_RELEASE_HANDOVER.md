@@ -264,10 +264,10 @@ git log -n 10 --oneline
 ```
 
 Primary Handover Document:
-- [`docs/handover/GALAXY_S25_ADRENO_VULKAN_RELEASE_HANDOVER.md`](file:///c:/Users/ATSAdmin/Documents/UNO/small_prj/termux-diffusion/docs/handover/GALAXY_S25_ADRENO_VULKAN_RELEASE_HANDOVER.md)
+- [`docs/handover/GALAXY_S25_ADRENO_VULKAN_RELEASE_HANDOVER.md`](file:///c:/Users/GAME/Desktop/uno-km/dev/termux-diffusion/docs/handover/GALAXY_S25_ADRENO_VULKAN_RELEASE_HANDOVER.md)
 
 Machine-Readable Handover JSON:
-- [`release-handover/galaxy-s25-adreno-vulkan.json`](file:///c:/Users/ATSAdmin/Documents/UNO/small_prj/termux-diffusion/release-handover/galaxy-s25-adreno-vulkan.json)
+- [`release-handover/galaxy-s25-adreno-vulkan.json`](file:///c:/Users/GAME/Desktop/uno-km/dev/termux-diffusion/release-handover/galaxy-s25-adreno-vulkan.json)
 
 ---
 

@@ -42,7 +42,7 @@ ACTUAL_PATCH1_SHA256="$(sha256sum "${PATCH1}" | awk '{print $1}')"
 ACTUAL_PATCH2_SHA256="$(sha256sum "${PATCH2}" | awk '{print $1}')"
 
 echo "[4/13] Verifying Patch SHA-256 hashes..."
-if [ "${ACTUAL_PATCA1_SHA256}" != "${EXPECTED_PATCH1_SHA256}" ]; then
+if [ "${ACTUAL_PATCH1_SHA256}" != "${EXPECTED_PATCH1_SHA256}" ]; then
     echo "ERROR: Patch 1 hash mismatch! ${ACTUAL_PATCH1_SHA256} != ${EXPECTED_PATCH1_SHA256}"
     exit 1
 fi
@@ -50,7 +50,7 @@ if [ "${ACTUAL_PATCH2_SHA256}" != "${EXPECTED_PATCH2_SHA256}" ]; then
     echo "ERROR: Patch 2 hash mismatch! ${ACTUAL_PATCH2_SHA256} != ${EXPECTED_PATCH2_SHA256}"
     exit 1
 fi
-echo "       Patch 1: PASS (${ACTUAL_PATCA1_SHA256})"
+echo "       Patch 1: PASS (${ACTUAL_PATCH1_SHA256})"
 echo "       Patch 2: PASS (${ACTUAL_PATCH2_SHA256})"
 
 # 5. git apply --check
@@ -106,7 +106,7 @@ echo "[11/13] Verifying ground-truth build provenance..."
 echo "[12/13] Hash binding check: PASS (Vulkan sd-cli != CPU Optimized)"
 
 # 13. Output reproducible JSON summary
-SUMMARY_JSON="${REPO_ROOT}/validation/galaxy-s25/reproducible-build.jsn"
+SUMMARY_JSON="${REPO_ROOT}/validation/galaxy-s25/reproducible-build.json"
 echo "[13/13] Reproducible build summary registered: ${SUMMARY_JSON}"
 
 echo "=== REPRODUCTION CHECK COMPLETE: ALL CRITERIA PASSED ==="

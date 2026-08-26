@@ -119,11 +119,18 @@ def get_engine_bin_dir() -> Path:
     return bin_dir
 
 
-def locate_sd_cli() -> Optional[Path]:
+def locate_sd_cli(backend: Optional[str] = None) -> Optional[Path]:
     """Locate the compiled sd-cli executable binary across standard locations."""
-    # 1. Custom cached engine binary
-    for fname in ("sd-cli", "sd-cli.exe", "sd", "sd.exe"):
-        cached_bin = get_engine_bin_dir() / fname
+    bin_dir = get_engine_bin_dir()
+    if backend == "cpu":
+        candidates = ("sd-cli-cpu", "sd-cli-source-cpu", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
+    elif backend in ("vulkan", "gpu"):
+        candidates = ("sd-cli-vulkan", "sd-cli-source-vulkan", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
+    else:
+        candidates = ("sd-cli", "sd-cli.exe", "sd", "sd.exe", "sd-cli-vulkan", "sd-cli-cpu")
+
+    for fname in candidates:
+        cached_bin = bin_dir / fname
         if cached_bin.is_file() and (os.access(cached_bin, os.X_OK) or os.name == "nt"):
             return cached_bin.resolve()
 

@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "device_model": "SM-S931N",
+  "gpu": "Qualcomm Adreno (TM) 830",
+  "driver_version": "vulkan.adreno.so v0800.64.7 (Vulkan 1.3.284)",
+  "model_family": "Realistic Vision V6.0 B1",
+  "model_quantization": "Q4_K",
+  "pipeline_name": "mul_mat_vec_q4_k_f32_f32",
+  "shader_name": "mul_mat_vec_q4_k.comp",
+  "shader_sha256": "PENDING_INSTRUMENTATION",
+  "pipeline_create_result": "ErrorUnknown (-6)",
+  "vk_result": "VK_ERROR_UNKNOWN",
+  "specialization_constants": {
+    "constant_id_0_block_size": "PENDING_INSTRUMENTATION",
+    "constant_id_1_num_rows": 1,
+    "constant_id_2_num_cols": 1,
+    "local_size_x_id_0": 64,
+    "local_size_y": 1,
+    "local_size_z": 1
+  },
+  "block_size": "PENDING_INSTRUMENTATION",
+  "local_size": [
+    64,
+    1,
+    1
+  ],
+  "required_subgroup_size": 0,
+  "shared_memory_bytes": "PENDING_INSTRUMENTATION",
+  "exact_root_cause": "PENDING_RUNTIME_INSTRUMENTATION",
+  "next_action": "INSTRUMENT_AND_REPRODUCE_Q4_K_PIPELINE",
+  "instrumentation_checklist": [
+    "1. Extract Shader SPIR-V binary and calculate SHA-256",
+    "2. Log specialization constant values passed to vkCreateComputePipelines",
+    "3. Check workgroup size vs BLOCK_SIZE in shared memory reduction loop",
+    "4. Check Adreno 830 driver compiler log / info message",
+    "5. Test patch with SHMEM sizing or FP32 subgroupAdd on Wave64"
+  ]
+}

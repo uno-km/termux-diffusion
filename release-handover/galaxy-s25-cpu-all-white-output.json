@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "device_model": "SM-S931N",
+  "cpu": "Qualcomm Oryon 64-bit ARMv8.2-A+dotprod+fp16+i8mm",
+  "affected_models": [
+    {
+      "model_family": "DreamShaper 8 LCM",
+      "quantization": "Q4_0",
+      "resolution": "512x512",
+      "steps": [
+        4,
+        6
+      ],
+      "output_size_bytes": 9405,
+      "pixel_mean": 255.0,
+      "pixel_stddev": 0.0,
+      "unique_colors": 1
+    },
+    {
+      "model_family": "Realistic Vision V6.0 B1",
+      "quantization": "Q4_K",
+      "resolution": "512x512",
+      "steps": [
+        6,
+        20
+      ],
+      "output_size_bytes": 9951,
+      "pixel_mean": 255.0,
+      "pixel_stddev": 0.0,
+      "unique_colors": 1
+    }
+  ],
+  "exact_root_cause": "PENDING_LATENT_AND_VAE_AUDIT",
+  "suspected_stages": [
+    "VAE decode latent normalization saturation",
+    "Latent divergence / NaN / Inf during CPU UNet steps",
+    "CPU quantization kernel precision loss",
+    "Output RGB float to uint8 clamp saturation"
+  ],
+  "next_action": "INSTRUMENT_CPU_LATENT_AND_VAE_TELEMETRY",
+  "audit_fields_to_measure": [
+    "LATENT_MIN",
+    "LATENT_MAX",
+    "LATENT_MEAN",
+    "LATENT_STDDEV",
+    "LATENT_NAN_COUNT",
+    "LATENT_INF_COUNT",
+    "VAE_INPUT_MIN",
+    "VAE_INPUT_MAX",
+    "VAE_INPUT_NAN_COUNT",
+    "VAE_INPUT_INF_COUNT",
+    "VAE_OUTPUT_PRE_CLAMP_MIN",
+    "VAE_OUTPUT_PRE_CLAMP_MAX",
+    "VAE_OUTPUT_PRE_CLAMP_MEAN",
+    "VAE_OUTPUT_PRE_CLAMP_STDDEV",
+    "VAE_OUTPUT_POST_CLAMP_MIN",
+    "VAE_OUTPUT_POST_CLAMP_MAX",
+    "TAESD_PATH",
+    "FULL_VAE_PATH",
+    "SCHEDULE",
+    "SAMPLER"
+  ]
+}

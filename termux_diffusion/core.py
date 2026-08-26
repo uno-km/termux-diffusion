@@ -239,7 +239,7 @@ def generate(
             logger.warning("Low RAM Warning: %s", msg)
 
     # 2. Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
-    sd_cli = locate_sd_cli()
+    sd_cli = locate_sd_cli(effective_device)
     if not sd_cli:
         if auto_provision:
             logger.info("sd-cli binary not found in standard paths. Attempting auto-provisioning as requested...")

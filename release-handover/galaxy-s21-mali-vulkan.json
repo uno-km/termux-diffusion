@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/uno-km/termux-diffusion.git",
+  "branch": "feature/gpu",
+  "device": {
+    "model": "SM-G991N",
+    "codename": "o1s",
+    "gpu": "Mali-G78"
+  },
+  "validation": {
+    "v0_v9": "verified",
+    "v10_ggml_matmul": "verified",
+    "v11_sdxs_vulkan": "verified",
+    "strict_all_tensor": "pending_backend_audit"
+  },
+  "resolution": {
+    "root_cause_class": "UNET_MUL_MAT_ALIGNED_PIPELINE_OUT_OF_BOUNDS_BUFFER_ACCESS",
+    "root_cause_isolated": true,
+    "first_failed_node": 1055,
+    "first_failed_operation": "MUL_MAT",
+    "first_failed_pipeline": "matmul_f16_f16acc_aligned_l",
+    "patch_path": "patches/v10-v11-mali-g78-vulkan.patch",
+    "patch_sha256": "8cddc5b4f753eadb4180ad21f724876113deb8c00c82abe19d7efafdff82f21b"
+  },
+  "package": {
+    "status": "candidate_staged",
+    "filename": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+    "sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+    "tracked_in_git": false
+  },
+  "publication": {
+    "publish_ready": false,
+    "next_action": "release_packaging_and_signature_preparation"
+  }
+}

@@ -1,85 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Installation & Setup Guide | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/i18n.js" defer></script>
-  <script src="assets/i18n-translations.js" defer></script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation & Setup Guide | Termux-Diffusion</title>
+    <meta name="description" content="Step-by-step installation guide for termux-diffusion v1.3.0 across Python PyPI, npm CLI, prebuilt auto-selection, and 8-tier hardware doctor.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/installation.html">
+    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Installation & Setup Guide | Termux-Diffusion">
+    <meta property="og:description" content="Step-by-step installation guide for termux-diffusion v1.3.0 across Python PyPI, npm CLI, prebuilt auto-selection, and 8-tier hardware doctor.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/installation.html">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Installation & Setup Guide | Termux-Diffusion">
+    <meta name="twitter:description" content="Step-by-step installation guide for termux-diffusion v1.3.0 across Python PyPI, npm CLI, prebuilt auto-selection, and 8-tier hardware doctor.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.3.0",
+      "description": "Step-by-step installation guide for termux-diffusion v1.3.0 across Python PyPI, npm CLI, prebuilt auto-selection, and 8-tier hardware doctor.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
+    <link rel="stylesheet" href="/shared/style.css">
+    <script src="/shared/common.js" defer></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="header-brand">
-      <img src="favicon.svg" alt="Termux-Diffusion Logo">
-      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-    </a>
-    <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
-      <div class="lang-selector-wrapper"></div>
-      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
-      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
-      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
+            <div class="lang-selector-wrapper">
+                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
+        </div>
+    </header>
+    <div class="container">
+        <nav class="sidebar">
+            <h3 data-i18n="common.nav.overview">Overview</h3>
+            <ul>
+                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+                <li><a href="installation.html" class="active" data-i18n="common.nav.installation">Installation Guide</a></li>
+                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
+                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
+                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
+                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
+                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
+                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+            </ul>
+            <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+            <ul>
+                <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
+                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
+                <li><a href="/foundation/">AMEVA Foundation</a></li>
+                <li><a href="/index.html">Founder Digital CV</a></li>
+            </ul>
+            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
+                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
+                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h2 data-i18n="installation.title">Installation &amp; Setup Guide</h2>
+            <p data-i18n="installation.subtitle">Complete guide for provisioning the native Bionic C++ engine, Python/Node.js SDKs, dual signed prebuilt artifacts, and hardware diagnostics.</p>
+
+            <div class="alert alert-tip">
+                <span class="alert-title">⚡ Zero-Compilation 1-Click Provisioning (v1.3.0 Release)</span>
+                <p>Starting with v1.3.0, <code>termux-diffusion</code> automatically detects your Android CPU instruction set features (DotProd, FP16) and downloads <strong>cryptographically signed ARM64 prebuilt binaries</strong> verified with Ed25519 signatures. No on-device compilation tools (Clang/CMake/Ninja) are required!</p>
+            </div>
+
+            <!-- SECTION 1: QUICK 1-CLICK INSTALLATION -->
+            <h3>1. 1-Click Package Manager Installation</h3>
+            
+            <h4>1.1 Python Environment (PyPI)</h4>
+            <pre><code class="language-bash"># Step 1: Install python package from PyPI
+pip install termux-diffusion
+
+# Step 2: Auto-provision optimal ARM64 Bionic engine binary (takes ~5s)
+termux-diffusion-install
+
+# Step 3: Run pre-flight health diagnostic
+termux-diffusion doctor</code></pre>
+
+            <h4>1.2 Node.js / TypeScript Environment (npm)</h4>
+            <pre><code class="language-bash"># Step 1: Install global CLI package from npm
+npm install -g termux-diffusion
+
+# Step 2: Auto-provision native prebuilt engine
+npx termux-diffusion install
+
+# Step 3: Run pre-flight diagnostic
+npx termux-diffusion doctor</code></pre>
+
+            <!-- SECTION 2: DUAL PREBUILT AUTO-SELECTION -->
+            <h3>2. Dual Signed Prebuilt Artifacts &amp; Auto-Selection Matrix</h3>
+            <p>During installation, the engine probes <code>/proc/cpuinfo</code> and kernel <code>getauxval(AT_HWCAP)</code> to download the exact binary matching your processor:</p>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prebuilt Artifact Name</th>
+                            <th>Target ISA &amp; CPU Features</th>
+                            <th>Verified Target Hardware</th>
+                            <th>Performance Characteristic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(0, 68, 153, 0.05); font-weight: 700;">
+                            <td><code>sd-cli-arm64-v8.2a-dotprod-fp16</code></td>
+                            <td>ARMv8.2-A + DotProd + FP16 Vector</td>
+                            <td>Galaxy A35 (Exynos 1380), Galaxy S21 (Exynos 2100), Snapdragon 865+</td>
+                            <td><span style="color: #2e7d32;">1.98x Faster Inference</span> (SDXS ~4.08s)</td>
+                        </tr>
+                        <tr>
+                            <td><code>sd-cli-arm64-v8a-cpu-baseline</code></td>
+                            <td>ARMv8-A Standard 64-bit NEON</td>
+                            <td>Broad Android ARM64 Devices, Android 8.0+</td>
+                            <td>Universal Fallback Compatibility</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECTION 3: 8-TIER DOCTOR DIAGNOSTIC -->
+            <h3>3. 8-Tier Hardware &amp; Platform Diagnostic Doctor</h3>
+            <p>Run <code>termux-diffusion doctor</code> to execute the comprehensive 8-tier verification suite:</p>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tier</th>
+                            <th>Diagnostic Verification Item</th>
+                            <th>Validation Criteria &amp; Target Standard</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Tier 1</strong></td>
+                            <td>Android Bionic Platform</td>
+                            <td>Verifies Linux ARM64 kernel (aarch64) and Android OS environment.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 2</strong></td>
+                            <td>RAM &amp; Memory Headroom</td>
+                            <td>Checks physical RAM (&ge;4GB recommended) and zRAM/Swap configuration.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 3</strong></td>
+                            <td>Storage &amp; Gallery Permissions</td>
+                            <td>Verifies read/write access to <code>~/storage/pictures/TermuxDiffusion</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 4</strong></td>
+                            <td>Native Engine Binary (sd-cli)</td>
+                            <td>Validates ELF64 header, execute permissions, and dynamic linker symbols.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 5</strong></td>
+                            <td>Bionic Vulkan Driver Link</td>
+                            <td>Probes <code>/system/lib64/libvulkan.so</code> and GPU compute queue support.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 6</strong></td>
+                            <td>CPU ISA Extensions</td>
+                            <td>Detects hardware DotProd (<code>ASIMDDP</code>) and FP16 (<code>ASIMDHP</code>) flags.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 7</strong></td>
+                            <td>Shared C++ Runtime</td>
+                            <td>Checks <code>libc++_shared.so</code> and <code>libomp.so</code> library resolution.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tier 8</strong></td>
+                            <td>Prebuilt Signature Check</td>
+                            <td>Verifies cryptographic Ed25519 signature on <code>manifest-v1.3.0-dual.json</code>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECTION 4: SOURCE BUILD FALLBACK -->
+            <h3>4. Advanced Source Compilation Fallback (Optional)</h3>
+            <p>For custom embedded architectures or upstream C++ development, you can force source compilation:</p>
+            <pre><code class="language-bash"># Install native build toolchains
+pkg install clang cmake make ninja git vulkan-loader vulkan-headers
+
+# Force source compilation with device-detected compiler optimizations
+termux-diffusion-install --source --jobs 4</code></pre>
+
+            <!-- SECTION 5: ENVIRONMENT SETUP -->
+            <h3>5. Termux Background &amp; Storage Optimization</h3>
+            <ul>
+                <li><strong>Samsung Gallery Sync:</strong> Run <code>termux-setup-storage</code> once to allow automatic image indexing in Samsung Gallery / Google Photos.</li>
+                <li><strong>Preventing Background Sleep:</strong> Execute <code>termux-wake-lock</code> before running multi-minute inference tasks to block Android Doze CPU throttling.</li>
+            </ul>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
+        </main>
     </div>
-  </header>
-
-  <div class="container">
-  <nav class="sidebar">
-    <h3 data-i18n="common.nav.overview">Overview</h3>
-    <ul>
-      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-      <li><a href="installation.html" class="active" data-i18n="common.nav.installation">Installation Guide</a></li>
-      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.reference">Official Reference</h3>
-    <ul>
-      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
-      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
-      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
-      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-    <ul>
-      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
-      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
-      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
-      <li><a href="/foundation/">AMEVA Foundation</a></li>
-      <li><a href="/">Founder Digital CV</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
-    <ul>
-      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
-      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
-      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
-      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
-    </ul>
-  </nav>
-
-    <main class="content">
-      <h2>Installation & Setup Guide</h2>
-      <p class="subtitle">Hardware acceleration, Termux setup, and dependency management</p>
-      <div class="alert alert-tip">
-           <span class="alert-title">Prerequisites</span>
-           <p>Ensure Python 3.9+ or Node.js 18+ is installed on your Linux / Android / Desktop environment.</p>
-         </div>
-         <h3>Package Managers</h3>
-         <pre><code>pip install termux-diffusion
-# or: npm install termux-diffusion</code></pre>
-         <h3>Verification Check</h3>
-         <pre><code>python -c "import termux-diffusion; print('Installation OK')"</code></pre>
-    </main>
-  </div>
-
-  <footer>
-    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
-  </footer>
 </body>
 </html>

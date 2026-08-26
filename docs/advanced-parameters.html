@@ -1,78 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Parameters & Tuning | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/i18n.js" defer></script>
-  <script src="assets/i18n-translations.js" defer></script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Parameters & Tuning | Termux-Diffusion</title>
+    <meta name="description" content="In-depth guide to VAE Tiling, CLIP Skip, LoRA weights, TAESD autoencoders, and sampler/scheduler selection on Android Termux.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/advanced-parameters.html">
+    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Advanced Parameters & Tuning | Termux-Diffusion">
+    <meta property="og:description" content="In-depth guide to VAE Tiling, CLIP Skip, LoRA weights, TAESD autoencoders, and sampler/scheduler selection on Android Termux.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/advanced-parameters.html">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Advanced Parameters & Tuning | Termux-Diffusion">
+    <meta name="twitter:description" content="In-depth guide to VAE Tiling, CLIP Skip, LoRA weights, TAESD autoencoders, and sampler/scheduler selection on Android Termux.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.3.0",
+      "description": "In-depth guide to VAE Tiling, CLIP Skip, LoRA weights, TAESD autoencoders, and sampler/scheduler selection on Android Termux.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
+    <link rel="stylesheet" href="/shared/style.css">
+    <script src="/shared/common.js" defer></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="header-brand">
-      <img src="favicon.svg" alt="Termux-Diffusion Logo">
-      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-    </a>
-    <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
-      <div class="lang-selector-wrapper"></div>
-      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
-      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
-      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
+            <div class="lang-selector-wrapper">
+                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
+        </div>
+    </header>
+    <div class="container">
+        <nav class="sidebar">
+            <h3 data-i18n="common.nav.overview">Overview</h3>
+            <ul>
+                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
+                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
+                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
+                <li><a href="advanced-parameters.html" class="active" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
+                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
+                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+            </ul>
+            <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+            <ul>
+                <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
+                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
+                <li><a href="/foundation/">AMEVA Foundation</a></li>
+                <li><a href="/index.html">Founder Digital CV</a></li>
+            </ul>
+            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
+                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
+                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h2 data-i18n="advancedParams.title">High-Precision Parameters &amp; Tuning</h2>
+            <p data-i18n="advancedParams.subtitle">Deep-dive into VAE Tiling, CLIP Layer Skipping, LoRA weight merging, TAESD autoencoders, and multi-threaded CPU tuning on Android.</p>
+
+            <!-- SECTION 1: VAE TILING -->
+            <h3>1. VAE Tiling (<code>--vae-tiling</code> / <code>vae_tiling=True</code>)</h3>
+            <p><strong>The essential safeguard for running 1.5GB+ models on Android mobile hardware.</strong></p>
+            <ul>
+                <li><strong>Mechanism:</strong> Full monolithic VAE decoding requires allocating a <code>[1, 4, 64, 64] &rarr; [1, 3, 512, 512]</code> tensor graph that spikes intermediate RAM to 1.2 GB ~ 1.5 GB. <code>--vae-tiling</code> splits spatial dimensions into overlapping 256×256 tiles with Gaussian feathering.</li>
+                <li><strong>Benefit:</strong> <strong>Slashes peak memory by ~70% (from 1,240MB down to &lt;200MB)</strong>, preventing Android <code>LowMemoryKiller</code> (LMK) aborts on 6GB RAM devices like Galaxy A35.</li>
+                <li><strong>Recommendation:</strong> Always enable for <code>anime</code> and <code>realistic</code> presets. Not required for <code>sdxs</code> (uses lightweight TAESD).</li>
+            </ul>
+
+            <!-- SECTION 2: CLIP SKIP -->
+            <h3>2. CLIP Layer Skipping (<code>--clip-skip 1|2</code>)</h3>
+            <ul>
+                <li><strong>Concept:</strong> CLIP text encoder processes token embeddings across 12 transformer layers. Skipping the final layer (<code>clip_skip=2</code>) extracts more conceptual, less literal semantic features.</li>
+                <li><strong>Best Use Case:</strong> Essential for Anime and 2D illustration models (DreamShaper 8 LCM) to produce richer artistic composition without over-constraining anatomy.</li>
+            </ul>
+
+            <!-- SECTION 3: LORA WEIGHTS -->
+            <h3>3. Dynamic LoRA Weight Merging (<code>--lora-dir &lt;path&gt;</code>)</h3>
+            <pre><code class="language-bash"># Place .safetensors LoRA files in ~/loras/
+termux-diffusion generate "portrait <lora:korean_face:0.8>" -m realistic --lora-dir ~/loras/</code></pre>
+            <p>On-the-fly matrix rank decomposition merges low-rank adapter weights directly into the UNet tensor graph without pre-baking, preserving model storage.</p>
+
+            <!-- SECTION 4: TAESD AUTOENCODER -->
+            <h3>4. Tiny AutoEncoder for Stable Diffusion (<code>--taesd &lt;path&gt;</code>)</h3>
+            <ul>
+                <li><strong>Latency Reduction:</strong> Replaces standard 16-layer VAE with a tiny 4-layer convnet, cutting latent decoding time from 7.3s down to <strong>0.20s</strong> on Exynos 1380.</li>
+                <li>Built directly into the <code>sdxs</code> model preset. Can be supplied to <code>anime</code> or <code>realistic</code> for near-instant preview generations.</li>
+            </ul>
+
+            <!-- SECTION 5: SAMPLERS & SCHEDULERS -->
+            <h3>5. Sampler &amp; Noise Scheduler Compatibility Matrix</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sampler (<code>--sampler</code>)</th>
+                            <th>Schedule (<code>--schedule</code>)</th>
+                            <th>Recommended Steps</th>
+                            <th>Optimal Model Architecture</th>
+                            <th>Behavior &amp; Stability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(0, 68, 153, 0.05);">
+                            <td><strong><code>euler_a</code></strong></td>
+                            <td><code>default</code></td>
+                            <td>1 ~ 2 (SDXS) / 6 (Real)</td>
+                            <td><strong>SDXS, Realistic Vision</strong></td>
+                            <td>Fastest first-order ancestral solver. Uncorrupted distillation.</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>lcm</code></strong></td>
+                            <td><code>karras</code> / <code>default</code></td>
+                            <td>4 ~ 6</td>
+                            <td><strong>DreamShaper 8 LCM</strong></td>
+                            <td>Consistency trajectory solver. High saturation, cel-shading.</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>dpm++2m</code></strong></td>
+                            <td><code>karras</code></td>
+                            <td>8 ~ 12</td>
+                            <td><strong>Realistic Vision (HQ)</strong></td>
+                            <td>Second-order multi-step. Highest photorealistic fidelity.</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>heun</code> / <code>dpm2</code></strong></td>
+                            <td><code>exponential</code></td>
+                            <td>15 ~ 20</td>
+                            <td>Standard SD 1.5 Base</td>
+                            <td>Double-evaluation per step. <em>Do NOT use on SDXS</em>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECTION 6: THREAD TUNING -->
+            <h3>6. Multi-Threaded CPU Affinity Tuning (<code>-t &lt;int&gt;</code>)</h3>
+            <p>Exynos 1380 (Galaxy A35) and Exynos 2100 (Galaxy S21) feature big.LITTLE heterogeneous CPU architectures:</p>
+            <ul>
+                <li><strong>Optimal Thread Count:</strong> <strong><code>4 threads</code></strong> (pins execution exclusively to Cortex-A78 / Cortex-X1 big cores).</li>
+                <li><strong>Over-threading Warning:</strong> Setting threads to <code>8</code> forces work onto Cortex-A55 efficiency cores, creating thread synchronization stalls that <em>slow down</em> inference by ~18%.</li>
+            </ul>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
+        </main>
     </div>
-  </header>
-
-  <div class="container">
-  <nav class="sidebar">
-    <h3 data-i18n="common.nav.overview">Overview</h3>
-    <ul>
-      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.reference">Official Reference</h3>
-    <ul>
-      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
-      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
-      <li><a href="advanced-parameters.html" class="active" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
-      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-    <ul>
-      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
-      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
-      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
-      <li><a href="/foundation/">AMEVA Foundation</a></li>
-      <li><a href="/">Founder Digital CV</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
-    <ul>
-      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
-      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
-      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
-      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
-    </ul>
-  </nav>
-
-    <main class="content">
-      <h2>Advanced Parameters & Tuning</h2>
-      <p class="subtitle">Kernel-level tuning, buffer pool sizing, and thread configuration</p>
-      <h3>Memory Buffer Pool Configuration</h3>
-         <p>Adjust max memory threshold and swap behaviors for ultra-constrained edge nodes.</p>
-    </main>
-  </div>
-
-  <footer>
-    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
-  </footer>
 </body>
 </html>

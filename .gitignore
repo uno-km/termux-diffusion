@@ -53,9 +53,12 @@ Thumbs.db
 *.o
 *.obj
 *.exe
+*.so
 *.spv
 *.d
 *.tmp
+*.rsp
+*.s
 spv_out/
 v10_objs/
 build*/
@@ -63,4 +66,5 @@ dist_vulkan/*.tar.gz
 dist_vulkan/pkg_adreno/
 dist_vulkan/pkg_mali/
 dist_vulkan/pkg_*/
-
+validation/galaxy-s25/v10-self-test
+validation/galaxy-s25/v11/sd-cli

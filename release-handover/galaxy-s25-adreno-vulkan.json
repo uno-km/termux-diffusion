@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/uno-km/termux-diffusion.git",
+  "branch": "validation/galaxy-s25",
+  "device": {
+    "model": "SM-S931N",
+    "soc": "Snapdragon 8 Elite",
+    "gpu": "Adreno 830"
+  },
+  "validation": {
+    "v0_v9": "verified",
+    "v10_ggml_matmul": "verified",
+    "v11_sdxs_vulkan": "verified",
+    "strict_all_tensor": "pending_fallback_audit"
+  },
+  "package": {
+    "filename": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz",
+    "size_bytes": 67754500,
+    "sha256": "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92",
+    "tracked_in_git": false,
+    "status": "verified_unsigned_experimental_candidate"
+  },
+  "binaries": {
+    "sd_cli_vulkan_sha256": "efce9303c59aa7001845d4823e7cb1750f42eb7f61ccfb44e52f1b37401e4b53",
+    "v10_self_test_sha256": "def8b6ab6696c3d63a71fafdb18e3f72836181dc3713fbe0a0eb3df04f9b918f"
+  },
+  "manifest": {
+    "filename": "manifest-v1.3.1-vulkan-experimental.json",
+    "size_bytes": 1885,
+    "sha256": "34b9ec98fc92decd7326e60b819cc1a827bb4451cc770e0c605c85d1ef01557e",
+    "signature_status": "pending_offline_root_signing",
+    "signing_key_id": "release-key-2026-01"
+  },
+  "publication": {
+    "publish_ready": false,
+    "next_action": "offline_signing_then_github_prerelease",
+    "target_tag": "v1.3.1-vulkan-experimental"
+  }
+}

@@ -16,7 +16,9 @@
   "current_blocker": {
     "stage": "diffusion_sampling",
     "error": "vk_error_device_lost",
-    "first_failed_operation": "node_1055_diffusion_sampling"
+    "first_failed_node": 1055,
+    "first_failed_operation": "unet_operation_not_yet_disambiguated",
+    "first_failed_vulkan_call": "vkWaitForFences"
   },
   "package": {
     "status": "not_created",
@@ -27,6 +29,6 @@
   },
   "publication": {
     "publish_ready": false,
-    "next_action": "resume_debugging_node_1055_split_dispatch"
+    "next_action": "instrument_node_1055_before_selecting_fix"
   }
 }

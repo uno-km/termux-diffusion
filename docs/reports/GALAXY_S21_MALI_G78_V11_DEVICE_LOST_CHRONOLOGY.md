@@ -1,8 +1,8 @@
-# Galaxy S21 (Mali-G78) V11 Device Lost Isolation & Root Cause Chronology
+# Galaxy S21 (Mali-G78) V11 Device Lost Location Isolation & Diagnostic Chronology
 
 ## 1. Executive Summary
 
-This document records the strict investigation, device gating, verification of Stage V10 GGML MatMul, and root-cause isolation of `VK_ERROR_DEVICE_LOST` during Stage V11 UNet Diffusion Sampling on Samsung Galaxy S21 (`SM-G991N` / `o1s` / Mali-G78).
+This document records the device identity verification, Stage V10 GGML MatMul completion, and exact failure location isolation for Stage V11 UNet Diffusion Sampling on Samsung Galaxy S21 (`SM-G991N` / `o1s` / Mali-G78).
 
 ---
 
@@ -19,7 +19,7 @@ This document records the strict investigation, device gating, verification of S
 
 ---
 
-## 3. Ground Truth & Stage V10 MatMul Verification
+## 3. Ground Truth & Stage V10 MatMul Verification (Frozen)
 
 Stage V10 GGML MatMul was executed in the isolated directory `/data/data/com.termux/files/home/tmp/track-b-s21-v10-v11-revalidation/build/` with the compiled executable `track_b_v10_matmul`.
 
@@ -46,19 +46,34 @@ RESULT=PASS_V10_MALI_GGML_MATMUL_SUCCESSFUL
 
 ---
 
-## 4. Stage V11 Investigation & Isolation of First Failure
+## 4. Stage V11 Failure Location Isolation & Diagnostic Status
 
-### 4.1. Telemetry
+### 4.1. Telemetry & Established Facts
 - **Model**: SDXS (512-DS) in GGUF format
 - **Params**: 651.92 MB total
 - **Text Encoder**: Allocated to Vulkan VRAM (`159.13 MB`), successfully completed `get_learned_condition` in 7.64s.
-- **Diffusion Sampling**: When entering UNet sampling with `GGML_VK_SERIALIZE_SUBMISSIONS=1`, execution failed at:
+- **Diffusion Sampling**: With `GGML_VK_SERIALIZE_SUBMISSIONS=1`, execution failed at:
   ```text
   [ERROR] ggml_extend.hpp:72 - ggml_vulkan: device lost on Vulkan0 waiting for submission (nodes 1055 to 1055):
   libc++abi: terminating due to uncaught exception of type vk::DeviceLostError: vk::Device::waitForFences: ErrorDeviceLost
   ```
 
-### 4.2. Root Cause Classification
-- **Classification**: `UNET_LONG_RUNNING_KERNEL_OR_DISPATCH_TIMEOUT`
-- **First Failed Node**: Node 1055
-- **Failure Mechanism**: The Android Mali-G78 GPU watchdog timeout triggers during large UNet convolution/matmul dispatch when submitting without split dispatch.
+### 4.2. Diagnostic Status & Strict Ground Truth
+- **Failure Location**: `Node 1055`
+- **First Failed Stage**: `DIFFUSION_SAMPLING`
+- **First Failed Vulkan Call**: `vkWaitForFences`
+- **Vulkan Error**: `VK_ERROR_DEVICE_LOST`
+- **Location Isolated**: `TRUE`
+- **Exact Root Cause Isolated**: `FALSE`
+- **Root Cause Class**: `UNET_NODE_1055_DEVICE_LOST`
+- **Unconfirmed / Unmeasured Items for Node 1055**:
+  - Exact GGML Operation (Conv2D, MulMat, Reshape, etc.)
+  - Pipeline Name
+  - Shader Variant
+  - Workgroup Size & Dispatch Groups
+  - Subgroup Configurations
+  - Descriptor Buffer Ranges & Alignments
+  - GPU Memory State & Driver Error Details
+
+### 4.3. Next Resumption Policy
+Before applying any patch (Split Dispatch, Workgroup Clamp, FP16 alteration, Subgroup toggle, or Timeout tuning), instrument Node 1055 to extract exact tensor dimensions, operation type, pipeline, and shader variant.

@@ -60,58 +60,57 @@
     <script src="/shared/common.js" defer></script>
 </head>
 <body>
-    <header>
+        <header>
         <a href="index.html" class="header-brand">
             <img src="favicon.svg" alt="Termux-Diffusion Logo">
             <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
             <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
-            <div class="lang-selector-wrapper">
-                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="zh">🇨🇳 简体中文</option>
-                </select>
-            </div>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
+            <div class="lang-selector-wrapper"></div>
+            <a href="/foundation/index.html" class="header-btn" style="border-color:#2563eb;color:#2563eb;font-weight:600;" data-i18n="common.foundationBtn">Foundation</a>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm</a>
+            <a href="https://github.com/sponsors/uno-km" target="_blank" class="header-btn" style="border-color: #ea4aaa; color: #ea4aaa; font-weight: 700;">Sponsor</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+            <a href="/" class="header-btn" style="border-color:#004499;color:#004499;font-weight:600;" data-i18n="common.founderBtn">Founder CV</a>
         </div>
     </header>
     <div class="container">
-        <nav class="sidebar">
-            <h3 data-i18n="common.nav.overview">Overview</h3>
+                <nav class="sidebar">
+            <!-- Tier 1: Primary Navigation (Document / Foundation) -->
+            <h3 data-i18n="common.nav.docNav">문서 상세 목차</h3>
             <ul>
-                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
-                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
-                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
-                <li><a href="advanced-parameters.html" class="active" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
-                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
-                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+            <li><a href="index.html">Home / Architecture</a></li>
+            <li><a href="installation.html">Installation Guide</a></li>
+            <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+            <li><a href="models.html">Model Hub & Presets</a></li>
+            <li><a href="gallery.html">Visual Showcase & Gallery</a></li>
+            <li><a href="api-reference.html">100% Full API Reference</a></li>
+            <li><a href="advanced-parameters.html" class="active">High-Precision Parameters</a></li>
+            <li><a href="benchmarks.html">Benchmarks & Hardware</a></li>
+            <li><a href="versions.html">Version Archive</a></li>
             </ul>
-            <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+            <!-- Tier 2: Flagship Libraries -->
+            <h3 data-i18n="common.nav.libraries">플래그십 라이브러리</h3>
             <ul>
+                <li><a href="/lib/sentinel/">AMEVA-Sentinel (Security SDK)</a></li>
                 <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="/lib/aichain/">Termux-AIChain (Zero-Dep Agent)</a></li>
+                <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+                <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
                 <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
                 <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
                 <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
-                <li><a href="/foundation/">AMEVA Foundation</a></li>
-                <li><a href="/index.html">Founder Digital CV</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
             </ul>
-            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
+            <!-- Tier 3: AI Protocols & Specifications -->
+            <h3 data-i18n="common.nav.aiSpecs">AI 에이전트 프로토콜</h3>
             <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
-                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
                 <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
             </ul>
         </nav>

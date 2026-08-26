@@ -48,3 +48,14 @@ Thumbs.db
 .idea/
 *.tmp
 *.bak
+
+# Build artifacts & binaries
+*.o
+*.obj
+*.exe
+*.spv
+*.d
+*.tmp
+spv_out/
+v10_objs/
+build*/

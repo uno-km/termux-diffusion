@@ -13,7 +13,7 @@
 
 ## 1. Executive Summary
 
-Stage V10 evaluates pure upstream **GGML-Vulkan** tensor execution on the **Samsung Galaxy S25 (Qualcomm Adreno 830)**. Unlike ARM Mali GPU targets (such as Galaxy S21 Mali-G78 and Galaxy A35 Mali-G68) which require vendor-specific workarounds (such as Vulkan 1.1 structure downgrade, physical-device property trimming, and `/system/lib64` loader redirection), the Galaxy S25 Adreno 830 successfully executes **pure upstream GGML-Vulkan** via standard Termux Vulkan loader infrastructure.
+Stage V10 evaluates the **upstream-compatible GGML-Vulkan** tensor execution on the **Samsung Galaxy S25 (Qualcomm Adreno 830)**. While testing on the Galaxy S21 environment previously required loader alignment and dispatch adjustments, the Galaxy S25 Adreno 830 successfully executes the GGML-Vulkan FP32 matrix multiplication probe via the standard Termux Vulkan loader path without S21 Mali-specific runtime patches.
 
 ### Core Metrics Table
 
@@ -31,32 +31,43 @@ Stage V10 evaluates pure upstream **GGML-Vulkan** tensor execution on the **Sams
 | **Max Absolute Error ($L_\infty$)** | $< 1.0 \times 10^{-3}$ | **`3.757477e-04`** | **PASS** |
 | **Mean Absolute Error ($L_1$)** | $< 5.0 \times 10^{-4}$ | **`1.585786e-04`** | **PASS** |
 | **NaN / Inf Output Count** | 0 | `0 / 0` | **PASS** |
+| **FP32 MatMul Correctness** | Numerical equivalence | **`VERIFIED`** | **PASS** |
+| **FP16 Capability** | Driver capability | **`REPORTED (fp16: 1)`** | **INFO** |
+| **FP16 MatMul Correctness** | Separate precision test | **`NOT TESTED`** | **N/A** |
 | **Vulkan Driver Cleanup** | Clean deallocation | `PASS` | **PASS** |
 | **Device Exit Code** | `0` | `0` | **PASS** |
 
 ---
 
-## 2. Upstream Purity & Architecture Analysis
+## 2. Upstream Compatibility & Architecture Analysis
 
-### 2.1 Pure Upstream Path (No Mali Workarounds Required)
-On Samsung Galaxy S21 (Exynos 2100 / Mali-G78), the proprietary Mali driver rejected standard Vulkan 1.3 `VkPhysicalDeviceFeatures2` query chains and exhibited queue submission deadlocks without queue index overrides. 
+### 2.1 Upstream Compatibility Path
+- On the tested Galaxy S21 environment, the Termux Vulkan path initially exposed llvmpipe rather than Mali-G78. Subsequent integration required Android system-loader alignment and device-dispatch compatibility work.
+- On **Galaxy S25 (Snapdragon 8 Elite / Adreno 830)**:
+  1. Standard Termux `libvulkan.so` loader directly enumerates `Adreno (TM) 830` without Mesa llvmpipe fallback.
+  2. The upstream-compatible GGML-Vulkan pipeline executes cleanly without Mali-specific queue index workarounds or `/system/lib64` loader redirection.
 
-On **Galaxy S25 (Snapdragon 8 Elite / Adreno 830)**:
-1. **Standard Vulkan Loader Compatibility**: Standard Termux `libvulkan.so` loader successfully enumerates the physical Adreno 830 hardware GPU without Mesa llvmpipe interception.
-2. **Upstream Feature Compatibility**: Adreno Vulkan driver natively supports standard Vulkan 1.3 feature descriptors and dynamic shader pipelines.
-3. **Queue Dispatcher Stability**: Pure upstream GGML queue management, asynchronous fence synchronization, and command buffer submissions succeed with zero deadlocks.
+### 2.2 Provenance & Source Hashes
+- **Submodule Commit (`stable-diffusion.cpp`)**: `97d2990807fe6d558e395f8764198d7c7e7b411c`
+- **GGML Commit**: `97d2990`
+- **`ggml-vulkan.cpp` SHA256**: `c8ef996695578bef67cf1fe4457eda526a0d6d44143292d3a0ae4439daa79bae`
+- **`ggml-vulkan-shaders.hpp` SHA256**: `063c5df028c696cdbb5720129e8e74f529a8240199de486f3d218ce940ae7f85`
+- **`track_b_v10_matmul.cpp` SHA256**: `9cc69fc55bd1872ea0c539ff372393569416909b7063b1e3d93554a85cb3f8b5`
 
-### 2.2 Adreno 830 Hardware Properties Exposed by GGML-Vulkan
-```
+### 2.3 Adreno 830 Hardware Properties Exposed by GGML-Vulkan
+```text
 ggml_vulkan: Found 1 Vulkan devices:
 ggml_vulkan: 0 = Adreno (TM) 830 (Qualcomm Technologies Inc. Adreno Vulkan Driver) |
              uma: 1 | fp16: 1 | bf16: 0 | fp4: 0 | warp size: 64 |
              shared memory: 32768 | int dot: 0 | matrix cores: none
 ```
-- **Unified Memory Architecture (UMA)**: `uma = 1` (Device local memory is directly host-visible, minimizing host-to-device buffer copy overhead).
+- **Unified Memory Architecture (UMA)**: GGML reported UMA support (`uma: 1`). Actual copy behavior and performance require model-level profiling.
 - **Subgroup / Warp Execution**: `warp size = 64` (Adreno Wave64 execution model).
 - **Workgroup Shared Memory**: `32 KB` available per compute workgroup.
-- **Half-Precision (FP16)**: `fp16 = 1` (Hardware supports native 16-bit floating point compute shaders).
+- **Precision Status**:
+  - `FP16 capability`: **REPORTED** (`fp16: 1`)
+  - `FP16 GGML MatMul correctness`: **NOT TESTED** (Reserved for precision-specific probes)
+  - `FP32 GGML MatMul correctness`: **VERIFIED**
 
 ---
 
@@ -107,7 +118,7 @@ RESULT=PASS_V10_ADRENO_GGML_MATMUL_SUCCESSFUL
 
 ## 5. Conclusion & Stage V11 Readiness
 
-Galaxy S25 Adreno 830 has successfully passed **Stage V10 GGML-Vulkan FP32 MatMul Validation** with zero fallback and high numerical accuracy.
+GGML-Vulkan FP32 tensor execution was verified on the Galaxy S25 Adreno 830 without CPU fallback.
 - **Stage V0~V9 (Raw Vulkan Probes)**: `VERIFIED`
-- **Stage V10 (GGML-Vulkan MatMul)**: `VERIFIED`
+- **Stage V10 (GGML-Vulkan FP32 MatMul)**: `VERIFIED`
 - **Stage V11 (SDXS Vulkan 256x256 1-Step Model Inference)**: **UNBLOCKED / READY TO PROCEED**

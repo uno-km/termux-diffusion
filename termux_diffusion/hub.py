@@ -23,23 +23,48 @@ logger = logging.getLogger("termux_diffusion.hub")
 
 # Built-in Samsung Galaxy & Mobile optimized GGUF presets (Immutable MappingProxy)
 DEFAULT_PRESETS = MappingProxyType({
-    "realistic": {
-        "repo_id": "second-state/Realistic_Vision_V6.0_B1-GGUF",
-        "filename": "realisticVisionV60B1_v51HyperVAE-Q4_k.gguf",
-        "alias": "realistic.gguf",
-        "description": "Realistic Vision V6.0 B1 (Q4_K) - Full SD1.5 photorealistic portraits (Needs 20-25 steps, CFG 7.0, DPM2 Karras)",
-        "size_mb": 1547,
-        "default_steps": 20,
-        "default_cfg": 7.0,
+    "fast": {
+        "repo_id": "concedo/sdxs-512-tinySDdistilled-GGUF",
+        "filename": "sdxs-512-tinySDdistilled_Q8_0.gguf",
+        "alias": "sdxs.gguf",
+        "description": "Fast Preset (SDXS Q8_0) - Ultra-fast 256x256 1-step Vulkan inference (Verified)",
+        "size_mb": 651,
+        "default_steps": 1,
+        "default_cfg": 1.0,
+        "default_width": 256,
+        "default_height": 256,
+        "default_sampler": "euler_a",
+        "default_device": "vulkan",
+        "status": "verified"
     },
-    "speed": {
-        "repo_id": "gpustack/stable-diffusion-v1-5-GGUF",
-        "filename": "stable-diffusion-v1-5-Q4_1.gguf",
-        "alias": "lightning.gguf",
-        "description": "Stable Diffusion 1.5 Base (Q4_1) - General-purpose base model (Needs 15-20 steps, CFG 6.0)",
-        "size_mb": 1682,
-        "default_steps": 20,
-        "default_cfg": 6.0,
+    "balanced": {
+        "repo_id": "concedo/sdxs-512-tinySDdistilled-GGUF",
+        "filename": "sdxs-512-tinySDdistilled_Q8_0.gguf",
+        "alias": "sdxs.gguf",
+        "description": "Balanced Preset (SDXS Q8_0) - High-quality 512x512 2-step Vulkan inference (Verified)",
+        "size_mb": 651,
+        "default_steps": 2,
+        "default_cfg": 1.0,
+        "default_width": 512,
+        "default_height": 512,
+        "default_sampler": "euler_a",
+        "default_device": "vulkan",
+        "status": "verified"
+    },
+    "anime-experimental": {
+        "repo_id": "haven-ai-companion/dreamshaper8-lcm-gguf",
+        "filename": "DreamShaper8_LCM_q4_0.gguf",
+        "alias": "anime.gguf",
+        "description": "Anime Experimental (DreamShaper 8 LCM Q4_0) - 512x512 6-step Vulkan inference (Verified Experimental)",
+        "size_mb": 1550,
+        "default_steps": 6,
+        "default_cfg": 1.5,
+        "default_width": 512,
+        "default_height": 512,
+        "default_sampler": "lcm",
+        "default_device": "vulkan",
+        "default_vae_tiling": True,
+        "status": "verified_experimental"
     },
     "sdxs": {
         "repo_id": "concedo/sdxs-512-tinySDdistilled-GGUF",
@@ -50,6 +75,34 @@ DEFAULT_PRESETS = MappingProxyType({
         "default_steps": 2,
         "default_cfg": 1.0,
     },
+    "anime": {
+        "repo_id": "haven-ai-companion/dreamshaper8-lcm-gguf",
+        "filename": "DreamShaper8_LCM_q4_0.gguf",
+        "alias": "anime.gguf",
+        "description": "DreamShaper 8 LCM (Q4_0) - Fast 6-step LCM stylized anime & illustration art (CFG 1.5, LCM)",
+        "size_mb": 1550,
+        "default_steps": 6,
+        "default_cfg": 1.5,
+    },
+    "realistic": {
+        "repo_id": "second-state/Realistic_Vision_V6.0_B1-GGUF",
+        "filename": "realisticVisionV60B1_v51HyperVAE-Q4_k.gguf",
+        "alias": "realistic.gguf",
+        "description": "Realistic Vision V6.0 B1 (Q4_K) - Full SD1.5 photorealistic portraits (Vulkan disabled pending Q4_K runtime instrumentation)",
+        "size_mb": 1547,
+        "default_steps": 20,
+        "default_cfg": 7.0,
+        "status": "disabled_pending_instrumentation"
+    },
+    "speed": {
+        "repo_id": "gpustack/stable-diffusion-v1-5-GGUF",
+        "filename": "stable-diffusion-v1-5-Q4_1.gguf",
+        "alias": "lightning.gguf",
+        "description": "Stable Diffusion 1.5 Base (Q4_1) - General-purpose base model (Needs 15-20 steps, CFG 6.0)",
+        "size_mb": 1682,
+        "default_steps": 20,
+        "default_cfg": 6.0,
+    },
     "turbo": {
         "repo_id": "second-state/stable-diffusion-v1-5-GGUF",
         "filename": "stable-diffusion-v1-5-pruned-emaonly-Q4_0.gguf",
@@ -58,15 +111,6 @@ DEFAULT_PRESETS = MappingProxyType({
         "size_mb": 1494,
         "default_steps": 20,
         "default_cfg": 6.0,
-    },
-    "anime": {
-        "repo_id": "haven-ai-companion/dreamshaper8-lcm-gguf",
-        "filename": "DreamShaper8_LCM_q4_0.gguf",
-        "alias": "anime.gguf",
-        "description": "DreamShaper 8 LCM (Q4_0) - Fast 4-8 step LCM stylized anime & illustration art (CFG 1.5, LCM)",
-        "size_mb": 1550,
-        "default_steps": 6,
-        "default_cfg": 1.5,
     },
 })
 

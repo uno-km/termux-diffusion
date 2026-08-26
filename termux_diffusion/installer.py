@@ -32,7 +32,7 @@ from .platform import (
 logger = logging.getLogger("termux_diffusion.installer")
 
 SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
-PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v0.1.0"
+PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental"
 
 
 import uuid
@@ -90,6 +90,20 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
             vulkan_bin = bin_dir / "sd-cli-vulkan"
             print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
             try:
+                if not vulkan_bin.is_file():
+                    # Attempt download from official GitHub release
+                    pkg_url = f"{PREBUILT_BASE_URL}/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
+                    pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
+                    tar_dest = bin_dir / "vulkan-prebuilt.tar.gz"
+                    try:
+                        atomic_download_file(pkg_url, tar_dest, expected_sha256=pkg_sha256)
+                        import tarfile
+                        with tarfile.open(tar_dest, "r:gz") as tar:
+                            tar.extractall(path=get_default_cache_dir())
+                        tar_dest.unlink(missing_ok=True)
+                    except Exception as dl_err:
+                        logger.debug("Vulkan prebuilt download skipped/failed: %s", dl_err)
+
                 if vulkan_bin.is_file() and run_binary_self_test(vulkan_bin, expected_backend="vulkan").stage1_load_passed:
                     active = activate_binary(bin_dir, "sd-cli-vulkan")
                     print("[termux-diffusion] Fast-Track: Prebuilt Vulkan binary validated and activated.")

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Benchmarks & Profiling | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
+  <meta name="description" content="Empirical on-device benchmarks across Samsung Galaxy S25, Galaxy S21, and Galaxy A35 for Vulkan GPU and CPU Optimized backends.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/i18n.js" defer></script>
@@ -17,7 +17,7 @@
       <h1 data-i18n="common.brand">Termux-Diffusion</h1>
     </a>
     <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
+      <span class="release-tag" data-i18n="common.releaseTag">v1.3.1 (Multi-SoC Vulkan)</span>
       <div class="lang-selector-wrapper"></div>
       <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
       <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
@@ -36,8 +36,10 @@
     <h3 data-i18n="common.nav.reference">Official Reference</h3>
     <ul>
       <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
+      <li><a href="models.html" data-i18n="common.nav.models">Model Hub & GGUF</a></li>
       <li><a href="benchmarks.html" class="active" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
       <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
+      <li><a href="gallery.html" data-i18n="common.nav.gallery">Render Gallery</a></li>
       <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
     </ul>
     <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
@@ -64,16 +66,115 @@
   </nav>
 
     <main class="content">
-      <h2>Benchmarks & Profiling</h2>
-      <p class="subtitle">Deterministic latency and VRAM allocation statistics</p>
-      <table class="data-table">
-           <thead><tr><th>Target Device</th><th>Latency (ms)</th><th>VRAM Consumption</th><th>Accuracy</th></tr></thead>
-           <tbody>
-             <tr><td>Snapdragon 8 Gen 2 (ARM64)</td><td>1.2 ms</td><td>14.2 MB</td><td>100.0% Exact</td></tr>
-             <tr><td>Apple M-Series (WebGPU)</td><td>0.8 ms</td><td>12.0 MB</td><td>100.0% Exact</td></tr>
-             <tr><td>Standard Intel x86_64</td><td>2.1 ms</td><td>16.5 MB</td><td>100.0% Exact</td></tr>
-           </tbody>
-         </table>
+      <h2>Benchmarks & Empirical Profiling</h2>
+      <p class="subtitle">Ground truth hardware metrics across Galaxy S25, S21, and A35 real devices</p>
+
+      <section class="doc-section">
+        <h3>1. Multi-Device Benchmark Matrix</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Target Device</th>
+              <th>SoC / GPU Architecture</th>
+              <th>Preset / Model</th>
+              <th>Backend</th>
+              <th>Latency</th>
+              <th>VRAM / Peak RAM</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Galaxy S25</strong> (SM-S931N)</td>
+              <td>Snapdragon 8 Elite / Adreno 830</td>
+              <td>FAST (SDXS 256p 1-step)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>4.39 s</strong></td>
+              <td>651 MB VRAM (0 MB RAM)</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S25</strong> (SM-S931N)</td>
+              <td>Snapdragon 8 Elite / Adreno 830</td>
+              <td>BALANCED (SDXS 512p 2-step)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>16.24 s</strong></td>
+              <td>651 MB VRAM + Tiling</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S25</strong> (SM-S931N)</td>
+              <td>Snapdragon 8 Elite / Adreno 830</td>
+              <td>ANIME (DreamShaper 512p 6-step)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>184.18 s</strong></td>
+              <td>1,550 MB VRAM</td>
+              <td><span class="badge badge-warning">Experimental</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S21</strong> (SM-G991N)</td>
+              <td>Exynos 2100 / Mali-G78 MP14</td>
+              <td>SDXS 512p 1-step (Node 1055 Fix)</td>
+              <td><code>Vulkan GPU</code></td>
+              <td><strong>19.82 s</strong></td>
+              <td>710 MB VRAM</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy A35</strong> (SM-A356N)</td>
+              <td>Exynos 1380 / Mali-G68 MP5</td>
+              <td>SDXS 512p 1-step (ARMv8.2-A)</td>
+              <td><code>CPU Optimized</code></td>
+              <td><strong>4.08 s</strong></td>
+              <td>1.18 GB RAM (1.98x Speedup)</td>
+              <td><span class="badge badge-success">Verified</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="doc-section">
+        <h3>2. Subsystem Latency Breakdown</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Device & Pipeline</th>
+              <th>Text Conditioning</th>
+              <th>UNet Sampling</th>
+              <th>VAE Decoding</th>
+              <th>End-to-End Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Galaxy S25</strong> (Vulkan FAST 256p)</td>
+              <td>1.22 s</td>
+              <td>2.22 s (1-step)</td>
+              <td>0.94 s</td>
+              <td><strong>4.39 s</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy S25</strong> (Vulkan BALANCED 512p)</td>
+              <td>1.30 s</td>
+              <td>9.46 s (2-step)</td>
+              <td>5.48 s (Tiled)</td>
+              <td><strong>16.24 s</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Galaxy A35</strong> (CPU Optimized 512p)</td>
+              <td>1.85 s</td>
+              <td>1.28 s (1-step)</td>
+              <td>0.95 s</td>
+              <td><strong>4.08 s</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="doc-section">
+        <h3>3. VAE Tiling Memory Defense</h3>
+        <p>Enabling <code>--vae-tiling</code> splits high-resolution 512x512 latent matrices into overlapping 64x64 tiles, preventing memory allocation spikes and protecting Android Bionic processes against LMK (Low Memory Killer) termination.</p>
+      </section>
     </main>
   </div>
 

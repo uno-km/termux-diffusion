@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Version Archive & Changelog | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
+  <meta name="description" content="Official release chronology, commit hashes, release assets, and feature changelog for Termux-Diffusion.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/i18n.js" defer></script>
@@ -17,7 +17,7 @@
       <h1 data-i18n="common.brand">Termux-Diffusion</h1>
     </a>
     <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
+      <span class="release-tag" data-i18n="common.releaseTag">v1.3.1 (Multi-SoC Vulkan)</span>
       <div class="lang-selector-wrapper"></div>
       <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
       <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
@@ -36,8 +36,10 @@
     <h3 data-i18n="common.nav.reference">Official Reference</h3>
     <ul>
       <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
+      <li><a href="models.html" data-i18n="common.nav.models">Model Hub & GGUF</a></li>
       <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
       <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
+      <li><a href="gallery.html" data-i18n="common.nav.gallery">Render Gallery</a></li>
       <li><a href="versions.html" class="active" data-i18n="common.nav.versions">Version Archive</a></li>
     </ul>
     <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
@@ -64,14 +66,39 @@
   </nav>
 
     <main class="content">
-      <h2>Version Archive & Changelog</h2>
-      <p class="subtitle">Changelog history and immutable releases</p>
-      <h3>v1.1.1 - Production Stable (Current)</h3>
-         <ul>
-           <li>Standardized on Tomcat/Apache Classic Engineering Design System.</li>
-           <li>Integrated 6-language client-side i18n DOM translation engine.</li>
-           <li>Implemented AI Agent feed generation (llms.txt, llms-full.txt).</li>
-         </ul>
+      <h2>Version Archive & Chronological Changelog</h2>
+      <p class="subtitle">Complete history of official releases, prebuilt binary assets, and kernel patches</p>
+
+      <section class="doc-section">
+        <h3>v1.3.1 - Multi-SoC Vulkan Acceleration & Product Presets <span class="badge badge-success">Latest</span></h3>
+        <p><strong>Release Date:</strong> 2026-08-26 | <strong>Tag:</strong> <code>v1.3.1-vulkan-experimental</code></p>
+        <ul>
+          <li><strong>Galaxy S25 (Adreno 830) Support:</strong> Native Vulkan acceleration delivering 4.39s (FAST, 256p 1-step) and 16.24s (BALANCED, 512p 2-step) inference.</li>
+          <li><strong>Galaxy S21 (Mali-G78) Fix:</strong> Resolved Node 1055 <code>VK_ERROR_DEVICE_LOST</code> driver crash, enabling full SDXS on-device inference.</li>
+          <li><strong>Product Presets Architecture:</strong> Added <code>--preset fast</code>, <code>--preset balanced</code>, and <code>--preset anime_experimental</code>.</li>
+          <li><strong>Strict Fail-Fast Protection:</strong> Prohibits silent CPU fallback when Vulkan is explicitly requested.</li>
+          <li><strong>Lightweight Gateway Distribution:</strong> 67.7MB native binaries served via GitHub Release Assets, preserving 53KB PyPI and 85KB npm footprints.</li>
+        </ul>
+      </section>
+
+      <section class="doc-section">
+        <h3>v1.3.0 - Dual-Prebuilt Fast-Track Architecture</h3>
+        <p><strong>Release Date:</strong> 2026-08-25 | <strong>Tag:</strong> <code>v1.3.0</code></p>
+        <ul>
+          <li>Integrated Dual-Prebuilt architecture (ARMv8.2-A CPU Optimized + ARMv8-A Baseline).</li>
+          <li>Achieved 4.08s (1.98x speedup) on Galaxy A35 using ARM DotProd/FP16 SIMD vectorization.</li>
+          <li>Introduced <code>--vae-tiling</code> memory defense reducing peak decode allocation by ~70%.</li>
+        </ul>
+      </section>
+
+      <section class="doc-section">
+        <h3>v1.2.0 - TOP 7 Advanced Inference Parameters</h3>
+        <p><strong>Release Date:</strong> 2026-08-24 | <strong>Tag:</strong> <code>v1.2.0</code></p>
+        <ul>
+          <li>Added support for Img2Img, ControlNet, LoRA adapter directories, CLIP skip, TAESD, and custom samplers.</li>
+          <li>Engineered 8-tier interactive Doctor diagnostics and CPU cluster affinity management.</li>
+        </ul>
+      </section>
     </main>
   </div>
 

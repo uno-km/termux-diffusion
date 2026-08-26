@@ -1,0 +1,7 @@
+{
+  "NODE_HELP_RC": 0,
+  "NODE_GEN_RC": 0,
+  "NODE_RAW_STDOUT": "[Node.js Test] Starting SDXS generation via termux-diffusion Node.js SDK...\n[Render] [termux-diffusion] Rendering with '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf' (1 steps, 4 threads, backend: cpu)...\n[Done] [termux-diffusion] Image generated in 6.1s -> /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-node-sdxs.png\n[Gallery] [Samsung Gallery] Synchronized to: /data/data/com.termux/files/home/storage/pictures/TermuxDiffusion/a35-node-sdxs.png\n[Node.js Test] Result: {\"path\":\"/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-node-sdxs.png\",\"galleryPath\":\"/data/data/com.termux/files/home/storage/pictures/TermuxDiffusion/a35-node-sdxs.png\",\"prompt\":\"a small red robot on a wooden workbench, photorealistic\",\"model\":\"/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf\",\"steps\":1,\"cfgScale\":1,\"elapsedSec\":6.087,\"samplingMethod\":null,\"schedule\":null,\"vaeTiling\":false,\"initImg\":null,\"strength\":null,\"loraDir\":null,\"clipSkip\":null,\"controlNet\":null,\"controlImage\":null,\"controlStrength\":null,\"taesd\":null}\n[Node.js Test] Total Elapsed: 7.30s",
+  "NODE_RAW_STDERR": "[termux-diffusion] Notice: Library found at '/vendor/lib64/libenn_engine.so' but read access was denied (EACCES).",
+  "NODE_IMAGE_METADATA": "EXISTS,133697,a747ab877132e064f21b2fb07225c5d3036702309ea7789a5c59f972514a8c3a,256,256"
+}

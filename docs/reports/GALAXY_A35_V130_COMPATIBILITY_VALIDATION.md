@@ -10,7 +10,9 @@
 | **Optimized CPU Prebuilt** | **VALIDATED** | `sd-cli-arm64-v8.2a-dotprod-fp16` | RC=0, Latency: 4.08s (**1.98x Speedup**) |
 | **Installer Auto-Selection** | **VALIDATED** | DotProd + FP16 Detection | Auto-selected Optimized artifact |
 | **One-Touch Install** | **VALIDATED** | Prebuilt-Only (0 Compilations) | Instant provisioning |
+| **Node.js / npm E2E SDK** | **VALIDATED** | `require('termux-diffusion')` | RC=0, Latency: 6.08s, Gallery Synced |
 | **Mali-G68 GPU Vulkan** | **VERIFIED** | Track B V0 ~ V9 Probes | 10/10 Stages PASS (0 Mismatches) |
+| **GGML / SDXS Vulkan** | **NOT TESTED** | Upstream GGML / SD Vulkan | Experimental track preserved |
 | **Non-Destructive Integrity** | **PRESERVED** | Isolated `$HOME/tmp` staging | Existing installations unchanged |
 
 ---
@@ -174,14 +176,26 @@ Executed in isolated directory `$HOME/tmp/termux-diffusion-a35-v130-validation/o
 
 ---
 
-## 9. One-Touch Installer & Auto-Selection
+## 9. One-Touch Installer & Process Compilation Audit
 
+### Python Installer Auto-Selection
 Tested inside an isolated Python virtualenv (`$ISODIR/staging/venv`):
-
 * Installer capability detection identified `dotprod=True` and `fp16=True`.
 * Selected Artifact: `sd-cli-arm64-v8.2a-dotprod-fp16`
 * Selection Match: **TRUE** (100% matched expected artifact)
-* **On-Device Compilations**: **0 processes** (`make=0`, `cmake=0`, `ninja=0`, `clang=0`, `gcc=0`)
+
+### Node.js / npm End-to-End SDK Validation
+Tested inside an isolated npm project (`$ISODIR/staging/node_test`):
+* Installed `termux-diffusion-1.3.0.tgz` via npm in 753ms.
+* Executed programmatic Node.js generation via `const { generate } = require('termux-diffusion')`.
+* Return Code: `0`
+* Rendering Time: `6.087 s` (Total elapsed: `7.30 s`)
+* Output image: `a35-node-sdxs.png` (256×256 PNG, 133,697 bytes, SHA-256 `a747ab877132e064f21b2fb07225c5d3036702309ea7789a5c59f972514a8c3a`)
+* Auto-sync to Samsung Gallery: `/storage/pictures/TermuxDiffusion/a35-node-sdxs.png` (**PASSED**)
+
+### Compilation Process Audit
+* **termux-diffusion Installation & Image Generation**: **0 on-device compilations** (`make=0`, `cmake=0`, `ninja=0`, `clang=0`, `gcc=0`). Pure prebuilt instant provisioning.
+* **Vulkan V0 ~ V9 GPU Probes**: Reused prebuilt NDK ELF64 binaries cross-compiled for Android ARM64 Bionic + SPIR-V bytecode generated via `glslangValidator`.
 
 ---
 
@@ -211,15 +225,17 @@ A35_MALI_G68_VULKAN_COMPUTE=VERIFIED
 
 ## 11. Shared vs. Device-Specific Assets
 
-* **Shared Universal Assets (Reusable across Galaxy S21 & A35)**:
-  * Signed Prebuilt Tarball: `sd-cli-arm64-v8.2a-dotprod-fp16.tar.gz`
+* **Shared Universal Assets (Reusable across Galaxy S21, Galaxy A35, and broad ARM64 devices)**:
+  * Signed Optimized Tarball: `sd-cli-arm64-v8.2a-dotprod-fp16.tar.gz`
+    * *Product Description*: **Android ARM64 ARMv8.2-A DotProd FP16 Optimized (Validated on Galaxy S21 and Galaxy A35)**
   * Signed Baseline Tarball: `sd-cli-arm64-v8a-cpu-baseline.tar.gz`
+    * *Product Description*: **Android ARM64 CPU Baseline (Broad-Compatibility Candidate)**
   * Manifest & Ed25519 signature: `manifest-v1.3.0-dual.json` / `.sig`
   * PyPI wheel & npm package: `termux-diffusion 1.3.0`
-* **Device-Specific Measurements (A35 Exynos 1380 / Mali-G68)**:
+* **Device-Specific Ground Truth Measurements**:
   * A35 Latency: Baseline 8.07s / Optimized 4.08s
   * A35 GPU Hardware ID: `0x92041010` (Mali-G68 MP5, Vulkan 1.3.219)
-  * S21 Hardware ID: `0x90400000` (Mali-G78 MP14, Vulkan 1.1.213)
+  * S21 GPU Hardware ID: *See S21 V3 raw device-enumeration evidence: `0x92020010` (Mali-G78 MP14)*
 
 ---
 
@@ -229,8 +245,11 @@ A35_MALI_G68_VULKAN_COMPUTE=VERIFIED
 A35_BASELINE_PREBUILT=VALIDATED
 A35_OPTIMIZED_PREBUILT=VALIDATED
 A35_ONE_TOUCH_INSTALLER=VALIDATED
+A35_NODE_SDK_GENERATION=VALIDATED
 A35_CPU_PRODUCT_SUPPORT=VALIDATED
 A35_MALI_G68_VULKAN_COMPUTE=VERIFIED
+A35_GGML_VULKAN_MATMUL=NOT_TESTED
+A35_VULKAN_SDXS=NOT_TESTED
 A35_VULKAN_GPU_SUPPORT=EXPERIMENTAL_READY
 DEFAULT_ARTIFACT=sd-cli-arm64-v8.2a-dotprod-fp16
 ```
@@ -246,7 +265,7 @@ Galaxy A35 users can install and run `termux-diffusion` in 2 clean steps without
 # 1. Install package from PyPI
 pip install termux-diffusion
 
-# 2. Generate image (Prebuilt engine automatically installs and generates in ~4s)
+# 2. Generate image (Prebuilt engine automatically provisions and generates in ~4s)
 termux-diffusion generate "a small red robot on a wooden workbench, photorealistic" -m sdxs
 ```
 
@@ -267,3 +286,4 @@ Generated images are automatically indexed and saved to **Samsung Gallery / Goog
 
 1. **Vulkan End-to-End Inference (Track B V10 / V11)**: While V0~V9 compute pipeline execution on Mali-G68 is verified (0 mismatches), full GGML MatMul and SDXS Vulkan pipelines are preserved as experimental tracks pending future upstream optimization.
 2. **Memory Footprint**: Total memory consumption during 256x256 SDXS generation is ~652 MB, fitting comfortably within the 6 GB RAM budget of Galaxy A35 with zero Out-Of-Memory (OOM) events.
+3. **Security Posture**: Galaxy A35 host verification is strictly enforced via `known_hosts` and `paramiko.RejectPolicy()`, with Ed25519 key-based SSH authentication.

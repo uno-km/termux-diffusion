@@ -1,0 +1,10 @@
+{
+  "model_name": "SDXS 512 Tiny SD Distilled (Q8_0)",
+  "model_filename": "sdxs-512-tinySDdistilled_Q8_0.gguf",
+  "model_source_url": "https://huggingface.co/concedo/sdxs-512-tinySDdistilled-GGUF/resolve/main/sdxs-512-tinySDdistilled_Q8_0.gguf",
+  "remote_path": "/data/data/com.termux/files/home/tmp/track-b-s25-v11-sdxs/models/sdxs-512-tinySDdistilled_Q8_0.gguf",
+  "size_bytes": 682847200,
+  "gguf_magic_valid": true,
+  "sha256": "409ab23582ee074c6b9d5395784fc0741b0599fb9d138686c69087c71678eb6a",
+  "timestamp_iso": "2026-08-26T01:45:59Z"
+}

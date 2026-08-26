@@ -65,21 +65,21 @@ def test_resolve_device_backend_vulkan_strict():
 
 
 def test_get_sd_cli_gpu_args_cpu():
-    """CPU mode must produce zero extra CLI args."""
+    """CPU mode passes --offload-to-cpu when cpu is explicitly targeted."""
     args = get_sd_cli_gpu_args("cpu", 0)
-    assert args == []
+    assert args == ["--offload-to-cpu"]
 
 
 def test_get_sd_cli_gpu_args_vulkan():
-    """Vulkan mode must produce -ngl flag."""
+    """Vulkan native binary does not require extra legacy flags."""
     args = get_sd_cli_gpu_args("vulkan", 99)
-    assert args == ["-ngl", "99"]
+    assert args == []
 
 
 def test_get_sd_cli_gpu_args_opencl():
-    """OpenCL mode must produce -ngl flag."""
+    """OpenCL native binary does not require extra legacy flags."""
     args = get_sd_cli_gpu_args("opencl", 32)
-    assert args == ["-ngl", "32"]
+    assert args == []
 
 
 def test_cmake_flags_include_march_when_arm64():

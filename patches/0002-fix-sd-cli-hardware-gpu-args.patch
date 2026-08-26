@@ -1,0 +1,49 @@
+diff --git a/termux_diffusion/hardware.py b/termux_diffusion/hardware.py
+index fa5cb94..e34ece2 100644
+--- a/termux_diffusion/hardware.py
++++ b/termux_diffusion/hardware.py
+@@ -371,9 +371,9 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
+ 
+ def get_sd_cli_gpu_args(device: str, ngl: int) -> List[str]:
+     """Build the sd-cli command-line arguments for GPU/NPU offloading."""
+-    args = []
+-    if device in ("vulkan", "opencl", "gpu", "npu", "tpu") and ngl > 0:
+-        args.extend(["-ngl", str(ngl)])
++    args: List[str] = []
++    if device == "cpu":
++        args.append("--offload-to-cpu")
+     return args
+ 
+ 
+diff --git a/tests/test_hardware.py b/tests/test_hardware.py
+index 6e3d07c..fc5197e 100644
+--- a/tests/test_hardware.py
++++ b/tests/test_hardware.py
+@@ -65,21 +65,21 @@ def test_resolve_device_backend_vulkan_strict():
+ 
+ 
+ def test_get_sd_cli_gpu_args_cpu():
+-    """CPU mode must produce zero extra CLI args."""
++    """CPU mode passes --offload-to-cpu when cpu is explicitly targeted."""
+     args = get_sd_cli_gpu_args("cpu", 0)
+-    assert args == []
++    assert args == ["--offload-to-cpu"]
+ 
+ 
+ def test_get_sd_cli_gpu_args_vulkan():
+-    """Vulkan mode must produce -ngl flag."""
++    """Vulkan native binary does not require extra legacy flags."""
+     args = get_sd_cli_gpu_args("vulkan", 99)
+-    assert args == ["-ngl", "99"]
++    assert args == []
+ 
+ 
+ def test_get_sd_cli_gpu_args_opencl():
+-    """OpenCL mode must produce -ngl flag."""
++    """OpenCL native binary does not require extra legacy flags."""
+     args = get_sd_cli_gpu_args("opencl", 32)
+-    assert args == ["-ngl", "32"]
++    assert args == []
+ 
+ 
+ def test_cmake_flags_include_march_when_arm64():

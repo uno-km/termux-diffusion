@@ -371,9 +371,9 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
 
 def get_sd_cli_gpu_args(device: str, ngl: int) -> List[str]:
     """Build the sd-cli command-line arguments for GPU/NPU offloading."""
-    args = []
-    if device in ("vulkan", "opencl", "gpu", "npu", "tpu") and ngl > 0:
-        args.extend(["-ngl", str(ngl)])
+    args: List[str] = []
+    if device == "cpu":
+        args.append("--offload-to-cpu")
     return args
 
 

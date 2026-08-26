@@ -1,0 +1,33 @@
+{
+  "device": "Galaxy A35 5G (SM-A356N)",
+  "soc": "Exynos 1380",
+  "gpu": "Mali-G68",
+  "benchmarks": {
+    "vulkan_sdxs_256_1step": {
+      "engine": "sd-cli-vulkan (mali-compat-v2)",
+      "backend": "vulkan0",
+      "model": "sdxs.gguf (Q8_0)",
+      "resolution": "256x256",
+      "steps": 1,
+      "text_encoder_sec": 4.29,
+      "diffusion_sampling_sec": 9.22,
+      "vae_decode_sec": 2.18,
+      "total_generation_sec": 15.72,
+      "vram_mb": 651.92,
+      "ram_mb": 0.0
+    },
+    "cpu_sdxs_256_1step": {
+      "engine": "sd-cli-cpu",
+      "backend": "cpu (NEON / DotProd)",
+      "model": "sdxs.gguf (Q8_0)",
+      "resolution": "256x256",
+      "steps": 1,
+      "threads": 4,
+      "diffusion_sampling_sec": 10.41,
+      "total_generation_sec": 22.5,
+      "vram_mb": 0.0,
+      "ram_mb": 720.0
+    },
+    "speedup_ratio": 1.43
+  }
+}

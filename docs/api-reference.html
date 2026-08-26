@@ -1,84 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Complete API Reference | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/i18n.js" defer></script>
-  <script src="assets/i18n-translations.js" defer></script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete API Reference | Termux-Diffusion</title>
+    <meta name="description" content="Complete programmatic API reference for Python SDK, Node.js runtime, and unified CLI binary in termux-diffusion v1.3.0.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
+    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Complete API Reference | Termux-Diffusion">
+    <meta property="og:description" content="Complete programmatic API reference for Python SDK, Node.js runtime, and unified CLI binary in termux-diffusion v1.3.0.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Complete API Reference | Termux-Diffusion">
+    <meta name="twitter:description" content="Complete programmatic API reference for Python SDK, Node.js runtime, and unified CLI binary in termux-diffusion v1.3.0.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.3.0",
+      "description": "Complete programmatic API reference for Python SDK, Node.js runtime, and unified CLI binary in termux-diffusion v1.3.0.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
+    <link rel="stylesheet" href="/shared/style.css">
+    <script src="/shared/common.js" defer></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="header-brand">
-      <img src="favicon.svg" alt="Termux-Diffusion Logo">
-      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-    </a>
-    <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
-      <div class="lang-selector-wrapper"></div>
-      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
-      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
-      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+        <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
+            <div class="lang-selector-wrapper"></div>
+            <a href="/foundation/index.html" class="header-btn" style="border-color:#2563eb;color:#2563eb;font-weight:600;" data-i18n="common.foundationBtn">Foundation</a>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm</a>
+            <a href="https://github.com/sponsors/uno-km" target="_blank" class="header-btn" style="border-color: #ea4aaa; color: #ea4aaa; font-weight: 700;">Sponsor</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+            <a href="/" class="header-btn" style="border-color:#004499;color:#004499;font-weight:600;" data-i18n="common.founderBtn">Founder CV</a>
+        </div>
+    </header>
+    <div class="container">
+                <nav class="sidebar">
+            <!-- Tier 1: Primary Navigation (Document / Foundation) -->
+            <h3 data-i18n="common.nav.docNav">문서 상세 목차</h3>
+            <ul>
+            <li><a href="index.html">Home / Architecture</a></li>
+            <li><a href="installation.html">Installation Guide</a></li>
+            <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+            <li><a href="models.html">Model Hub & Presets</a></li>
+            <li><a href="gallery.html">Visual Showcase & Gallery</a></li>
+            <li><a href="api-reference.html" class="active">100% Full API Reference</a></li>
+            <li><a href="advanced-parameters.html">High-Precision Parameters</a></li>
+            <li><a href="benchmarks.html">Benchmarks & Hardware</a></li>
+            <li><a href="versions.html">Version Archive</a></li>
+            </ul>
+            <!-- Tier 2: Flagship Libraries -->
+            <h3 data-i18n="common.nav.libraries">플래그십 라이브러리</h3>
+            <ul>
+                <li><a href="/lib/sentinel/">AMEVA-Sentinel (Security SDK)</a></li>
+                <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+                <li><a href="/lib/aichain/">Termux-AIChain (Zero-Dep Agent)</a></li>
+                <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+                <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
+                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
+            </ul>
+            <!-- Tier 3: AI Protocols & Specifications -->
+            <h3 data-i18n="common.nav.aiSpecs">AI 에이전트 프로토콜</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
+                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h2 data-i18n="apiReference.title">Complete API Reference</h2>
+            <p data-i18n="apiReference.subtitle">Comprehensive specification for Python SDK, Node.js TypeScript API, and unified CLI binary interface in termux-diffusion v1.3.0.</p>
+
+            <!-- SECTION 1: PYTHON SDK -->
+            <h3>1. Python SDK (`termux_diffusion`)</h3>
+            
+            <h4>1.1 <code>termux_diffusion.generate(...)</code></h4>
+            <p>Synchronous function that triggers on-device Stable Diffusion inference, automatic Bionic prebuilt detection, and Samsung Gallery synchronization.</p>
+            
+            <pre><code class="language-python">from termux_diffusion import generate, GenerationResult
+
+result: GenerationResult = generate(
+    prompt: str,
+    model: str = "sdxs",
+    steps: Optional[int] = None,
+    cfg_scale: Optional[float] = None,
+    width: int = 512,
+    height: int = 512,
+    output_path: Optional[str] = None,
+    negative_prompt: Optional[str] = None,
+    sampler: Optional[str] = None,
+    schedule: Optional[str] = None,
+    vae_tiling: bool = False,
+    seed: int = -1,
+    threads: Optional[int] = None,
+    init_img: Optional[str] = None,
+    strength: Optional[float] = None,
+    lora_dir: Optional[str] = None,
+    clip_skip: Optional[int] = None,
+    control_net: Optional[str] = None,
+    control_image: Optional[str] = None,
+    control_strength: Optional[float] = None,
+    taesd: Optional[str] = None,
+    device: str = "cpu"
+) -> GenerationResult</code></pre>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description &amp; Best Practices</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>prompt</code></td>
+                            <td><code>str</code></td>
+                            <td><em>Required</em></td>
+                            <td>Positive description of the target visual synthesis.</td>
+                        </tr>
+                        <tr>
+                            <td><code>model</code></td>
+                            <td><code>str</code></td>
+                            <td><code>"sdxs"</code></td>
+                            <td>Preset identifier: <code>"sdxs"</code>, <code>"anime"</code>, <code>"realistic"</code>, <code>"speed"</code>, or local GGUF path.</td>
+                        </tr>
+                        <tr>
+                            <td><code>steps</code></td>
+                            <td><code>int</code></td>
+                            <td><em>Auto</em></td>
+                            <td>Denoising steps. Defaults: SDXS=2, Anime=4~6, Realistic=6~8.</td>
+                        </tr>
+                        <tr>
+                            <td><code>cfg_scale</code></td>
+                            <td><code>float</code></td>
+                            <td><em>Auto</em></td>
+                            <td>Classifier-Free Guidance. Defaults: SDXS=1.0, Anime=1.5, Realistic=4.0.</td>
+                        </tr>
+                        <tr>
+                            <td><code>vae_tiling</code></td>
+                            <td><code>bool</code></td>
+                            <td><code>False</code></td>
+                            <td><strong>Essential for 1.5GB+ models</strong>. Slashes peak RAM by 70% to prevent Android OOM crashes.</td>
+                        </tr>
+                        <tr>
+                            <td><code>sampler</code></td>
+                            <td><code>str</code></td>
+                            <td><code>"euler_a"</code></td>
+                            <td>Sampling method: <code>"euler_a"</code>, <code>"euler"</code>, <code>"heun"</code>, <code>"dpm2"</code>, <code>"dpm++2s_a"</code>, <code>"dpm++2m"</code>, <code>"lcm"</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>schedule</code></td>
+                            <td><code>str</code></td>
+                            <td><code>"default"</code></td>
+                            <td>Noise schedule: <code>"default"</code>, <code>"discrete"</code>, <code>"karras"</code>, <code>"exponential"</code>, <code>"ays"</code>, <code>"gits"</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>threads</code></td>
+                            <td><code>int</code></td>
+                            <td><code>None</code></td>
+                            <td>CPU thread count. Defaults to optimal cluster size (4 big cores on Exynos 1380 / 2100).</td>
+                        </tr>
+                        <tr>
+                            <td><code>seed</code></td>
+                            <td><code>int</code></td>
+                            <td><code>-1</code></td>
+                            <td>RNG seed for deterministic replication (<code>-1</code> for random).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>1.2 <code>GenerationResult</code> Object Structure</h4>
+            <pre><code class="language-python">@dataclass
+class GenerationResult:
+    path: str             # Absolute file path of generated image in working directory
+    gallery_path: str     # Path in Samsung Gallery (~/storage/pictures/TermuxDiffusion/...)
+    elapsed_sec: float    # Exact end-to-end inference latency in seconds
+    seed: int             # Evaluated integer seed used for generation
+    model_name: str       # Resolved GGUF model identifier
+    metrics: Dict[str, Any] # Dictionary of sub-phase latencies (Load, Cond, Sample, VAE)</code></pre>
+
+            <h4>1.3 <code>TermuxWakeLock</code> Context Manager</h4>
+            <p>Prevents Android OS Doze mode from freezing CPU execution during long inference tasks (&gt;3 minutes).</p>
+            <pre><code class="language-python">from termux_diffusion.platform import TermuxWakeLock
+
+# Automatic acquisition and release via context manager
+with TermuxWakeLock():
+    res = generate(prompt="Cyberpunk landscape", model="realistic", steps=8, vae_tiling=True)
+    print(f"Generated safely: {res.path}")</code></pre>
+
+            <!-- SECTION 2: NODE.JS SDK -->
+            <h3>2. Node.js / TypeScript SDK</h3>
+            <pre><code class="language-javascript">const { generate } = require("termux-diffusion");
+
+async function main() {
+    const result = await generate({
+        prompt: "(masterpiece:1.2), beautiful Korean woman in cafe, soft morning light, 85mm f1.4",
+        model: "sdxs",
+        steps: 2,
+        cfgScale: 1.0,
+        width: 512,
+        height: 512
+    });
+    console.log(`Generated in ${result.elapsedSec}s: ${result.path}`);
+    console.log(`Gallery Path: ${result.galleryPath}`);
+}
+main();</code></pre>
+
+            <!-- SECTION 3: CLI REFERENCE -->
+            <h3>3. Unified CLI Reference (<code>termux-diffusion</code>)</h3>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command / Flag</th>
+                            <th>Shorthand</th>
+                            <th>Description &amp; Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>termux-diffusion generate</code></td>
+                            <td><code>gen</code></td>
+                            <td>Primary synthesis command. Accepts positional prompt string.</td>
+                        </tr>
+                        <tr>
+                            <td><code>--model &lt;name&gt;</code></td>
+                            <td><code>-m</code></td>
+                            <td>Model preset (<code>sdxs</code>, <code>anime</code>, <code>realistic</code>, <code>speed</code>) or local GGUF path.</td>
+                        </tr>
+                        <tr>
+                            <td><code>--steps &lt;int&gt;</code></td>
+                            <td><code>-s</code></td>
+                            <td>Denoising step count (e.g. <code>-s 2</code> for SDXS, <code>-s 6</code> for Realistic).</td>
+                        </tr>
+                        <tr>
+                            <td><code>--cfg-scale &lt;float&gt;</code></td>
+                            <td><code>-c</code></td>
+                            <td>Guidance scale (e.g. <code>-c 1.0</code> for SDXS, <code>-c 4.0</code> for Realistic).</td>
+                        </tr>
+                        <tr>
+                            <td><code>--vae-tiling</code></td>
+                            <td>-</td>
+                            <td><strong>Tiled VAE decoding</strong> for 70% lower memory footprint.</td>
+                        </tr>
+                        <tr>
+                            <td><code>--width / --height</code></td>
+                            <td><code>-W / -H</code></td>
+                            <td>Output spatial dimensions (default: <code>-W 512 -H 512</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>--sampling-method &lt;name&gt;</code></td>
+                            <td><code>--sampler</code></td>
+                            <td>Sampler: <code>euler_a</code>, <code>lcm</code>, <code>dpm++2m</code>, <code>heun</code>, <code>dpm2</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>--schedule &lt;name&gt;</code></td>
+                            <td>-</td>
+                            <td>Noise schedule: <code>default</code>, <code>karras</code>, <code>ays</code>, <code>exponential</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>termux-diffusion doctor</code></td>
+                            <td>-</td>
+                            <td>8-Tier hardware and prebuilt diagnostic test suite.</td>
+                        </tr>
+                        <tr>
+                            <td><code>termux-diffusion install</code></td>
+                            <td>-</td>
+                            <td>Bootstrap and provision native ARM64 Bionic engine binaries.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
+        </main>
     </div>
-  </header>
-
-  <div class="container">
-  <nav class="sidebar">
-    <h3 data-i18n="common.nav.overview">Overview</h3>
-    <ul>
-      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.reference">Official Reference</h3>
-    <ul>
-      <li><a href="api-reference.html" class="active" data-i18n="common.nav.apiReference">API Reference</a></li>
-      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
-      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
-      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-    <ul>
-      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
-      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
-      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
-      <li><a href="/foundation/">AMEVA Foundation</a></li>
-      <li><a href="/">Founder Digital CV</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
-    <ul>
-      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
-      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
-      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
-      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
-    </ul>
-  </nav>
-
-    <main class="content">
-      <h2>Complete API Reference</h2>
-      <p class="subtitle">100% Full Class, Struct, and Method Documentation</p>
-      <h3>Engine Subsystem</h3>
-         <table class="data-table">
-           <thead><tr><th>Method / Struct</th><th>Signature</th><th>Description</th></tr></thead>
-           <tbody>
-             <tr><td><code>Engine.__init__</code></td><td><code>(device='auto', precision='fp16')</code></td><td>Initializes hardware backend accelerator</td></tr>
-             <tr><td><code>Engine.compute</code></td><td><code>(inputs: Tensor) -&gt; Tensor</code></td><td>Executes closed-form calculation with memory protection</td></tr>
-           </tbody>
-         </table>
-    </main>
-  </div>
-
-  <footer>
-    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
-  </footer>
 </body>
 </html>

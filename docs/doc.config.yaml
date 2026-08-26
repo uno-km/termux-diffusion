@@ -2,10 +2,10 @@
 name: "Termux-Diffusion"
 package_name_pypi: "termux-diffusion"
 package_name_npm: "termux-diffusion"
-version: "v1.1.1"
-release_name: "Production Stable"
+version: "v1.3.0"
+release_name: "Dual-Prebuilt Production Release"
 license: "Apache-2.0"
-platform: "Android ARM64 / Samsung Galaxy"
+platform: "Android ARM64 / Samsung Galaxy A35 & S21"
 github_repo_url: "https://github.com/uno-km/termux-diffusion"
 
 tagline_en: "Native On-Device Stable Diffusion Runtime for Android Termux & ARM64"
@@ -16,8 +16,8 @@ quick_install_cmd: "pip install termux-diffusion\n# or: npm install termux-diffu
 why_challenge_en: "Generating AI images on mobile devices typically requires cloud API dependencies or heavy virtualized container layers (PRoot) that quickly exceed RAM limits."
 why_challenge_ko: "모바일 환경에서 AI 이미지 생성은 클라우드 API 의존성을 요구하거나 무거운 가상화(PRoot) 계층으로 인해 RAM 한계를 초과하여 강제 종료됩니다."
 
-description_en: "Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing."
-description_ko: "안드로이드 순정 Bionic libc 상에서 NEON SIMD 벡터 가속을 결합하여 가상화 오버헤드 없이 고화질 이미지를 생성하고 삼성 갤러리에 즉시 자동 동기화합니다."
+description_en: "Executes quantized Stable Diffusion models directly on Android Bionic libc with ARMv8.2-A DotProd/FP16 SIMD vector acceleration and direct Samsung Gallery indexing."
+description_ko: "안드로이드 순정 Bionic libc 상에서 ARMv8.2-A DotProd/FP16 SIMD 벡터 가속을 결합하여 가상화 오버헤드 없이 고화질 이미지를 생성하고 삼성 갤러리에 즉시 자동 동기화합니다."
 
 features:
   - title_en: "Zero-PRoot Native ARM64 Bionic"
@@ -38,7 +38,7 @@ matrix_table:
     operations: "SD 1.5, SD Turbo, LCM, Tiny-SD, GGML Quantized Weights"
     status: "Production"
   - category: "Vector Acceleration"
-    operations: "ARM64 NEON SIMD, FP16 Compute, Multi-Threaded Tiling"
+    operations: "ARM64 ARMv8.2-A DotProd/FP16 SIMD, FP16 Compute, Multi-Threaded Tiling"
     status: "Production"
   - category: "Media Integration"
     operations: "PNG/WebP Export, Android MediaStore Intent Broadcast"

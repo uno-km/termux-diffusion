@@ -1,89 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quickstart & Execution Recipes | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/i18n.js" defer></script>
-  <script src="assets/i18n-translations.js" defer></script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quickstart & Execution Recipes | Termux-Diffusion</title>
+    <meta name="description" content="10-second quickstart and curated golden execution recipes for SDXS, Anime LCM, and Realistic Vision models on Android Termux.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/quickstart.html">
+    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Quickstart & Execution Recipes | Termux-Diffusion">
+    <meta property="og:description" content="10-second quickstart and curated golden execution recipes for SDXS, Anime LCM, and Realistic Vision models on Android Termux.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/quickstart.html">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Quickstart & Execution Recipes | Termux-Diffusion">
+    <meta name="twitter:description" content="10-second quickstart and curated golden execution recipes for SDXS, Anime LCM, and Realistic Vision models on Android Termux.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.3.0",
+      "description": "10-second quickstart and curated golden execution recipes for SDXS, Anime LCM, and Realistic Vision models on Android Termux.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
+    <link rel="stylesheet" href="/shared/style.css">
+    <script src="/shared/common.js" defer></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="header-brand">
-      <img src="favicon.svg" alt="Termux-Diffusion Logo">
-      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-    </a>
-    <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
-      <div class="lang-selector-wrapper"></div>
-      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
-      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
-      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
-    </div>
-  </header>
+        <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
+            <div class="lang-selector-wrapper"></div>
+            <a href="/foundation/index.html" class="header-btn" style="border-color:#2563eb;color:#2563eb;font-weight:600;" data-i18n="common.foundationBtn">Foundation</a>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm</a>
+            <a href="https://github.com/sponsors/uno-km" target="_blank" class="header-btn" style="border-color: #ea4aaa; color: #ea4aaa; font-weight: 700;">Sponsor</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+            <a href="/" class="header-btn" style="border-color:#004499;color:#004499;font-weight:600;" data-i18n="common.founderBtn">Founder CV</a>
+        </div>
+    </header>
+    <div class="container">
+                <nav class="sidebar">
+            <!-- Tier 1: Primary Navigation (Document / Foundation) -->
+            <h3 data-i18n="common.nav.docNav">문서 상세 목차</h3>
+            <ul>
+            <li><a href="index.html">Home / Architecture</a></li>
+            <li><a href="installation.html">Installation Guide</a></li>
+            <li><a href="quickstart.html" class="active">Quickstart & Recipes</a></li>
+            <li><a href="models.html">Model Hub & Presets</a></li>
+            <li><a href="gallery.html">Visual Showcase & Gallery</a></li>
+            <li><a href="api-reference.html">100% Full API Reference</a></li>
+            <li><a href="advanced-parameters.html">High-Precision Parameters</a></li>
+            <li><a href="benchmarks.html">Benchmarks & Hardware</a></li>
+            <li><a href="versions.html">Version Archive</a></li>
+            </ul>
+            <!-- Tier 2: Flagship Libraries -->
+            <h3 data-i18n="common.nav.libraries">플래그십 라이브러리</h3>
+            <ul>
+                <li><a href="/lib/sentinel/">AMEVA-Sentinel (Security SDK)</a></li>
+                <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+                <li><a href="/lib/aichain/">Termux-AIChain (Zero-Dep Agent)</a></li>
+                <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+                <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
+                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
+            </ul>
+            <!-- Tier 3: AI Protocols & Specifications -->
+            <h3 data-i18n="common.nav.aiSpecs">AI 에이전트 프로토콜</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
+                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h2 data-i18n="quickstart.title">Quickstart &amp; Execution Recipes</h2>
+            <p data-i18n="quickstart.subtitle">Get started with on-device image generation in 10 seconds. Includes copy-paste recipes for SDXS, Anime LCM, and Realistic Vision.</p>
 
-  <div class="container">
-  <nav class="sidebar">
-    <h3 data-i18n="common.nav.overview">Overview</h3>
-    <ul>
-      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-      <li><a href="quickstart.html" class="active" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.reference">Official Reference</h3>
-    <ul>
-      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
-      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
-      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
-      <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-    <ul>
-      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
-      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
-      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
-      <li><a href="/foundation/">AMEVA Foundation</a></li>
-      <li><a href="/">Founder Digital CV</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
-    <ul>
-      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
-      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
-      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
-      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
-    </ul>
-  </nav>
+            <!-- SECTION 1: 10-SECOND QUICKSTART -->
+            <h3>1. 10-Second Quickstart (초고속 첫 이미지 생성)</h3>
+            <p>Generate your first photorealistic image in <strong>4 seconds</strong> directly from the terminal:</p>
 
-    <main class="content">
-      <h2>Quickstart & Execution Recipes</h2>
-      <p class="subtitle">Standard usage patterns and rapid prototyping code</p>
-      <h3>Basic Execution Recipe</h3>
-         <pre><code>import termux_diffusion as td
+            <pre><code class="language-bash"># 1. Generate ultra-fast SDXS image (Auto-downloads weights on 1st run)
+termux-diffusion generate "a small red robot on a wooden workbench, photorealistic" -m sdxs</code></pre>
 
-# 1. Generate image on Android hardware
-image_path = td.generate(
-    prompt="Cyberpunk Seoul city at night, neon lights, 8k",
-    model="sd-turbo",
-    steps=4
+            <!-- SECTION 2: PYTHON SDK QUICKSTART -->
+            <h3>2. Python SDK Quickstart</h3>
+            <pre><code class="language-python">import termux_diffusion as td
+
+# Generate 512x512 image on Galaxy A35 / S21
+result = td.generate(
+    prompt="(masterpiece:1.2), beautiful Korean woman in cafe, cozy knit sweater, soft morning window light, 85mm f1.4",
+    model="sdxs",
+    steps=2,
+    cfg_scale=1.0,
+    width=512,
+    height=512
 )
-print(f"Generated and saved to Gallery: {image_path}")
-</code></pre>
-         <h3>Production Asynchronous Batching</h3>
-         <p>Utilize weakref pooling and zero-copy streaming buffers for continuous pipelines.</p>
-    </main>
-  </div>
 
-  <footer>
-    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
-  </footer>
+print(f"Generated in {result.elapsed_sec:.2f}s!")
+print(f"Saved to: {result.path}")
+print(f"Samsung Gallery Path: {result.gallery_path}")</code></pre>
+
+            <!-- SECTION 3: NODE.JS QUICKSTART -->
+            <h3>3. Node.js / JavaScript Quickstart</h3>
+            <pre><code class="language-javascript">const { generate } = require("termux-diffusion");
+
+async function run() {
+    const result = await generate({
+        prompt: "anime warrior girl, cyber armor, glowing katana, masterpiece, 8k",
+        model: "anime",
+        steps: 4,
+        cfgScale: 1.5,
+        vaeTiling: true
+    });
+    console.log(`Rendered in ${result.elapsedSec}s: ${result.path}`);
+}
+run();</code></pre>
+
+            <!-- SECTION 4: 3 GOLDEN RECIPES -->
+            <h3>4. Curated Model Golden Recipes (모델별 황금 레시피)</h3>
+
+            <h4>Recipe 1: SDXS (Real-Time 4-Second Generation)</h4>
+            <pre><code class="language-bash">termux-diffusion generate   "a small red robot on a wooden workbench, photorealistic, 8k"   -m sdxs -W 256 -H 256 -s 1 --cfg-scale 1.0</code></pre>
+            <ul>
+                <li><strong>Latency:</strong> <strong>4.08s (Galaxy A35) / 3.83s (Galaxy S21)</strong></li>
+                <li><strong>Best For:</strong> Real-time mobile apps, chatbots, instant visual mockups.</li>
+            </ul>
+
+            <h4>Recipe 2: DreamShaper 8 LCM (Vibrant 2D/2.5D Anime)</h4>
+            <pre><code class="language-bash">termux-diffusion generate   "anime girl warrior in cyber armor, glowing katana, highly detailed background, masterpiece, 8k"   -n "low quality, blurry, bad anatomy, deformed, extra limbs"   -m anime -W 512 -H 512 -s 4 --cfg-scale 1.5 --sampling-method lcm --vae-tiling</code></pre>
+            <ul>
+                <li><strong>Latency:</strong> 7.0 ~ 9.4 minutes on CPU</li>
+                <li><strong>Rule:</strong> Always append <code>--vae-tiling</code> to prevent memory allocation spikes.</li>
+            </ul>
+
+            <h4>Recipe 3: Realistic Vision V6.0 B1 (Golden Photorealism)</h4>
+            <pre><code class="language-bash">termux-diffusion generate   "(masterpiece, best quality:1.2), professional portrait photo of a beautiful 24yo Korean woman, cozy knit sweater, cafe background, soft morning window light, 85mm f1.4 lens, natural skin texture, lifelike, sharp focus"   -n "(worst quality, low quality:1.4), (deformed iris, deformed pupils:1.3), cgi, 3d, render, cartoon, plastic skin, doll, ugly"   -m realistic -W 512 -H 512 -s 6 --cfg-scale 4.0 --sampling-method euler_a --vae-tiling --seed 777</code></pre>
+            <ul>
+                <li><strong>Golden Rule:</strong> <strong>Keep CFG at 4.0</strong> to avoid high-contrast color burn. Use lens keywords (<code>85mm f1.4 lens, soft window light</code>) instead of literal <code>'skin pores'</code>.</li>
+            </ul>
+
+            <!-- SECTION 5: IMG2IMG RECIPE -->
+            <h3>5. Img2Img Synthesis Recipe</h3>
+            <pre><code class="language-bash"># Transform existing photo into anime watercolor art
+termux-diffusion generate   "watercolor anime portrait, soft brush strokes, masterpiece"   -i input_photo.png --strength 0.65 -m anime --vae-tiling</code></pre>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
+        </main>
+    </div>
 </body>
 </html>

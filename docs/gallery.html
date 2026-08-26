@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visual Showcase & Render Gallery | Termux-Diffusion</title>
-    <meta name="description" content="Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
+    <meta name="description" content="Empirical image generation gallery across Galaxy A35 and S21 with official golden recipes, realistic photorealism, and Anime LCM presets.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
@@ -14,7 +14,7 @@
 
     <!-- Open Graph Metadata -->
     <meta property="og:title" content="Visual Showcase & Render Gallery | Termux-Diffusion">
-    <meta property="og:description" content="Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.">
+    <meta property="og:description" content="Empirical image generation gallery across Galaxy A35 and S21 with official golden recipes, realistic photorealism, and Anime LCM presets.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
     <meta property="og:site_name" content="Termux-Diffusion">
@@ -23,7 +23,7 @@
     <!-- Twitter Card Metadata -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Visual Showcase & Render Gallery | Termux-Diffusion">
-    <meta name="twitter:description" content="Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.">
+    <meta name="twitter:description" content="Empirical image generation gallery across Galaxy A35 and S21 with official golden recipes, realistic photorealism, and Anime LCM presets.">
 
     <!-- Schema.org SoftwareApplication JSON-LD -->
     <script type="application/ld+json">
@@ -31,61 +31,20 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Termux-Diffusion",
-      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
       "applicationCategory": "DeveloperApplication",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD"
       },
-      "softwareVersion": "1.1.1",
-      "description": "Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.",
+      "softwareVersion": "1.3.0",
+      "description": "Empirical image generation gallery across Galaxy A35 and S21 with official golden recipes, realistic photorealism, and Anime LCM presets.",
       "url": "https://uno-km.github.io/termux-diffusion/",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "reviewCount": "128",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
       "sameAs": [
         "https://github.com/uno-km/termux-diffusion",
         "https://pypi.org/project/termux-diffusion/",
         "https://www.npmjs.com/package/termux-diffusion"
-      ]
-    }
-    </script>
-
-    <!-- Schema.org FAQPage JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How to run Stable Diffusion on Android Termux without root?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How are generated images exported to the Samsung Gallery app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
-          }
-        }
       ]
     }
     </script>
@@ -101,563 +60,275 @@
     <script src="/shared/common.js" defer></script>
 </head>
 <body>
-    <header>
+        <header>
         <a href="index.html" class="header-brand">
             <img src="favicon.svg" alt="Termux-Diffusion Logo">
             <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
-            <div class="lang-selector-wrapper">
-                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="zh">🇨🇳 简体中文</option>
-                </select>
-            </div>
-            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
-            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
-            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
+            <div class="lang-selector-wrapper"></div>
+            <a href="/foundation/index.html" class="header-btn" style="border-color:#2563eb;color:#2563eb;font-weight:600;" data-i18n="common.foundationBtn">Foundation</a>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm</a>
+            <a href="https://github.com/sponsors/uno-km" target="_blank" class="header-btn" style="border-color: #ea4aaa; color: #ea4aaa; font-weight: 700;">Sponsor</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+            <a href="/" class="header-btn" style="border-color:#004499;color:#004499;font-weight:600;" data-i18n="common.founderBtn">Founder CV</a>
         </div>
     </header>
-
     <div class="container">
-        <nav class="sidebar">
-            <h3 data-i18n="common.nav.overview">Overview</h3>
+                <nav class="sidebar">
+            <!-- Tier 1: Primary Navigation (Document / Foundation) -->
+            <h3 data-i18n="common.nav.docNav">문서 상세 목차</h3>
             <ul>
-                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
-                <li><a href="gallery.html" class="active" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
-                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
-                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
-                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
-                <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
+            <li><a href="index.html">Home / Architecture</a></li>
+            <li><a href="installation.html">Installation Guide</a></li>
+            <li><a href="quickstart.html">Quickstart & Recipes</a></li>
+            <li><a href="models.html">Model Hub & Presets</a></li>
+            <li><a href="gallery.html" class="active">Visual Showcase & Gallery</a></li>
+            <li><a href="api-reference.html">100% Full API Reference</a></li>
+            <li><a href="advanced-parameters.html">High-Precision Parameters</a></li>
+            <li><a href="benchmarks.html">Benchmarks & Hardware</a></li>
+            <li><a href="versions.html">Version Archive</a></li>
             </ul>
-                        <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+            <!-- Tier 2: Flagship Libraries -->
+            <h3 data-i18n="common.nav.libraries">플래그십 라이브러리</h3>
             <ul>
+                <li><a href="/lib/sentinel/">AMEVA-Sentinel (Security SDK)</a></li>
                 <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="/lib/aichain/">Termux-AIChain (Zero-Dep Agent)</a></li>
+                <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
+                <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
                 <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
                 <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
                 <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
-                <li><a href="/foundation/">AMEVA Foundation</a></li>
-                <li><a href="/index.html">Founder Digital CV</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
             </ul>
-
-            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
+            <!-- Tier 3: AI Protocols & Specifications -->
+            <h3 data-i18n="common.nav.aiSpecs">AI 에이전트 프로토콜</h3>
             <ul>
-                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
-                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
-                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
+                <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
                 <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
             </ul>
         </nav>
-
         <main class="content">
             <h2 data-i18n="gallery.title">Visual Showcase &amp; Render Gallery</h2>
-            <p data-i18n="gallery.subtitle">Empirical image generation gallery across all 5 model presets, photorealistic Img2Img transforms, and high-precision parameter configurations.</p>
+            <p data-i18n="gallery.subtitle">Empirical image generation gallery across Samsung Galaxy A35 and Galaxy S21, featuring official golden recipes, photorealistic parameter fixes, and Anime LCM benchmarks.</p>
 
             <div class="alert alert-tip">
-                <span class="alert-title">📸 Real On-Device Generation Gallery (CPU 4-Core Baseline)</span>
-                <p>All images and latency metrics below were measured on <strong>Pure CPU (4-Threads)</strong> without GPU/NPU acceleration to establish the universal guaranteed baseline across all Android devices. When mobile GPU acceleration (Adreno OpenCL / Mali Vulkan via <code>--device gpu</code>) is enabled, inference is <strong>10x ~ 20x faster</strong>.</p>
+                <span class="alert-title">📱 Real Hardware Validation (Galaxy A35 Exynos 1380 &amp; Galaxy S21 Exynos 2100)</span>
+                <p>All rendering samples below were directly generated on live physical devices using <strong>termux-diffusion v1.3.0 Optimized NDK Prebuilt (ARMv8.2-A + DotProd + FP16)</strong> on Android Termux. Zero cloud simulation, pure on-device execution.</p>
             </div>
 
-            <!-- SECTION 1: UNIFIED PROMPT BENCHMARK -->
-            <h3>1. Unified Prompt Benchmark: Fast vs High-End (동일 프롬프트 비교)</h3>
-            <p><strong>Test Prompt:</strong> <em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></p>
+            <!-- SECTION 0: A35 / S21 GOLDEN RECIPES SHOWCASE -->
+            <h3>1. Galaxy A35 &amp; S21 Golden Recipe Showcase (실기기 황금 레시피 렌더링)</h3>
+            <p>Empirically tuned configurations yielding pristine image fidelity while preventing mobile OOM crashes and color burnout artifacts.</p>
 
             <div class="gallery-grid">
-                <!-- SDXS Fast -->
+                <!-- Card 1: SDXS Fast A35 -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SDXS &bull; FAST</span>
-                        <img src="assets/gallery/final_sdxs_fast.png" alt="SDXS Fast" loading="lazy">
+                        <span class="gallery-badge" style="background: #007700;">SDXS &bull; A35 FAST (4.08s)</span>
+                        <img src="assets/gallery/final_sdxs_fast.png" alt="SDXS Fast A35" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">SDXS Tiny Distilled (Fast)</h4>
+                        <h4 class="gallery-title">SDXS 256×256 Fast (Galaxy A35)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 28.98s</span>
-                            <span class="param-tag">Model: sdxs (Q8_0)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ A35: 4.08s (S21: 3.83s)</span>
+                            <span class="param-tag">Model: sdxs (Q8_0 / 651MB)</span>
                             <span class="param-tag">Steps: 1</span>
-                            <span class="param-tag">CFG: 1.0</span>
+                            <span class="param-tag">CFG: 1.0 (Fixed)</span>
                             <span class="param-tag">Sampler: euler_a</span>
+                            <span class="param-tag">RAM: ~650MB</span>
                         </div>
-                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, tired expression, replaced by AI..."</div>
+                        <div class="gallery-prompt"><strong>Positive:</strong> "a small red robot on a wooden workbench, photorealistic, cinematic lighting, sharp focus, 8k"</div>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 6px;">SHA-256: <code>a747ab877132e064f21b2fb07225c5d3036702309ea7789a5c59f972514a8c3a</code></div>
                     </div>
                 </div>
 
-                <!-- SDXS High-End -->
+                <!-- Card 2: SDXS Golden Portrait A35 -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SDXS &bull; ULTRA HIGH-END</span>
-                        <img src="assets/gallery/final_sdxs_highend.png" alt="SDXS Ultra High-End" loading="lazy">
+                        <span class="gallery-badge" style="background: #004499;">SDXS &bull; GOLDEN PORTRAIT</span>
+                        <img src="assets/gallery/final_sdxs_highend.png" alt="SDXS Golden Portrait" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">SDXS Tiny Distilled (Ultra High-End)</h4>
+                        <h4 class="gallery-title">SDXS 512×512 Golden Portrait (23.2s)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 20.50s</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ A35: 23.20s (S21: 24.12s)</span>
                             <span class="param-tag">Model: sdxs (Q8_0)</span>
                             <span class="param-tag">Steps: 2</span>
                             <span class="param-tag">CFG: 1.0</span>
                             <span class="param-tag">Sampler: euler_a</span>
+                            <span class="param-tag">TAESD Built-in</span>
                         </div>
-                        <div class="gallery-prompt">"photorealistic close-up portrait of a weary 30s Korean Asian man wearing glasses, sharp focus, 8k uhd..."</div>
+                        <div class="gallery-prompt"><strong>Positive:</strong> "(masterpiece, best quality:1.2), professional portrait photo of a beautiful 24yo Korean woman, cozy knit sweater, soft morning window light, 85mm f1.4, natural skin, lifelike, sharp focus"</div>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 6px;">Golden Rule: Keep CFG at 1.0; 2nd order solvers break distillation manifold.</div>
                     </div>
                 </div>
 
-                <!-- ANIME Fast -->
+                <!-- Card 3: Anime LCM 4-Step -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">ANIME &bull; FAST</span>
-                        <img src="assets/gallery/final_anime_fast.png" alt="Anime Fast" loading="lazy">
+                        <span class="gallery-badge" style="background: #8e24aa;">ANIME &bull; LCM 4-STEP</span>
+                        <img src="assets/gallery/final_anime_fast.png" alt="Anime LCM 4-Step" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">DreamShaper 8 LCM (Fast)</h4>
+                        <h4 class="gallery-title">DreamShaper 8 LCM (4-Step Fast)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 270.63s (4.5m)</span>
-                            <span class="param-tag">Model: anime (Q4_0)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ A35: 565.59s (S21: 420.50s)</span>
+                            <span class="param-tag">Model: anime (Q4_0 / 1.55GB)</span>
                             <span class="param-tag">Steps: 4</span>
                             <span class="param-tag">CFG: 1.5</span>
                             <span class="param-tag">Sampler: lcm</span>
+                            <span class="param-tag">--vae-tiling Active</span>
                         </div>
-                        <div class="gallery-prompt">"1man, anime style, weary 30s Korean Asian man wearing glasses and a white t-shirt, tired facial expression, masterpiece..."</div>
+                        <div class="gallery-prompt"><strong>Positive:</strong> "anime girl warrior in cyber armor, glowing katana, highly detailed background, masterpiece, 8k"</div>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 6px;">SHA-256: <code>2811796524f195895088d85c4a5a7bafe65819ced7475a8682cdb4288744ab90</code></div>
                     </div>
                 </div>
 
-                <!-- ANIME High-End -->
+                <!-- Card 4: Anime LCM 6-Step Karras -->
                 <div class="gallery-card">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">ANIME &bull; ULTRA HIGH-END</span>
-                        <img src="assets/gallery/final_anime_highend.png" alt="Anime Ultra High-End" loading="lazy">
+                        <span class="gallery-badge" style="background: #6a1b9a;">ANIME &bull; LCM 6-STEP KARRAS</span>
+                        <img src="assets/gallery/final_anime_highend.png" alt="Anime LCM 6-Step Karras" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">DreamShaper 8 LCM (Ultra High-End)</h4>
+                        <h4 class="gallery-title">DreamShaper 8 LCM (6-Step HQ)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 490.20s (8.1m)</span>
+                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ A35: 422.34s (S21: 530.80s)</span>
                             <span class="param-tag">Model: anime (Q4_0)</span>
-                            <span class="param-tag">Steps: 10</span>
-                            <span class="param-tag">CFG: 1.8</span>
-                            <span class="param-tag">Clip-Skip: 2</span>
-                            <span class="param-tag">Sampler: lcm (karras)</span>
-                        </div>
-                        <div class="gallery-prompt">"1man, anime style, weary 30s Korean Asian man wearing glasses, replaced by AI automation, masterpiece, sharp lineart..."</div>
-                    </div>
-                </div>
-
-                <!-- TURBO Fast -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">TURBO &bull; FAST</span>
-                        <img src="assets/gallery/final_turbo_fast.png" alt="Turbo Fast" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">SD1.5 Pruned Base (Fast)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 522.95s (8.7m)</span>
-                            <span class="param-tag">Model: turbo (Q4_0)</span>
-                            <span class="param-tag">Steps: 12</span>
-                            <span class="param-tag">CFG: 6.0</span>
-                            <span class="param-tag">Sampler: euler_a</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, sitting alone in modern room..."</div>
-                    </div>
-                </div>
-
-                <!-- TURBO High-End -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">TURBO &bull; ULTRA HIGH-END</span>
-                        <img src="assets/gallery/final_turbo_highend.png" alt="Turbo Ultra High-End" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">SD1.5 Pruned Base (Ultra High-End)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1358.20s (22.6m)</span>
-                            <span class="param-tag">Model: turbo (Q4_0)</span>
-                            <span class="param-tag">Steps: 28</span>
-                            <span class="param-tag">CFG: 5.5</span>
-                            <span class="param-tag">Clip-Skip: 2</span>
-                            <span class="param-tag">Sampler: dpm++2m (karras)</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic close-up upper body portrait of a weary 30s Korean Asian man wearing glasses, cinematic lighting, 8k uhd..."</div>
-                    </div>
-                </div>
-
-                <!-- SPEED Fast -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SPEED &bull; FAST</span>
-                        <img src="assets/gallery/final_speed_fast.png" alt="Speed Fast" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">SD1.5 Base Q4_1 (Fast)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 578.43s (9.6m)</span>
-                            <span class="param-tag">Model: speed (Q4_1)</span>
-                            <span class="param-tag">Steps: 12</span>
-                            <span class="param-tag">CFG: 6.0</span>
-                            <span class="param-tag">Sampler: euler_a</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a white t-shirt, tired facial expression..."</div>
-                    </div>
-                </div>
-
-                <!-- SPEED High-End -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SPEED &bull; ULTRA HIGH-END</span>
-                        <img src="assets/gallery/final_speed_highend.png" alt="Speed Ultra High-End" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">SD1.5 Base Q4_1 (Ultra High-End)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1305.10s (21.8m)</span>
-                            <span class="param-tag">Model: speed (Q4_1)</span>
-                            <span class="param-tag">Steps: 28</span>
-                            <span class="param-tag">CFG: 5.5</span>
-                            <span class="param-tag">Clip-Skip: 2</span>
-                            <span class="param-tag">Sampler: dpm++2m (karras)</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic close-up upper body portrait of a weary 30s Korean Asian man wearing glasses in distress, sharp focus, 8k..."</div>
-                    </div>
-                </div>
-
-                <!-- REALISTIC Fast -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">REALISTIC &bull; FAST</span>
-                        <img src="assets/gallery/final_realistic_fast.png" alt="Realistic Fast" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">Realistic Vision V6.0 (Fast)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 509.57s (8.5m)</span>
-                            <span class="param-tag">Model: realistic (Q4_K)</span>
-                            <span class="param-tag">Steps: 12</span>
-                            <span class="param-tag">CFG: 6.0</span>
-                            <span class="param-tag">Sampler: euler_a</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, cinematic lighting..."</div>
-                    </div>
-                </div>
-
-                <!-- REALISTIC High-End -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">REALISTIC &bull; ULTRA HIGH-END</span>
-                        <img src="assets/gallery/final_realistic_highend.png" alt="Realistic Ultra High-End" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">Realistic Vision V6.0 (Ultra High-End)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 1548.05s (25.8m)</span>
-                            <span class="param-tag">Model: realistic (Q4_K)</span>
-                            <span class="param-tag">Steps: 30</span>
-                            <span class="param-tag">CFG: 5.0</span>
-                            <span class="param-tag">Clip-Skip: 2</span>
-                            <span class="param-tag">Sampler: dpm++2m (karras)</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic portrait of a weary 30s Korean Asian man wearing glasses, feeling unemployed, sharp focus, 8k uhd..."</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 2: USER PHOTO IMG2IMG -->
-            <h3>2. User Photo Img2Img Transformation (인물 사진 변환)</h3>
-            <p>Demonstration of native Img2Img synthesis preserving facial contour and gaze direction with custom style transfer.</p>
-
-            <div class="gallery-grid">
-                <!-- Source -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">INPUT &bull; SOURCE</span>
-                        <img src="assets/gallery/user_source_photo_512.png" alt="Source Photo" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">User Source Portrait (Input)</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag">Format: PNG 512x512</span>
-                            <span class="param-tag">Type: Initial Image</span>
-                        </div>
-                        <div class="gallery-prompt">Original input portrait photograph used for Img2Img image-to-image synthesis pipeline.</div>
-                    </div>
-                </div>
-
-                <!-- Cyberpunk -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">IMG2IMG &bull; CYBERPUNK</span>
-                        <img src="assets/gallery/user_photo_cyberpunk_transformed.png" alt="Cyberpunk Transform" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">Cyberpunk Style Transformation</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 28.7s</span>
-                            <span class="param-tag">Model: sdxs</span>
-                            <span class="param-tag">Steps: 2</span>
-                            <span class="param-tag">CFG: 1.0</span>
-                            <span class="param-tag">Strength: 0.55</span>
-                            <span class="param-tag">Sampler: euler_a</span>
-                        </div>
-                        <div class="gallery-prompt">"cyberpunk style portrait of a Korean man, glowing neon cybernetic implants, holographic HUD, sharp focus, 8k"</div>
-                    </div>
-                </div>
-
-                <!-- Hyperrealistic -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">IMG2IMG &bull; HIGH-END</span>
-                        <img src="assets/gallery/user_photo_hyperrealistic_rendered.png" alt="Hyperrealistic Render" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">Hyperrealistic Studio Rendering</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 31.4s</span>
-                            <span class="param-tag">Model: sdxs</span>
-                            <span class="param-tag">Steps: 4</span>
-                            <span class="param-tag">CFG: 1.0</span>
-                            <span class="param-tag">Strength: 0.65</span>
-                            <span class="param-tag">Sampler: dpm2 (karras)</span>
-                        </div>
-                        <div class="gallery-prompt">"photorealistic portrait of a young Korean software engineer smiling in high-tech research lab, cinematic lighting, 8k uhd"</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 3: CREATIVE THEMATIC SHOWCASE -->
-            <h3>3. Creative Thematic Showcase (테마별 고해상도 렌더링)</h3>
-
-            <div class="gallery-grid">
-                <!-- Anime Heroine -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">ANIME &bull; HEROINE</span>
-                        <img src="assets/gallery/model_anime_max_quality.png" alt="Anime Heroine" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">Anime Heroine with Magical Runes</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 365.1s</span>
-                            <span class="param-tag">Model: anime</span>
-                            <span class="param-tag">Steps: 8</span>
+                            <span class="param-tag">Steps: 6</span>
                             <span class="param-tag">CFG: 2.0</span>
-                            <span class="param-tag">Sampler: lcm (karras)</span>
+                            <span class="param-tag">Schedule: karras</span>
+                            <span class="param-tag">Sampler: lcm</span>
                         </div>
-                        <div class="gallery-prompt">"1girl, anime heroine with silver hair and glowing blue eyes, floating magical runes, dynamic angle, masterpiece"</div>
+                        <div class="gallery-prompt"><strong>Positive:</strong> "1girl, anime style, cyber armor, glowing katana, cyberpunk city night, masterpiece, sharp lineart, 8k"</div>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 6px;">SHA-256: <code>b3df8bb07af8576d0fec6e4b6d65b94f98bad0ee0911c2099e84d2af107583bf</code></div>
                     </div>
                 </div>
 
-                <!-- Mars Astronaut -->
-                <div class="gallery-card">
+                <!-- Card 5: Realistic Vision Before (Fried Artifacts) -->
+                <div class="gallery-card" style="border-left: 4px solid #d32f2f;">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">REALISTIC &bull; MARS</span>
-                        <img src="assets/gallery/model_realistic_max_quality.png" alt="Mars Astronaut" loading="lazy">
+                        <span class="gallery-badge" style="background: #d32f2f;">REALISTIC &bull; BEFORE (CFG 6.5)</span>
+                        <img src="assets/gallery/final_real_fast.png" alt="Realistic Vision CFG 6.5 Overburn" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">Mars Astronaut Cinematic Close-up</h4>
+                        <h4 class="gallery-title">[Before] CFG 6.5 Overburn &amp; Pore Flaw</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 798.2s</span>
-                            <span class="param-tag">Model: realistic</span>
+                            <span class="param-tag" style="background: #ffebee; color: #c62828;">❌ High Contrast Burn</span>
                             <span class="param-tag">Steps: 10</span>
-                            <span class="param-tag">CFG: 7.0</span>
-                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                            <span class="param-tag">CFG: 6.5 (Overburned)</span>
+                            <span class="param-tag">Keywords: 'skin pores'</span>
                         </div>
-                        <div class="gallery-prompt">"hyperrealistic cinematic close-up portrait of an astronaut on Mars looking into the camera, detailed visor reflections, 8k"</div>
+                        <div class="gallery-prompt"><strong>Failure Cause:</strong> High CFG causes saturation burn; literal prompt 'skin pores' generates trypophobia-like holes instead of natural texture.</div>
                     </div>
                 </div>
 
-                <!-- Cyberpunk Sports Car -->
-                <div class="gallery-card">
+                <!-- Card 6: Realistic Vision After (Golden Recipe CFG 4.0) -->
+                <div class="gallery-card" style="border-left: 4px solid #2e7d32;">
                     <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SDXS &bull; CYBERPUNK</span>
-                        <img src="assets/gallery/model_sdxs_max_quality.png" alt="Cyberpunk Car" loading="lazy">
+                        <span class="gallery-badge" style="background: #2e7d32;">REALISTIC &bull; GOLDEN RECIPE (CFG 4.0)</span>
+                        <img src="assets/gallery/final_real_highend.png" alt="Realistic Vision Golden Recipe" loading="lazy">
                     </div>
                     <div class="gallery-info">
-                        <h4 class="gallery-title">Cyberpunk Sports Car in Neo Seoul</h4>
+                        <h4 class="gallery-title">[After] Golden Recipe CFG 4.0 (543.1s)</h4>
                         <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 29.2s</span>
-                            <span class="param-tag">Model: sdxs</span>
-                            <span class="param-tag">Steps: 4</span>
-                            <span class="param-tag">CFG: 1.0</span>
-                            <span class="param-tag">Sampler: dpm2 (karras)</span>
+                            <span class="param-tag" style="background: #e8f5e9; color: #2e7d32; font-weight: 700;">⏱️ A35: 543.10s (6 Steps)</span>
+                            <span class="param-tag">Model: realistic (Q4_K / 1.55GB)</span>
+                            <span class="param-tag">CFG: 4.0 (Optimal)</span>
+                            <span class="param-tag">Sampler: euler_a</span>
+                            <span class="param-tag">--vae-tiling</span>
                         </div>
-                        <div class="gallery-prompt">"a futuristic sleek cyberpunk sports car cruising through neo seoul at midnight, neon reflections, highly detailed"</div>
-                    </div>
-                </div>
-
-                <!-- Robotic Kitten -->
-                <div class="gallery-card">
-                    <div class="gallery-img-wrapper">
-                        <span class="gallery-badge">SPEED &bull; KITTEN</span>
-                        <img src="assets/gallery/model_speed_max_quality.png" alt="Robotic Kitten" loading="lazy">
-                    </div>
-                    <div class="gallery-info">
-                        <h4 class="gallery-title">Cute Robotic Kitten with Glowing Yarn</h4>
-                        <div class="gallery-params">
-                            <span class="param-tag" style="background: #e8f0fe; color: #004499; font-weight: 700;">⏱️ CPU: 584.6s</span>
-                            <span class="param-tag">Model: speed</span>
-                            <span class="param-tag">Steps: 8</span>
-                            <span class="param-tag">CFG: 6.5</span>
-                            <span class="param-tag">Sampler: dpm++2s_a (karras)</span>
-                        </div>
-                        <div class="gallery-prompt">"a cute robotic kitten playing with a neon glowing yarn ball, high detail, studio lighting"</div>
+                        <div class="gallery-prompt"><strong>Positive:</strong> "(masterpiece, best quality:1.2), professional portrait photo of a beautiful 24yo Korean woman, cozy knit sweater, soft morning window light, 85mm f1.4 lens, natural skin texture, lifelike, sharp focus"</div>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 6px;">SHA-256: <code>54bb9b9a027a59a0edeedc9fafe033bc9bd8802eca9b4deafa18bc6e04530f2a</code></div>
                     </div>
                 </div>
             </div>
 
-            <!-- SECTION 4: FULL PARAMETER & PROMPT MATRIX TABLE -->
-            <h3>4. Full Parameter &amp; Prompt Matrix (전수 설정값 및 CPU 소요 시간 표)</h3>
-            <div style="overflow-x: auto;">
-                <table class="matrix-table">
+            <!-- SECTION 2: COMPARATIVE MATRIX -->
+            <h3>2. Empirical Hardware &amp; Latency Reference Matrix</h3>
+            <div class="table-wrapper">
+                <table>
                     <thead>
                         <tr>
-                            <th style="width: 70px;">Preview</th>
-                            <th>Category</th>
-                            <th>Model / Preset</th>
-                            <th>CPU (4-Core) Latency</th>
-                            <th>Steps</th>
+                            <th>Model Architecture</th>
+                            <th>Resolution</th>
+                            <th>Steps &amp; Sampler</th>
                             <th>CFG</th>
-                            <th>Sampler &amp; Schedule</th>
-                            <th>Prompt &amp; Detailed Configuration</th>
+                            <th>Galaxy S21 (Exynos 2100)</th>
+                            <th>Galaxy A35 (Exynos 1380)</th>
+                            <th>VAE Tiling</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><img src="assets/gallery/final_sdxs_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified Fast</span></td>
-                            <td><code>sdxs</code> (Distilled)</td>
-                            <td><strong style="color: #004499;">28.98s</strong></td>
-                            <td><strong>1</strong></td>
+                            <td><strong>SDXS (Tiny Distilled)</strong></td>
+                            <td>256×256</td>
+                            <td>1 Step / Euler A</td>
                             <td>1.0</td>
-                            <td><code>euler_a</code> (Default)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                            <td><strong>3.83s</strong></td>
+                            <td><strong>4.08s</strong> (+6.5%)</td>
+                            <td>Not Needed (TAESD)</td>
                         </tr>
                         <tr>
-                            <td><img src="assets/gallery/final_sdxs_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Ultra High-End</span></td>
-                            <td><code>sdxs</code> (Distilled)</td>
-                            <td><strong style="color: #004499;">20.50s</strong></td>
-                            <td><strong>2</strong></td>
+                            <td><strong>SDXS (Tiny Distilled)</strong></td>
+                            <td>512×512</td>
+                            <td>2 Steps / Euler A</td>
                             <td>1.0</td>
-                            <td><code>euler_a</code> (Default)</td>
-                            <td><em>"photorealistic close-up portrait of a weary 30s Korean Asian man wearing glasses, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: blur, low quality, deformed</small></td>
+                            <td><strong>24.12s</strong></td>
+                            <td><strong>23.20s ~ 29.53s</strong></td>
+                            <td>Not Needed (TAESD)</td>
                         </tr>
                         <tr>
-                            <td><img src="assets/gallery/final_anime_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified Fast</span></td>
-                            <td><code>anime</code> (LCM Distilled)</td>
-                            <td><strong style="color: #004499;">270.63s (4.5m)</strong></td>
-                            <td><strong>4</strong></td>
+                            <td><strong>DreamShaper 8 LCM</strong></td>
+                            <td>512×512</td>
+                            <td>4 Steps / LCM</td>
                             <td>1.5</td>
-                            <td><code>lcm</code> (Default)</td>
-                            <td><em>"1man, anime style, weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, tired facial expression, replaced by AI automation, masterpiece, highly detailed, sharp lineart"</em></td>
+                            <td><strong>420.50s</strong> (7.0m)</td>
+                            <td><strong>565.59s</strong> (9.4m)</td>
+                            <td><strong>Required</strong></td>
                         </tr>
                         <tr>
-                            <td><img src="assets/gallery/final_anime_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Ultra High-End</span></td>
-                            <td><code>anime</code> (LCM Distilled)</td>
-                            <td><strong style="color: #004499;">490.20s (8.1m)</strong></td>
-                            <td><strong>10</strong></td>
-                            <td>1.8</td>
-                            <td><code>lcm</code> (Karras, Clip-Skip: 2)</td>
-                            <td><em>"1man, anime style, weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, tired facial expression, replaced by AI automation, masterpiece, highly detailed, sharp lineart"</em><br><small style="color: var(--text-muted);">Negative: worst quality, lowres, bad hands, deformed eyes, zombie, creepy</small></td>
+                            <td><strong>DreamShaper 8 LCM</strong></td>
+                            <td>512×512</td>
+                            <td>6 Steps / LCM (Karras)</td>
+                            <td>2.0</td>
+                            <td><strong>530.80s</strong> (8.8m)</td>
+                            <td><strong>422.34s</strong> (7.0m)</td>
+                            <td><strong>Required</strong></td>
                         </tr>
                         <tr>
-                            <td><img src="assets/gallery/final_turbo_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified Fast</span></td>
-                            <td><code>turbo</code> (SD1.5 Pruned)</td>
-                            <td><strong style="color: #004499;">522.95s (8.7m)</strong></td>
-                            <td><strong>12</strong></td>
-                            <td>6.0</td>
-                            <td><code>euler_a</code> (Default)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
+                            <td><strong>Realistic Vision V6.0 B1</strong></td>
+                            <td>512×512</td>
+                            <td>6 Steps / Euler A</td>
+                            <td>4.0</td>
+                            <td><strong>360.20s</strong> (6.0m)</td>
+                            <td><strong>447.80s ~ 543.10s</strong></td>
+                            <td><strong>Required</strong></td>
                         </tr>
                         <tr>
-                            <td><img src="assets/gallery/final_turbo_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Ultra High-End</span></td>
-                            <td><code>turbo</code> (SD1.5 Pruned)</td>
-                            <td><strong style="color: #004499;">1358.20s (22.6m)</strong></td>
-                            <td><strong>28</strong></td>
-                            <td>5.5</td>
-                            <td><code>dpm++2m</code> (Karras, Clip-Skip: 2)</td>
-                            <td><em>"photorealistic close-up upper body portrait of a weary 30s Korean Asian man wearing glasses, cinematic lighting, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (full body, distant:1.4), (deformed iris, bad eyes:1.4), (bad anatomy:1.3), (morbid, zombie:1.2)</small></td>
-                        </tr>
-                        <tr>
-                            <td><img src="assets/gallery/final_speed_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified Fast</span></td>
-                            <td><code>speed</code> (SD1.5 Base)</td>
-                            <td><strong style="color: #004499;">578.43s (9.6m)</strong></td>
-                            <td><strong>12</strong></td>
-                            <td>6.0</td>
-                            <td><code>euler_a</code> (Default)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
-                        </tr>
-                        <tr>
-                            <td><img src="assets/gallery/final_speed_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Ultra High-End</span></td>
-                            <td><code>speed</code> (SD1.5 Base)</td>
-                            <td><strong style="color: #004499;">1305.10s (21.8m)</strong></td>
-                            <td><strong>28</strong></td>
-                            <td>5.5</td>
-                            <td><code>dpm++2m</code> (Karras, Clip-Skip: 2)</td>
-                            <td><em>"photorealistic close-up upper body portrait of a weary 30s Korean Asian man wearing glasses in distress, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (full body, distant:1.4), (deformed iris, bad eyes:1.4), (bad anatomy:1.3), (morbid, zombie:1.2)</small></td>
-                        </tr>
-                        <tr>
-                            <td><img src="assets/gallery/final_realistic_fast.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Unified Fast</span></td>
-                            <td><code>realistic</code> (Vision V6)</td>
-                            <td><strong style="color: #004499;">509.57s (8.5m)</strong></td>
-                            <td><strong>12</strong></td>
-                            <td>6.0</td>
-                            <td><code>euler_a</code> (Default)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em></td>
-                        </tr>
-                        <tr>
-                            <td><img src="assets/gallery/final_realistic_highend.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Ultra High-End</span></td>
-                            <td><code>realistic</code> (Vision V6)</td>
-                            <td><strong style="color: #004499;">1548.05s (25.8m)</strong></td>
-                            <td><strong>30</strong></td>
-                            <td>5.0</td>
-                            <td><code>dpm++2m</code> (Karras, Clip-Skip: 2)</td>
-                            <td><em>"photorealistic portrait of a weary 30s Korean Asian man wearing glasses and a plain white t-shirt, sitting alone in a modern room, feeling unemployed and replaced by AI, tired facial expression, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Negative: (deformed iris, deformed pupils, bad eyes, semi-realistic:1.4), (bad anatomy, extra digits:1.3), (morbid, dead eyes, zombie:1.2)</small></td>
-                        </tr>
-                        <tr>
-                            <td><img src="assets/gallery/user_photo_cyberpunk_transformed.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Img2Img Style</span></td>
-                            <td><code>sdxs</code> (Distilled)</td>
-                            <td><strong style="color: #004499;">28.7s</strong></td>
-                            <td><strong>2</strong></td>
-                            <td>1.0</td>
-                            <td><code>euler_a</code> (Strength: 0.55)</td>
-                            <td><em>"cyberpunk style portrait of a Korean man, glowing neon cybernetic implants, holographic HUD, sharp focus, 8k"</em><br><small style="color: var(--text-muted);">Input: user_source_photo_512.png</small></td>
-                        </tr>
-                        <tr>
-                            <td><img src="assets/gallery/user_photo_hyperrealistic_rendered.png" alt="thumb" style="width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);"></td>
-                            <td><span class="param-tag">Img2Img Studio</span></td>
-                            <td><code>sdxs</code> (Distilled)</td>
-                            <td><strong style="color: #004499;">31.4s</strong></td>
-                            <td><strong>4</strong></td>
-                            <td>1.0</td>
-                            <td><code>dpm2</code> (Strength: 0.65, Karras)</td>
-                            <td><em>"photorealistic portrait of a young Korean software engineer smiling in high-tech research lab, cinematic lighting, sharp focus, 8k uhd"</em><br><small style="color: var(--text-muted);">Input: user_source_photo_512.png</small></td>
+                            <td><strong>Realistic Vision V6.0 B1</strong></td>
+                            <td>512×512</td>
+                            <td>10 Steps / DPM++ 2M</td>
+                            <td>6.5</td>
+                            <td><strong>595.40s</strong> (9.9m)</td>
+                            <td><strong>743.96s</strong> (12.4m)</td>
+                            <td><strong>Required</strong></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
         </main>
     </div>
-    <footer>
-        <div style="margin-bottom: 8px; font-size: 0.85em; opacity: 0.85;">
-            <strong>Disclaimer:</strong> Termux-Diffusion is an independent open-source project developed for the Android Termux environment and is not officially affiliated with, endorsed by, or sponsored by the Termux project.
-        </div>
-        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
-    </footer>
 </body>
 </html>

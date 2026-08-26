@@ -30,18 +30,18 @@ int main() {
         h_B[i] = static_cast<float>((i % 5) + 1) * 0.2f;
     }
 
-    // 2. CPU Reference GGML MulMat: C[i0, i1] = sum_k(A[i0, k] * B[i1, k])
-    for (int i1 = 0; i1 < N; ++i1) {
-        for (int i0 = 0; i0 < M; ++i0) {
+    // 2. CPU Reference MatMul: C = A x B
+    for (int r = 0; r < M; ++r) {
+        for (int c = 0; c < N; ++c) {
             float sum = 0.0f;
             for (int k = 0; k < K; ++k) {
-                sum += h_A[i0 * K + k] * h_B[i1 * K + k];
+                sum += h_A[r * K + k] * h_B[k * N + c];
             }
-            h_C_cpu[i1 * M + i0] = sum;
+            h_C_cpu[r * N + c] = sum;
         }
     }
 
-    // 3. Initialize Vulkan Backend
+    // 3. Initialize Vulkan Backend strictly for Mali-G78
     ggml_backend_t backend = nullptr;
     std::string device_name = "UNKNOWN";
 
@@ -50,14 +50,21 @@ int main() {
 
     for (size_t i = 0; i < dev_count; ++i) {
         char name[128] = {0};
-        ggml_backend_vk_get_device_description(i, name, sizeof(name));
+        ggml_backend_vk_get_device_name(i, name, sizeof(name));
         std::cout << "[V10] VK Device #" << i << ": " << name << std::endl;
-        if (!backend) {
+        if (strstr(name, "Mali") != nullptr || strstr(name, "ARM") != nullptr) {
             backend = ggml_backend_vk_init(i);
-            if (backend) {
-                device_name = name;
-            }
+            device_name = name;
+            break;
         }
+    }
+
+    if (!backend && dev_count > 0) {
+        // Fallback to first device
+        backend = ggml_backend_vk_init(0);
+        char name[128] = {0};
+        ggml_backend_vk_get_device_name(0, name, sizeof(name));
+        device_name = name;
     }
 
     if (!backend) {
@@ -126,7 +133,7 @@ int main() {
     uint32_t inf_count = 0;
     double max_abs_err = 0.0;
     double sum_abs_err = 0.0;
-    double tolerance = 1e-3;
+    double tolerance = 1e-4;
 
     for (int i = 0; i < elem_count; ++i) {
         float val_gpu = h_C_gpu[i];
@@ -142,10 +149,6 @@ int main() {
         if (err > tolerance || std::isnan(val_gpu) || std::isinf(val_gpu)) {
             mismatch_count++;
         }
-
-        if (i < 8) {
-            std::cout << "[V10] Sample [" << i << "] CPU=" << val_cpu << " GPU=" << val_gpu << " delta=" << err << std::endl;
-        }
     }
 
     double mean_abs_err = sum_abs_err / elem_count;
@@ -156,7 +159,7 @@ int main() {
     std::cout << "V10_MEAN_ABS_ERROR=" << std::scientific << std::setprecision(6) << mean_abs_err << std::endl;
     std::cout << "V10_NAN_COUNT=" << nan_count << std::endl;
     std::cout << "V10_INF_COUNT=" << inf_count << std::endl;
-    std::cout << "V10_TOLERANCE=1.000000e-03" << std::endl;
+    std::cout << "V10_TOLERANCE=1.000000e-04" << std::endl;
 
     // Clean up
     ggml_gallocr_free(galloc);
@@ -167,7 +170,7 @@ int main() {
     std::cout << "PROCESS_RC=0" << std::endl;
 
     bool v10_pass = (mismatch_count == 0 && nan_count == 0 && inf_count == 0);
-    std::cout << "RESULT=" << (v10_pass ? "PASS_V10_ADRENO_GGML_MATMUL_SUCCESSFUL" : "FAIL_V10_TENSOR_MISMATCH") << std::endl;
+    std::cout << "RESULT=" << (v10_pass ? "PASS_V10_MALI_GGML_MATMUL_SUCCESSFUL" : "FAIL_V10_TENSOR_MISMATCH") << std::endl;
 
     return v10_pass ? 0 : 4;
 }

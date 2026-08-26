@@ -1,0 +1,10 @@
+{
+  "compiler": "clang++ / Android NDK / Termux toolchain",
+  "cmake_flags": "-DSD_VULKAN=ON -DSD_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release",
+  "device_tested": "Samsung Galaxy S21 5G (SM-G991N)",
+  "gpu_tested": "ARM Mali-G78 MP14",
+  "text_encoder_time_sec": 4.01,
+  "unet_sampling_time_sec": 4.89,
+  "vae_decode_time_sec": 1.05,
+  "total_generation_time_sec": 9.96
+}

@@ -1,0 +1,1316 @@
+================================================================================
+GALAXY A35 COMPATIBILITY VALIDATION MISSION (termux-diffusion v1.3.0)
+================================================================================
+Connecting to Galaxy A35 (172.17.252.82:8022) as u0_a30...
+SSH Connection successfully established.
+CMD: mkdir -p /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/staging /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/logs
+CMD: if [ -d $HOME/.termux-diffusion ]; then cp -r $HOME/.termux-diffusion $HOME/.termux-diffusion.backup-$(date +%s); echo 'BACKED_UP'; else echo 'NO_EXISTING_INSTALL'; fi
+[if [ -d $HOME/.termux-diffusion ]; then cp -r $HOME/.termux-diffusion $HOME/.termux-diffusion.backup-$(date +%s); echo 'BACKED_UP'; else echo 'NO_EXISTING_INSTALL'; fi] STDOUT:
+NO_EXISTING_INSTALL
+Existing install backup check: NO_EXISTING_INSTALL
+
+--- STEP 2: Live Device Identification ---
+CMD: getprop ro.product.manufacturer
+[getprop ro.product.manufacturer] STDOUT:
+samsung
+  DEVICE_MANUFACTURER = samsung
+CMD: getprop ro.product.model
+[getprop ro.product.model] STDOUT:
+SM-A356N
+  DEVICE_MODEL = SM-A356N
+CMD: getprop ro.product.name
+[getprop ro.product.name] STDOUT:
+a35xks
+  DEVICE_PRODUCT = a35xks
+CMD: getprop ro.product.device
+[getprop ro.product.device] STDOUT:
+a35x
+  DEVICE_CODENAME = a35x
+CMD: getprop ro.soc.model
+[getprop ro.soc.model] STDOUT:
+s5e8835
+  SOC_MODEL = s5e8835
+CMD: getprop ro.board.platform
+[getprop ro.board.platform] STDOUT:
+erd8835
+  BOARD_PLATFORM = erd8835
+CMD: getprop ro.build.version.release
+[getprop ro.build.version.release] STDOUT:
+16
+  ANDROID_VERSION = 16
+CMD: getprop ro.build.version.sdk
+[getprop ro.build.version.sdk] STDOUT:
+36
+  ANDROID_API_LEVEL = 36
+CMD: getprop ro.build.fingerprint
+[getprop ro.build.fingerprint] STDOUT:
+samsung/a35xks/a35x:16/BP4A.251205.006/A356NKSS9DZG1:user/release-keys
+  ANDROID_BUILD_FINGERPRINT = samsung/a35xks/a35x:16/BP4A.251205.006/A356NKSS9DZG1:user/release-keys
+CMD: uname -r
+[uname -r] STDOUT:
+5.15.189-android13-3-33470412
+  KERNEL_VERSION = 5.15.189-android13-3-33470412
+CMD: uname -a
+[uname -a] STDOUT:
+Linux localhost 5.15.189-android13-3-33470412 #1 SMP PREEMPT Thu Jul 2 11:03:01 KST 2026 aarch64 Android
+  UNAME_FULL = Linux localhost 5.15.189-android13-3-33470412 #1 SMP PREEMPT Thu Jul 2 11:03:01 KST 2026 aarch64 Android
+CMD: getprop ro.product.cpu.abilist
+[getprop ro.product.cpu.abilist] STDOUT:
+arm64-v8a,armeabi-v7a,armeabi
+  ABI_LIST = arm64-v8a,armeabi-v7a,armeabi
+CMD: getprop ro.product.cpu.abi
+[getprop ro.product.cpu.abi] STDOUT:
+arm64-v8a
+  PRIMARY_ABI = arm64-v8a
+CMD: nproc
+[nproc] STDOUT:
+8
+  CPU_CORE_COUNT = 8
+CMD: cat /sys/devices/system/cpu/online
+[cat /sys/devices/system/cpu/online] STDOUT:
+0-7
+  ONLINE_CPUS = 0-7
+CMD: echo $PREFIX
+[echo $PREFIX] STDOUT:
+/data/data/com.termux/files/usr
+  PREFIX = /data/data/com.termux/files/usr
+CMD: whoami
+[whoami] STDOUT:
+u0_a30
+  TERMUX_USER = u0_a30
+CMD: python3 --version
+[python3 --version] STDOUT:
+Python 3.13.13
+  PYTHON_VERSION = Python 3.13.13
+CMD: node --version
+[node --version] STDOUT:
+v25.8.2
+  NODE_VERSION = v25.8.2
+CMD: npm --version
+[npm --version] STDOUT:
+11.13.0
+  NPM_VERSION = 11.13.0
+CMD: cat /proc/meminfo
+[cat /proc/meminfo] STDOUT:
+MemTotal:        5556036 kB
+MemFree:          540532 kB
+MemAvailable:    2265208 kB
+Buffers:            2800 kB
+Cached:          1383228 kB
+SwapCached:       120052 kB
+Active:           824080 kB
+Inactive:        1600372 kB
+Active(anon):     342252 kB
+Inactive(anon):   719372 kB
+Active(file):     481828 kB
+Inactive(file):   881000 kB
+Unevictable:        4572 kB
+Mlocked:            4572 kB
+RbinTotal:        409600 kB
+RbinAlloced:           0 kB
+RbinPool:              0 kB
+RbinFree:         393892 kB
+RbinCached:        15708 kB
+SwapTotal:      10485756 kB
+SwapFree:        9117396 kB
+Dirty:                12 kB
+Writeback:             0 kB
+AnonPages:       1056152 kB
+Mapped:           808880 kB
+Shmem:              7340 kB
+KReclaimable:     671512 kB
+Slab:             643584 kB
+SReclaimable:     289552 kB
+SUnreclaim:       354032 kB
+KernelStack:       69296 kB
+ShadowCallStack:   17380 kB
+PageTables:       140256 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    13058972 kB
+Committed_AS:   249546588 kB
+VmallocTotal:   259653632 kB
+VmallocUsed:      361664 kB
+VmallocChunk:          0 kB
+Percpu:            12608 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+CmaTotal:         339968 kB
+CmaFree:               0 kB
+GpuTotal:              47284 kB
+system:            11876 kB
+system-uncached:  151076 kB
+zram0:            470564 kB
+CMD: df -m $HOME | tail -n 1
+
+--- STEP 3: CPU ISA Capability Verification ---
+CMD: cat /proc/cpuinfo
+[cat /proc/cpuinfo] STDOUT:
+processor	: 0
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x2
+CPU part	: 0xd05
+CPU revision	: 0
+
+processor	: 1
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x2
+CPU part	: 0xd05
+CPU revision	: 0
+
+processor	: 2
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x2
+CPU part	: 0xd05
+CPU revision	: 0
+
+processor	: 3
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x2
+CPU part	: 0xd05
+CPU revision	: 0
+
+processor	: 4
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x1
+CPU part	: 0xd41
+CPU revision	: 1
+
+processor	: 5
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x1
+CPU part	: 0xd41
+CPU revision	: 1
+
+processor	: 6
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x1
+CPU part	: 0xd41
+CPU revision	: 1
+
+processor	: 7
+BogoMIPS	: 52.00
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x1
+CPU part	: 0xd41
+CPU revision	: 1
+CMD: python3 -c "
+import ctypes
+libc = ctypes.CDLL(None)
+getauxval = libc.getauxval
+getauxval.restype = ctypes.c_ulong
+hwcap = getauxval(16)
+hwcap2 = getauxval(26)
+print(f'{hwcap},{hwcap2}')
+" 
+[python3 -c "
+import ctypes
+libc = ctypes.CDLL(None)
+getauxval = libc.getauxval
+getauxval.restype = ctypes.c_ulong
+hwcap = getauxval(16)
+hwcap2 = getauxval(26)
+print(f'{hwcap},{hwcap2}')
+" ] STDOUT:
+1155071,0
+  AARCH64 = True
+  ARMV8_2_A = True
+  NEON = True
+  FP16_SCALAR = True
+  FP16_VECTOR = True
+  ASIMDHP = True
+  DOTPROD = True
+  ASIMDDP = True
+  I8MM = False
+  SVE = False
+  SVE2 = False
+  HWCAP_HEX = 0x119fff
+  HWCAP2_HEX = 0x0
+  EXPECTED_ARTIFACT = sd-cli-arm64-v8.2a-dotprod-fp16
+
+--- STEP 4: Public Distribution Status Audit ---
+  PYPI_LATEST_VERSION = 1.3.0
+  PYPI_V130_EXISTS = True
+  PYPI_WHEEL_URL = https://files.pythonhosted.org/packages/14/d0/3478450231b3323157c7585719e3a034d956dde66035a0b006998f7533c2/termux_diffusion-1.3.0-py3-none-any.whl
+  PYPI_WHEEL_SHA256 = 9859553e6ee01c6c8a6251a71697e4c7c80fbed843d04d83b6da18b34d8eb5ee
+  PYPI_WHEEL_SIZE = 53495
+  NPM_LATEST_VERSION = 1.3.0
+  NPM_V130_EXISTS = True
+  NPM_TGZ_URL = https://registry.npmjs.org/termux-diffusion/-/termux-diffusion-1.3.0.tgz
+  NPM_TGZ_SHASUM = e8e9f12955420f19907e7a43f2b2565af25de3d8
+  GITHUB_LATEST_TAG = v1.3.0
+  GITHUB_TAG_V130_EXISTS = True
+  WEBSITE_DISPLAYED_VERSION = 1.3.0
+  PUBLIC_V130_AVAILABLE = True
+
+--- STEP 5 & 7: Manifest & Ed25519 Signature Verification ---
+  SIGNING_KEY_ID = release-key-2026-01
+  SIGNATURE_FILE_BYTES = 64
+  TRUSTED_PUBLIC_KEY_SOURCE = termux_diffusion/data/release-public-keys.json
+  PUBLIC_KEY_HEX = ea58ee6d830ca51164a3968c38e4abbad7fe39ebb761164821cba00524c15721
+  MANIFEST_SIGNATURE_VALID = True
+  MANIFEST_VERSION = 1.3.0
+  MANIFEST_CHANNEL = stable
+  BASELINE_MANIFEST_FILENAME = termux-diffusion-prebuilt-v1.3.0-arm64-v8a-cpu-baseline.tar.gz
+  BASELINE_MANIFEST_SHA256 = f224d1988e2970aad6e557e9463eaa9d65ffce4db06cab5725f72dacf4b260be
+  BASELINE_MANIFEST_SIZE = 44242538
+  OPTIMIZED_MANIFEST_FILENAME = termux-diffusion-prebuilt-v1.3.0-arm64-v8.2a-dotprod-fp16.tar.gz
+  OPTIMIZED_MANIFEST_SHA256 = 8299b02f1247f24e450201a8f3ce24499a23adc19fae607b1716b5c78046abad
+  OPTIMIZED_MANIFEST_SIZE = 44290906
+  A35_API_LEVEL = 36
+  MIN_API = 26
+  A35_API_COMPATIBLE = True
+
+--- STEP 8: Staging Artifacts & Verifying SHA-256 on Galaxy A35 ---
+  Uploading manifest-v1.3.0-dual.json (0.00 MB)...
+  Uploading manifest-v1.3.0-dual.json.sig (0.00 MB)...
+  Uploading SHA256SUMS (0.00 MB)...
+  Uploading termux-diffusion-prebuilt-v1.3.0-arm64-v8a-cpu-baseline.tar.gz (42.19 MB)...
+  Uploading termux-diffusion-prebuilt-v1.3.0-arm64-v8.2a-dotprod-fp16.tar.gz (42.24 MB)...
+CMD: cd /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads && sha256sum -c SHA256SUMS
+[cd /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads && sha256sum -c SHA256SUMS] STDOUT:
+manifest-v1.3.0-dual.json: OK
+manifest-v1.3.0-dual.json.sig: OK
+termux-diffusion-1.3.0.tgz: FAILED open or read
+termux-diffusion-prebuilt-v1.3.0-arm64-v8.2a-dotprod-fp16.tar.gz: OK
+termux-diffusion-prebuilt-v1.3.0-arm64-v8a-cpu-baseline.tar.gz: OK
+termux_diffusion-1.3.0-py3-none-any.whl: FAILED open or read
+Galaxy A35 SHA256SUMS Verification Output:
+manifest-v1.3.0-dual.json: OK
+manifest-v1.3.0-dual.json.sig: OK
+termux-diffusion-1.3.0.tgz: FAILED open or read
+termux-diffusion-prebuilt-v1.3.0-arm64-v8.2a-dotprod-fp16.tar.gz: OK
+termux-diffusion-prebuilt-v1.3.0-arm64-v8a-cpu-baseline.tar.gz: OK
+termux_diffusion-1.3.0-py3-none-any.whl: FAILED open or read
+
+--- STEP 9: Safe Tarball Extraction Audit ---
+CMD: tar -xzf /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads/termux-diffusion-prebuilt-v1.3.0-arm64-v8a-cpu-baseline.tar.gz -C /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline
+CMD: tar -xzf /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads/termux-diffusion-prebuilt-v1.3.0-arm64-v8.2a-dotprod-fp16.tar.gz -C /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized
+CMD: find /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline -type f
+[find /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline -type f] STDOUT:
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib/libc++_shared.so
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib/libomp.so
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/build-metadata.json
+CMD: find /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized -type f
+[find /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized -type f] STDOUT:
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib/libc++_shared.so
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib/libomp.so
+/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/build-metadata.json
+  BASELINE_TAR_ALLOWLIST_VALID = True (Files: ['bin/sd-cli', 'lib/libc++_shared.so', 'lib/libomp.so', 'build-metadata.json'])
+  OPTIMIZED_TAR_ALLOWLIST_VALID = True (Files: ['bin/sd-cli', 'lib/libc++_shared.so', 'lib/libomp.so', 'build-metadata.json'])
+
+--- STEP 10: ELF Header & DT_NEEDED Audit on Galaxy A35 ---
+CMD: chmod +x /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli
+CMD: python3 -c "
+import struct, json, os
+
+def audit_elf(filepath):
+    with open(filepath, 'rb') as f:
+        data = f.read(64)
+        magic = data[:4]
+        ei_class = data[4] # 2 = 64-bit
+        ei_data = data[5]  # 1 = little endian
+        e_machine = struct.unpack('<H', data[18:20])[0] # 183 = AArch64 (0xB7)
+    
+    # check strings for DT_NEEDED
+    with open(filepath, 'rb') as f:
+        content = f.read()
+    has_vulkan = b'libvulkan.so' in content
+    has_opencl = b'libOpenCL.so' in content
+    has_libcxx = b'libc++_shared.so' in content
+    has_libomp = b'libomp.so' in content
+
+    return {
+        'is_elf': magic == b'\x7fELF',
+        'is_elf64': ei_class == 2,
+        'is_aarch64': e_machine == 183,
+        'has_vulkan': has_vulkan,
+        'has_opencl': has_opencl,
+        'has_libcxx': has_libcxx,
+        'has_libomp': has_libomp
+    }
+
+res = {
+    'baseline_bin': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli'),
+    'baseline_libcxx': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib/libc++_shared.so'),
+    'baseline_libomp': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib/libomp.so'),
+    'opt_bin': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli'),
+    'opt_libcxx': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib/libc++_shared.so'),
+    'opt_libomp': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib/libomp.so'),
+}
+print(json.dumps(res))
+" 
+[python3 -c "
+import struct, json, os
+
+def audit_elf(filepath):
+    with open(filepath, 'rb') as f:
+        data = f.read(64)
+        magic = data[:4]
+        ei_class = data[4] # 2 = 64-bit
+        ei_data = data[5]  # 1 = little endian
+        e_machine = struct.unpack('<H', data[18:20])[0] # 183 = AArch64 (0xB7)
+    
+    # check strings for DT_NEEDED
+    with open(filepath, 'rb') as f:
+        content = f.read()
+    has_vulkan = b'libvulkan.so' in content
+    has_opencl = b'libOpenCL.so' in content
+    has_libcxx = b'libc++_shared.so' in content
+    has_libomp = b'libomp.so' in content
+
+    return {
+        'is_elf': magic == b'\x7fELF',
+        'is_elf64': ei_class == 2,
+        'is_aarch64': e_machine == 183,
+        'has_vulkan': has_vulkan,
+        'has_opencl': has_opencl,
+        'has_libcxx': has_libcxx,
+        'has_libomp': has_libomp
+    }
+
+res = {
+    'baseline_bin': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli'),
+    'baseline_libcxx': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib/libc++_shared.so'),
+    'baseline_libomp': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib/libomp.so'),
+    'opt_bin': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli'),
+    'opt_libcxx': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib/libc++_shared.so'),
+    'opt_libomp': audit_elf('/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib/libomp.so'),
+}
+print(json.dumps(res))
+" ] STDOUT:
+{"baseline_bin": {"is_elf": true, "is_elf64": true, "is_aarch64": true, "has_vulkan": false, "has_opencl": false, "has_libcxx": true, "has_libomp": true}, "baseline_libcxx": {"is_elf": true, "is_elf64": true, "is_aarch64": true, "has_vulkan": false, "has_opencl": false, "has_libcxx": true, "has_libomp": false}, "baseline_libomp": {"is_elf": true, "is_elf64": true, "is_aarch64": true, "has_vulkan": false, "has_opencl": false, "has_libcxx": false, "has_libomp": true}, "opt_bin": {"is_elf": true, "is_elf64": true, "is_aarch64": true, "has_vulkan": false, "has_opencl": false, "has_libcxx": true, "has_libomp": true}, "opt_libcxx": {"is_elf": true, "is_elf64": true, "is_aarch64": true, "has_vulkan": false, "has_opencl": false, "has_libcxx": true, "has_libomp": false}, "opt_libomp": {"is_elf": true, "is_elf64": true, "is_aarch64": true, "has_vulkan": false, "has_opencl": false, "has_libcxx": false, "has_libomp": true}}
+  ELF Audit Results: {
+  "baseline_bin": {
+    "is_elf": true,
+    "is_elf64": true,
+    "is_aarch64": true,
+    "has_vulkan": false,
+    "has_opencl": false,
+    "has_libcxx": true,
+    "has_libomp": true
+  },
+  "baseline_libcxx": {
+    "is_elf": true,
+    "is_elf64": true,
+    "is_aarch64": true,
+    "has_vulkan": false,
+    "has_opencl": false,
+    "has_libcxx": true,
+    "has_libomp": false
+  },
+  "baseline_libomp": {
+    "is_elf": true,
+    "is_elf64": true,
+    "is_aarch64": true,
+    "has_vulkan": false,
+    "has_opencl": false,
+    "has_libcxx": false,
+    "has_libomp": true
+  },
+  "opt_bin": {
+    "is_elf": true,
+    "is_elf64": true,
+    "is_aarch64": true,
+    "has_vulkan": false,
+    "has_opencl": false,
+    "has_libcxx": true,
+    "has_libomp": true
+  },
+  "opt_libcxx": {
+    "is_elf": true,
+    "is_elf64": true,
+    "is_aarch64": true,
+    "has_vulkan": false,
+    "has_opencl": false,
+    "has_libcxx": true,
+    "has_libomp": false
+  },
+  "opt_libomp": {
+    "is_elf": true,
+    "is_elf64": true,
+    "is_aarch64": true,
+    "has_vulkan": false,
+    "has_opencl": false,
+    "has_libcxx": false,
+    "has_libomp": true
+  }
+}
+
+--- STEP 11 & 12: Baseline Non-Destructive Execution & SDXS Inference ---
+CMD: LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli" --help
+[LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli" --help] STDOUT:
+stable-diffusion.cpp version master-827-97d2990, commit 97d2990
+Usage: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli [options]
+
+CLI Options:
+  -o, --output <string>         path to write result image to. you can use printf-style %d format specifiers for image
+                                sequences (default: ./output.png) (eg. output_%03d.png). Single-file video outputs
+                                support .avi, .webm, and animated .webp
+  --image <string>              path to the image to inspect (for metadata mode)
+  --metadata-format <string>    metadata output format, one of [text, json] (default: text)
+  --preview-path <string>       path to write preview image to (default: ./preview.png). Multi-frame previews support
+                                .avi, .webm, and animated .webp
+  --imat-out <string>           compute the imatrix for this run and save it to the provided path
+  --preview-interval <int>      interval in denoising steps between consecutive updates of the image preview file
+                                (default is 1, meaning updating at every step)
+  --output-begin-idx <int>      starting index for output image sequence, must be non-negative (default 0 if specified
+                                %d in output path, 1 otherwise)
+  --canny                       apply canny preprocessor (edge detection)
+  --convert-name                convert tensor name (for convert mode)
+  -v, --verbose                 print extra info
+  --color                       colors the logging tags according to level
+  --taesd-preview-only          prevents usage of taesd for decoding the final image. (for use with --preview tae)
+  --preview-noisy               enables previewing noisy inputs of the models rather than the denoised outputs
+  --metadata-raw                include raw hex previews for unparsed metadata payloads
+  --metadata-brief              truncate long metadata text values in text output
+  --metadata-all                include structural/container entries such as IHDR, IDAT, and non-metadata JPEG segments
+  -M, --mode                    run mode, one of [img_gen, adetailer, vid_gen, upscale, convert, metadata], default:
+                                img_gen
+  --preview                     preview method. must be one of the following [none, proj, tae, vae] (default is none)
+  -h, --help                    show this help message and exit
+  --imat-in                     load an imatrix file for quantization or continued collection; can be specified multiple
+                                times
+
+Context Options:
+  -m, --model <string>                     path to full model
+  --clip_l <string>                        path to the clip-l text encoder
+  --clip_g <string>                        path to the clip-g text encoder
+  --clip_vision <string>                   path to the clip-vision encoder
+  --t5xxl <string>                         path to the t5xxl text encoder
+  --llm <string>                           path to the llm text encoder. For example: (qwenvl2.5 for qwen-image,
+                                           mistral-small3.2 for flux2, ...)
+  --llm_vision <string>                    path to the llm vit
+  --qwen2vl <string>                       alias of --llm. Deprecated.
+  --qwen2vl_vision <string>                alias of --llm_vision. Deprecated.
+  --diffusion-model <string>               path to the standalone diffusion model
+  --high-noise-diffusion-model <string>    path to the standalone high noise diffusion model
+  --uncond-diffusion-model <string>        path to the standalone unconditional diffusion model, currently used by
+                                           Ideogram4 CFG
+  --embeddings-connectors <string>         path to LTXAV embeddings connectors
+  --vae <string>                           path to standalone vae model
+  --vae-format <string>                    VAE latent format override: auto, flux, sd3, flux2, or wan (default: auto)
+  --audio-vae <string>                     path to standalone LTX audio vae model
+  --taesd <string>                         path to taesd. Using Tiny AutoEncoder for fast decoding (low quality)
+  --tae <string>                           alias of --taesd
+  --control-net <string>                   path to control net model
+  --ip-adapter <string>                    path to IP-Adapter model (requires --clip_vision)
+  --motion-module <string>                 path to AnimateDiff motion module (SD 1.5); enables video generation on
+                                           --video-frames > 1
+  --embd-dir <string>                      embeddings directory
+  --lora-model-dir <string>                lora model directory
+  --hires-upscalers-dir <string>           highres fix upscaler model directory
+  --tensor-type-rules <string>             weight type per tensor pattern (example: "^vae\.=f16,model\.=q8_0")
+  --model-args <string>                    extra model args, key=value list. Supports chroma_use_dit_mask,
+                                           chroma_use_t5_mask, chroma_t5_mask_pad, qwen_image_zero_cond_t
+  --photo-maker <string>                   path to PHOTOMAKER model
+  --pulid-weights <string>                 path to PuLID Flux weights
+  --upscale-model <string>                 path to esrgan model.
+  --backend <string>                       runtime backend assignment, e.g. cpu or clip=cpu,vae=cuda0,diffusion=vulkan0
+  --params-backend <string>                parameter backend assignment, e.g. disk, cpu, or diffusion=disk,clip=cpu
+  --split-mode <string>                    weight distribution for modules assigned multiple devices (--backend
+                                           "diffusion=cuda0&cuda1"): layer (whole transformer blocks per device,
+                                           default) or row (matmul rows split across devices, CUDA only). Accepts a
+                                           single mode or per-module assignments, e.g. row or diffusion=row,te=layer
+  --rpc-servers <string>                   comma-separated list of RPC servers to connect to for offloading, in the
+                                           format host:port, e.g. localhost:50052,192.168.1.3:50052
+  --max-vram <string>                      maximum VRAM budget in GiB for graph-cut segmented execution. Accepts a
+                                           single value or assignments by backend/device, e.g. 6 or cuda0=6,vulkan0=4. 0
+                                           disables graph splitting; a negative value auto-detects free VRAM, sparing
+                                           the specified value
+  -t, --threads <int>                      number of threads to use during computation (default: -1). If threads <= 0,
+                                           then threads will be set to the number of CPU physical cores
+  --stream-layers                          enable residency+prefetch streaming on top of --max-vram (no effect without
+                                           --max-vram; defaults to false)
+  --eager-load                             load all params into the params backend at model-load time instead of lazily
+                                           on first use (defaults to false)
+  --auto-fit                               pick the diffusion/te/vae device placements automatically from the model size
+                                           and the per-device memory budgets (--max-vram; defaults to free memory minus
+                                           a small margin). Overrides --backend and --params-backend; may split modules
+                                           across GPUs (--split-mode still selects layer or row)
+  --force-sdxl-vae-conv-scale              force use of conv scale on sdxl vae
+  --offload-to-cpu                         place the weights in RAM to save VRAM, and automatically load them into VRAM
+                                           when needed
+  --mmap                                   whether to memory-map model
+  --control-net-cpu                        deprecated; use --backend controlnet=cpu
+  --clip-on-cpu                            deprecated; use --backend te=cpu
+  --vae-on-cpu                             deprecated; use --backend vae=cpu
+  --fa                                     use flash attention
+  --diffusion-fa                           use flash attention in the diffusion model only
+  --diffusion-conv-direct                  use ggml_conv2d_direct in the diffusion model
+  --vae-conv-direct                        use ggml_conv2d_direct in the vae model
+  --type                                   weight type (examples: f32, f16, q4_0, q4_1, q5_0, q5_1, q8_0, q2_K, q3_K,
+                                           q4_K). If not specified, the default is the type of the weight file
+  --rng                                    RNG, one of [std_default, cuda, cpu], default: cuda(sd-webui), cpu(comfyui)
+  --sampler-rng                            sampler RNG, one of [std_default, cuda, cpu]. If not specified, use --rng
+  --prediction                             prediction type override, one of [eps, v, edm_v, sd3_flow, flux_flow,
+                                           sefi_flow]
+  --lora-apply-mode                        the way to apply LoRA, one of [auto, immediately, at_runtime], default is
+                                           auto. In auto mode, if the model weights contain any quantized parameters,
+                                           the at_runtime mode will be used; otherwise, immediately will be used.The
+                                           immediately mode may have precision and compatibility issues with quantized
+                                           parameters, but it usually offers faster inference speed and, in some cases,
+                                           lower memory usage. The at_runtime mode, on the other hand, is exactly the
+                                           opposite.
+  --list-devices                           list available ggml backend devices (one 'name<TAB>description' per line) and
+                                           exit; the names are the device names accepted by --backend and
+                                           --params-backend
+
+Generation Options:
+  -p, --prompt <string>                    the prompt to render
+  -n, --negative-prompt <string>           the negative prompt (default: "")
+  --ad-model <string>                      path to a converted YOLOv8 detection model for ADetailer
+  --ad-prompt <string>                     ADetailer prompt; empty inherits the main prompt, supports [PROMPT], [SEP],
+                                           and [SKIP]
+  --ad-negative-prompt <string>            ADetailer negative prompt; empty inherits the main negative prompt, supports
+                                           [PROMPT] and [SEP]
+  --extra-ad-args <string>                 extra ADetailer args, key=value list. Supports input_size, confidence, nms,
+                                           max_detections, mask_k_largest, mask_min_ratio, mask_max_ratio, dilate_erode,
+                                           x_offset, y_offset, mask_mode, merge_masks, invert_mask, mask_blur,
+                                           inpaint_padding, inpaint_width, inpaint_height, denoising_strength, steps,
+                                           cfg_scale, sample_method, scheduler, sort_by
+  -i, --init-img <string>                  path to the init image
+  --end-img <string>                       path to the end image, required by flf2v
+  --mask <string>                          path to the mask image
+  --control-image <string>                 path to control image, control net
+  --ip-adapter-image <string>              path to the IP-Adapter reference image
+  --control-video <string>                 path to control video frames, It must be a directory path. The video frames
+                                           inside should be stored as images in lexicographical (character) order. For
+                                           example, if the control video path is `frames`, the directory contain images
+                                           such as 00.png, 01.png, ... etc.
+  --pm-id-images-dir <string>              path to PHOTOMAKER input id images dir
+  --pm-id-embed-path <string>              path to PHOTOMAKER v2 id embed
+  --pulid-id-embedding <string>            path to PuLID id embedding
+  --hires-upscaler <string>                highres fix upscaler, Lanczos, Nearest, Latent, Latent (nearest), Latent
+                                           (nearest-exact), Latent (antialiased), Latent (bicubic), Latent (bicubic
+                                           antialiased), or a model name under --hires-upscalers-dir (default: Latent)
+  --extra-sample-args <string>             extra sampler/scheduler/guidance args, key=value list. CFG supports
+                                           guidance_schedule; APG supports apg_eta, apg_momentum, apg_norm_threshold,
+                                           apg_norm_threshold_smoothing; SLG supports slg_uncond; lcm supports
+                                           noise_clip_std, noise_scale_start, noise_scale_end; flux supports base_shift,
+                                           max_shift; ltx2 supports max_shift, base_shift, stretch, terminal; euler_ge
+                                           supports gamma; beta scheduler supports alpha, beta; logit_normal supports
+                                           mu, std, logsnr_min, logsnr_max, resolution_aware; lms supports
+                                           lms_max_order, lms_shift, lms_divisions
+  --extra-tiling-args <string>             extra VAE tiling args, key=value list. LTX video VAE supports
+                                           temporal_tile_frames (default: 4), temporal_tile_overlap (default: 1)
+  --ref-image-args <string>                Key-value list to set up the way the reference images are processed (empty =
+                                           auto-detect from model weigths)
+  -H, --height <int>                       image height, in pixel space (default: 512)
+  -W, --width <int>                        image width, in pixel space (default: 512)
+  --steps <int>                            number of sample steps (default: 20)
+  --high-noise-steps <int>                 (high noise) number of sample steps (default: -1 = auto)
+  --clip-skip <int>                        ignore last layers of CLIP network; 1 ignores none, 2 ignores one layer
+                                           (default: -1). <= 0 represents unspecified, will be 1 for SD1.x, 2 for SD2.x
+  -b, --batch-count <int>                  batch count
+  --qwen-image-layers <int>                number of Qwen Image Layered layers; latent/output count is layers + 1
+                                           (default: 3)
+  --video-frames <int>                     video frames (default: 1)
+  --fps <int>                              fps (default: 24)
+  --timestep-shift <int>                   shift timestep for NitroFusion models (default: 0). recommended N for
+                                           NitroSD-Realism around 250 and 500 for NitroSD-Vibrant
+  --upscale-repeats <int>                  Run the ESRGAN upscaler this many times (default: 1)
+  --upscale-tile-size <int>                tile size for ESRGAN upscaling (default: 128)
+  --hires-width <int>                      highres fix target width, 0 to use --hires-scale (default: 0)
+  --hires-height <int>                     highres fix target height, 0 to use --hires-scale (default: 0)
+  --hires-steps <int>                      highres fix second pass sample steps, 0 to reuse --steps (default: 0)
+  --hires-upscale-tile-size <int>          highres fix upscaler tile size, reserved for model-backed upscalers (default:
+                                           128)
+  --cfg-scale <float>                      unconditional guidance scale: (default: 7.0)
+  --img-cfg-scale <float>                  image guidance scale for inpaint or image edit models: (default: same as
+                                           --cfg-scale)
+  --guidance <float>                       distilled guidance scale for models with guidance input (default: 3.5)
+  --slg-scale <float>                      skip layer guidance (SLG) scale, only for DiT models: (default: 0). 0 means
+                                           disabled, a value of 2.5 is nice for sd3.5 medium
+  --skip-layer-start <float>               SLG enabling point (default: 0.01)
+  --skip-layer-end <float>                 SLG disabling point (default: 0.2)
+  --eta <float>                            noise multiplier (default: 0 for ddim_trailing, tcd, res_multistep and
+                                           res_2s; 1 for euler_a, er_sde, dpm++2s_a, dpm++2m_sde and dpm++2m_sde_bt)
+  --flow-shift <float>                     shift value for Flow models like SD3.x or WAN (default: auto)
+  --high-noise-cfg-scale <float>           (high noise) unconditional guidance scale: (default: 7.0)
+  --high-noise-img-cfg-scale <float>       (high noise) image guidance scale for inpaint or image edit models (default:
+                                           same as --cfg-scale)
+  --high-noise-guidance <float>            (high noise) distilled guidance scale for models with guidance input
+                                           (default: 3.5)
+  --high-noise-slg-scale <float>           (high noise) skip layer guidance (SLG) scale, only for DiT models: (default:
+                                           0)
+  --high-noise-skip-layer-start <float>    (high noise) SLG enabling point (default: 0.01)
+  --high-noise-skip-layer-end <float>      (high noise) SLG disabling point (default: 0.2)
+  --high-noise-eta <float>                 (high noise) noise multiplier (default: 0 for ddim_trailing, tcd,
+                                           res_multistep and res_2s; 1 for euler_a, er_sde, dpm++2s_a, dpm++2m_sde and
+                                           dpm++2m_sde_bt)
+  --strength <float>                       strength for noising/unnoising (default: 0.75)
+  --pm-style-strength <float>              
+  --pulid-id-weight <float>                strength of PuLID identity injection
+  --control-strength <float>               strength to apply Control Net (default: 0.9). 1.0 corresponds to full
+                                           destruction of information in init image
+  --ip-adapter-strength <float>            strength to apply IP-Adapter (default: 1.0)
+  --moe-boundary <float>                   timestep boundary for Wan2.2 MoE model. (default: 0.875). Only enabled if
+                                           `--high-noise-steps` is set to -1
+  --vace-strength <float>                  wan vace strength
+  --vae-tile-overlap <float>               tile overlap for vae tiling, in fraction of tile size (default: 0.5)
+  --hires-scale <float>                    highres fix scale when target size is not set (default: 2.0)
+  --hires-denoising-strength <float>       highres fix second pass denoising strength (default: 0.7)
+  --increase-ref-index                     automatically increase the indices of references images based on the order
+                                           they are listed (starting with 1).
+  --disable-auto-resize-ref-image          disable auto resize of ref images
+  --circular                               enable circular padding on both axes for tileable output
+  --circularx                              enable circular padding on x-axis (width) only
+  --circulary                              enable circular padding on y-axis (height) only
+  --disable-image-metadata                 do not embed generation metadata on image files
+  --vae-tiling                             process vae in tiles to reduce memory usage
+  --temporal-tiling                        enable temporal tiling for LTX video VAE decode
+  --hires                                  enable highres fix
+  -s, --seed                               RNG seed (default: 42, use random seed for < 0)
+  --sampling-method                        sampling method, one of [euler, euler_a, heun, dpm2, dpm++2s_a, dpm++2m,
+                                           dpm++2mv2, ipndm, ipndm_v, lcm, ddim_trailing, tcd, res_multistep, res_2s,
+                                           er_sde, euler_cfg_pp, euler_a_cfg_pp, euler_ge, dpm++2m_sde, dpm++2m_sde_bt,
+                                           lms], default: euler for Flux/SD3/Wan, euler_a otherwise
+  --high-noise-sampling-method             (high noise) sampling method, one of [euler, euler_a, heun, dpm2, dpm++2s_a,
+                                           dpm++2m, dpm++2mv2, ipndm, ipndm_v, lcm, ddim_trailing, tcd, res_multistep,
+                                           res_2s, er_sde, euler_cfg_pp, euler_a_cfg_pp, euler_ge, dpm++2m_sde,
+                                           dpm++2m_sde_bt, lms], default: euler for Flux/SD3/Wan, euler_a otherwise
+  --scheduler                              denoiser sigma scheduler, one of [discrete, karras, exponential, ays, gits,
+                                           sgm_uniform, simple, smoothstep, kl_optimal, lcm, bong_tangent, ltx2,
+                                           logit_normal, flux2, flux, beta], alias: normal=discrete, default:
+                                           model-specific
+  --sigmas                                 custom sigma values for the sampler, comma-separated (e.g.,
+                                           "14.61,7.8,3.5,0.0").
+  --hires-sigmas                           custom sigma values for the highres fix second pass, comma-separated (e.g.,
+                                           "0.85,0.725,0.421875,0.0").
+  --skip-layers                            layers to skip for SLG steps (default: [7,8,9])
+  --high-noise-skip-layers                 (high noise) layers to skip for SLG steps (default: [7,8,9])
+  -r, --ref-image                          reference image for Flux Kontext or MiniMax-H3 Ref2VA (can be used multiple
+                                           times)
+  --ref-video                              MiniMax-H3 Ref2VA reference video frame directory at 24 fps (can be used
+                                           multiple times)
+  --ref-video-audio                        WAV soundtrack paired by index with --ref-video (can be used multiple times)
+  --ref-audio                              standalone WAV reference for MiniMax-H3 Ref2VA (can be used multiple times)
+  --cache-mode                             caching method: 'easycache' (DiT), 'ucache' (UNET),
+                                           'dbcache'/'taylorseer'/'cache-dit' (DiT block-level), 'spectrum' (UNET/DiT
+                                           Chebyshev+Taylor forecasting)
+  --cache-option                           named cache params (key=value format, comma-separated). easycache/ucache:
+                                           threshold=,start=,end=,decay=,relative=,reset=; dbcache/taylorseer/cache-dit:
+                                           Fn=,Bn=,threshold=,warmup=; spectrum: w=,m=,lam=,window=,flex=,warmup=,stop=.
+                                           Examples: "threshold=0.25" or "threshold=1.5,reset=0"
+  --scm-mask                               SCM steps mask for cache-dit: comma-separated 0/1 (e.g.,
+                                           "1,1,1,0,0,1,0,0,1,0") - 1=compute, 0=can cache
+  --scm-policy                             SCM policy: 'dynamic' (default) or 'static'
+  --vae-tile-size                          tile size for vae tiling, format [X]x[Y] (default: 32x32)
+  --vae-relative-tile-size                 relative tile size for vae tiling, format [X]x[Y], in fraction of image size
+                                           if < 1, in number of tiles per dim if >=1 (overrides --vae-tile-size)
+  --prompt-file                            path to the file containing the prompt to render
+  --negative-prompt-file                   path to the file containing the negative prompt
+  BASELINE_HELP_RC = 0
+CMD: if [ -f /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf ]; then sha256sum /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf; else echo 'MISSING'; fi
+[if [ -f /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf ]; then sha256sum /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf; else echo 'MISSING'; fi] STDOUT:
+MISSING
+  Downloading SDXS model from Hugging Face...
+CMD: curl -L -o /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf https://huggingface.co/concedo/sdxs-512-tinySDdistilled-GGUF/resolve/main/sdxs-512-tinySDdistilled_Q8_0.gguf
+CMD: sha256sum /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf
+[sha256sum /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf] STDOUT:
+409ab23582ee074c6b9d5395784fc0741b0599fb9d138686c69087c71678eb6a  /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf
+  SDXS Model SHA256: 409ab23582ee074c6b9d5395784fc0741b0599fb9d138686c69087c71678eb6a
+  Executing Baseline SDXS (256x256, 1 step, seed 42)...
+CMD: LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli" -m "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf" -p "a small red robot on a wooden workbench, photorealistic" -n "low quality, blurry, distorted" -W 256 -H 256 --steps 1 --seed 42 --cfg-scale 1.0 -o "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-baseline-sdxs.png"
+[LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/baseline/bin/sd-cli" -m "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf" -p "a small red robot on a wooden workbench, photorealistic" -n "low quality, blurry, distorted" -W 256 -H 256 --steps 1 --seed 42 --cfg-scale 1.0 -o "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-baseline-sdxs.png"] STDOUT:
+[INFO ] stable-diffusion.cpp:713  - loading model from '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf'
+[INFO ] model_loader.cpp:236  - load /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf using gguf format
+[INFO ] stable-diffusion.cpp:908  - Version: SDXS (512-DS) 
+[INFO ] stable-diffusion.cpp:959  - Weight type stat:                      f16: 401  |    q8_0: 209  
+[INFO ] stable-diffusion.cpp:960  - Conditioner weight type stat:          f16: 99   |    q8_0: 97   
+[INFO ] stable-diffusion.cpp:961  - Diffusion model weight type stat:      f16: 168  |    q8_0: 112  
+[INFO ] stable-diffusion.cpp:962  - VAE weight type stat:             
+[INFO ] stable-diffusion.cpp:1502 - using TAE for encoding / decoding
+[INFO ] stable-diffusion.cpp:1760 - total params memory size = 651.92MB (VRAM 0.00MB, RAM 651.92MB): text_encoders 159.13MB(RAM), diffusion_model 488.12MB(RAM), vae 4.67MB(RAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A)
+[INFO ] stable-diffusion.cpp:1849 - running in eps-prediction mode
+[INFO ] stable-diffusion.cpp:5628 - generate_image 256x256
+[INFO ] denoiser.hpp:1051 - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:4380 - sampling using Euler A method
+  |##################################################| 196/196 - 789.87MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.11s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5296 - get_learned_condition completed, taking 0.42s
+[INFO ] stable-diffusion.cpp:5679 - generating image: 1/1 - seed 42
+  |###################                               | 106/280 - 390.39MB/s[K  |######################                            | 122/280 - 529.14MB/s[K  |###############################################   | 260/280 - 713.69MB/s[K  |##################################################| 280/280 - 608.14MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.80s (read: 0.68s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+  |==================================================| 1/1 - 4.96s/it[K
+[INFO ] stable-diffusion.cpp:5711 - sampling completed, taking 4.98s
+[INFO ] stable-diffusion.cpp:5725 - generating 1 latent images completed, taking 4.98s
+[INFO ] stable-diffusion.cpp:5321 - decoding 1 latents
+  |##################################################| 67/67 - 11.54MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.01s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5387 - latent 1 decoded, taking 2.67s
+[INFO ] stable-diffusion.cpp:5391 - decode_first_stage completed, taking 2.67s
+[INFO ] stable-diffusion.cpp:5861 - generate_image completed in 8.07s
+[INFO ] main.cpp:490  - save result image 0 to '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-baseline-sdxs.png' (success)
+[INFO ] main.cpp:562  - 1/1 images saved
+  BASELINE_GEN_RC = 0
+  BASELINE Output:
+[INFO ] stable-diffusion.cpp:713  - loading model from '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf'
+[INFO ] model_loader.cpp:236  - load /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf using gguf format
+[INFO ] stable-diffusion.cpp:908  - Version: SDXS (512-DS) 
+[INFO ] stable-diffusion.cpp:959  - Weight type stat:                      f16: 401  |    q8_0: 209  
+[INFO ] stable-diffusion.cpp:960  - Conditioner weight type stat:          f16: 99   |    q8_0: 97   
+[INFO ] stable-diffusion.cpp:961  - Diffusion model weight type stat:      f16: 168  |    q8_0: 112  
+[INFO ] stable-diffusion.cpp:962  - VAE weight type stat:             
+[INFO ] stable-diffusion.cpp:1502 - using TAE for encoding / decoding
+[INFO ] stable-diffusion.cpp:1760 - total params memory size = 651.92MB (VRAM 0.00MB, RAM 651.92MB): text_encoders 159.13MB(RAM), diffusion_model 488.12MB(RAM), vae 4.67MB(RAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A)
+[INFO ] stable-diffusion.cpp:1849 - running in eps-prediction mode
+[INFO ] stable-diffusion.cpp:5628 - generate_image 256x256
+[INFO ] denoiser.hpp:1051 - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:4380 - sampling using Euler A method
+  |##################################################| 196/196 - 789.87MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.11s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5296 - get_learned_condition completed, taking 0.42s
+[INFO ] stable-diffusion.cpp:5679 - generating image: 1/1 - seed 42
+  |###################                               | 106/280 - 390.39MB/s[K  |######################                            | 122/280 - 529.14MB/s[K  |###############################################   | 260/280 - 713.69MB/s[K  |##################################################| 280/280 - 608.14MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.80s (read: 0.68s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+  |==================================================| 1/1 - 4.96s/it[K
+[INFO ] stable-diffusion.cpp:5711 - sampling completed, taking 4.98s
+[INFO ] stable-diffusion.cpp:5725 - generating 1 latent images completed, taking 4.98s
+[INFO ] stable-diffusion.cpp:5321 - decoding 1 latents
+  |##################################################| 67/67 - 11.54MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.01s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5387 - latent 1 decoded, taking 2.67s
+[INFO ] stable-diffusion.cpp:5391 - decode_first_stage completed, taking 2.67s
+[INFO ] stable-diffusion.cpp:5861 - generate_image completed in 8.07s
+[INFO ] main.cpp:490  - save result image 0 to '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-baseline-sdxs.png' (success)
+[INFO ] main.cpp:562  - 1/1 images saved
+
+CMD: python3 -c "
+import os, hashlib, struct
+path = '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-baseline-sdxs.png'
+if os.path.exists(path):
+    size = os.path.getsize(path)
+    with open(path, 'rb') as f:
+        data = f.read()
+    sha = hashlib.sha256(data).hexdigest()
+    w, h = struct.unpack('>II', data[16:24]) if data[:8] == b'\x89PNG\r\n\x1a\n' else (0, 0)
+    print(f'EXISTS,{size},{sha},{w},{h}')
+else:
+    print('NOT_FOUND')
+" 
+[python3 -c "
+import os, hashlib, struct
+path = '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-baseline-sdxs.png'
+if os.path.exists(path):
+    size = os.path.getsize(path)
+    with open(path, 'rb') as f:
+        data = f.read()
+    sha = hashlib.sha256(data).hexdigest()
+    w, h = struct.unpack('>II', data[16:24]) if data[:8] == b'\x89PNG\r\n\x1a\n' else (0, 0)
+    print(f'EXISTS,{size},{sha},{w},{h}')
+else:
+    print('NOT_FOUND')
+" ] STDOUT:
+EXISTS,134274,89778237b79e7dec101d542e90fa590413f341f6e7bbca7f74a464242639e407,256,256
+
+--- STEP 13 & 14: Optimized Non-Destructive Execution & SDXS Inference ---
+CMD: LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli" --help
+[LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli" --help] STDOUT:
+stable-diffusion.cpp version master-827-97d2990, commit 97d2990
+Usage: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli [options]
+
+CLI Options:
+  -o, --output <string>         path to write result image to. you can use printf-style %d format specifiers for image
+                                sequences (default: ./output.png) (eg. output_%03d.png). Single-file video outputs
+                                support .avi, .webm, and animated .webp
+  --image <string>              path to the image to inspect (for metadata mode)
+  --metadata-format <string>    metadata output format, one of [text, json] (default: text)
+  --preview-path <string>       path to write preview image to (default: ./preview.png). Multi-frame previews support
+                                .avi, .webm, and animated .webp
+  --imat-out <string>           compute the imatrix for this run and save it to the provided path
+  --preview-interval <int>      interval in denoising steps between consecutive updates of the image preview file
+                                (default is 1, meaning updating at every step)
+  --output-begin-idx <int>      starting index for output image sequence, must be non-negative (default 0 if specified
+                                %d in output path, 1 otherwise)
+  --canny                       apply canny preprocessor (edge detection)
+  --convert-name                convert tensor name (for convert mode)
+  -v, --verbose                 print extra info
+  --color                       colors the logging tags according to level
+  --taesd-preview-only          prevents usage of taesd for decoding the final image. (for use with --preview tae)
+  --preview-noisy               enables previewing noisy inputs of the models rather than the denoised outputs
+  --metadata-raw                include raw hex previews for unparsed metadata payloads
+  --metadata-brief              truncate long metadata text values in text output
+  --metadata-all                include structural/container entries such as IHDR, IDAT, and non-metadata JPEG segments
+  -M, --mode                    run mode, one of [img_gen, adetailer, vid_gen, upscale, convert, metadata], default:
+                                img_gen
+  --preview                     preview method. must be one of the following [none, proj, tae, vae] (default is none)
+  -h, --help                    show this help message and exit
+  --imat-in                     load an imatrix file for quantization or continued collection; can be specified multiple
+                                times
+
+Context Options:
+  -m, --model <string>                     path to full model
+  --clip_l <string>                        path to the clip-l text encoder
+  --clip_g <string>                        path to the clip-g text encoder
+  --clip_vision <string>                   path to the clip-vision encoder
+  --t5xxl <string>                         path to the t5xxl text encoder
+  --llm <string>                           path to the llm text encoder. For example: (qwenvl2.5 for qwen-image,
+                                           mistral-small3.2 for flux2, ...)
+  --llm_vision <string>                    path to the llm vit
+  --qwen2vl <string>                       alias of --llm. Deprecated.
+  --qwen2vl_vision <string>                alias of --llm_vision. Deprecated.
+  --diffusion-model <string>               path to the standalone diffusion model
+  --high-noise-diffusion-model <string>    path to the standalone high noise diffusion model
+  --uncond-diffusion-model <string>        path to the standalone unconditional diffusion model, currently used by
+                                           Ideogram4 CFG
+  --embeddings-connectors <string>         path to LTXAV embeddings connectors
+  --vae <string>                           path to standalone vae model
+  --vae-format <string>                    VAE latent format override: auto, flux, sd3, flux2, or wan (default: auto)
+  --audio-vae <string>                     path to standalone LTX audio vae model
+  --taesd <string>                         path to taesd. Using Tiny AutoEncoder for fast decoding (low quality)
+  --tae <string>                           alias of --taesd
+  --control-net <string>                   path to control net model
+  --ip-adapter <string>                    path to IP-Adapter model (requires --clip_vision)
+  --motion-module <string>                 path to AnimateDiff motion module (SD 1.5); enables video generation on
+                                           --video-frames > 1
+  --embd-dir <string>                      embeddings directory
+  --lora-model-dir <string>                lora model directory
+  --hires-upscalers-dir <string>           highres fix upscaler model directory
+  --tensor-type-rules <string>             weight type per tensor pattern (example: "^vae\.=f16,model\.=q8_0")
+  --model-args <string>                    extra model args, key=value list. Supports chroma_use_dit_mask,
+                                           chroma_use_t5_mask, chroma_t5_mask_pad, qwen_image_zero_cond_t
+  --photo-maker <string>                   path to PHOTOMAKER model
+  --pulid-weights <string>                 path to PuLID Flux weights
+  --upscale-model <string>                 path to esrgan model.
+  --backend <string>                       runtime backend assignment, e.g. cpu or clip=cpu,vae=cuda0,diffusion=vulkan0
+  --params-backend <string>                parameter backend assignment, e.g. disk, cpu, or diffusion=disk,clip=cpu
+  --split-mode <string>                    weight distribution for modules assigned multiple devices (--backend
+                                           "diffusion=cuda0&cuda1"): layer (whole transformer blocks per device,
+                                           default) or row (matmul rows split across devices, CUDA only). Accepts a
+                                           single mode or per-module assignments, e.g. row or diffusion=row,te=layer
+  --rpc-servers <string>                   comma-separated list of RPC servers to connect to for offloading, in the
+                                           format host:port, e.g. localhost:50052,192.168.1.3:50052
+  --max-vram <string>                      maximum VRAM budget in GiB for graph-cut segmented execution. Accepts a
+                                           single value or assignments by backend/device, e.g. 6 or cuda0=6,vulkan0=4. 0
+                                           disables graph splitting; a negative value auto-detects free VRAM, sparing
+                                           the specified value
+  -t, --threads <int>                      number of threads to use during computation (default: -1). If threads <= 0,
+                                           then threads will be set to the number of CPU physical cores
+  --stream-layers                          enable residency+prefetch streaming on top of --max-vram (no effect without
+                                           --max-vram; defaults to false)
+  --eager-load                             load all params into the params backend at model-load time instead of lazily
+                                           on first use (defaults to false)
+  --auto-fit                               pick the diffusion/te/vae device placements automatically from the model size
+                                           and the per-device memory budgets (--max-vram; defaults to free memory minus
+                                           a small margin). Overrides --backend and --params-backend; may split modules
+                                           across GPUs (--split-mode still selects layer or row)
+  --force-sdxl-vae-conv-scale              force use of conv scale on sdxl vae
+  --offload-to-cpu                         place the weights in RAM to save VRAM, and automatically load them into VRAM
+                                           when needed
+  --mmap                                   whether to memory-map model
+  --control-net-cpu                        deprecated; use --backend controlnet=cpu
+  --clip-on-cpu                            deprecated; use --backend te=cpu
+  --vae-on-cpu                             deprecated; use --backend vae=cpu
+  --fa                                     use flash attention
+  --diffusion-fa                           use flash attention in the diffusion model only
+  --diffusion-conv-direct                  use ggml_conv2d_direct in the diffusion model
+  --vae-conv-direct                        use ggml_conv2d_direct in the vae model
+  --type                                   weight type (examples: f32, f16, q4_0, q4_1, q5_0, q5_1, q8_0, q2_K, q3_K,
+                                           q4_K). If not specified, the default is the type of the weight file
+  --rng                                    RNG, one of [std_default, cuda, cpu], default: cuda(sd-webui), cpu(comfyui)
+  --sampler-rng                            sampler RNG, one of [std_default, cuda, cpu]. If not specified, use --rng
+  --prediction                             prediction type override, one of [eps, v, edm_v, sd3_flow, flux_flow,
+                                           sefi_flow]
+  --lora-apply-mode                        the way to apply LoRA, one of [auto, immediately, at_runtime], default is
+                                           auto. In auto mode, if the model weights contain any quantized parameters,
+                                           the at_runtime mode will be used; otherwise, immediately will be used.The
+                                           immediately mode may have precision and compatibility issues with quantized
+                                           parameters, but it usually offers faster inference speed and, in some cases,
+                                           lower memory usage. The at_runtime mode, on the other hand, is exactly the
+                                           opposite.
+  --list-devices                           list available ggml backend devices (one 'name<TAB>description' per line) and
+                                           exit; the names are the device names accepted by --backend and
+                                           --params-backend
+
+Generation Options:
+  -p, --prompt <string>                    the prompt to render
+  -n, --negative-prompt <string>           the negative prompt (default: "")
+  --ad-model <string>                      path to a converted YOLOv8 detection model for ADetailer
+  --ad-prompt <string>                     ADetailer prompt; empty inherits the main prompt, supports [PROMPT], [SEP],
+                                           and [SKIP]
+  --ad-negative-prompt <string>            ADetailer negative prompt; empty inherits the main negative prompt, supports
+                                           [PROMPT] and [SEP]
+  --extra-ad-args <string>                 extra ADetailer args, key=value list. Supports input_size, confidence, nms,
+                                           max_detections, mask_k_largest, mask_min_ratio, mask_max_ratio, dilate_erode,
+                                           x_offset, y_offset, mask_mode, merge_masks, invert_mask, mask_blur,
+                                           inpaint_padding, inpaint_width, inpaint_height, denoising_strength, steps,
+                                           cfg_scale, sample_method, scheduler, sort_by
+  -i, --init-img <string>                  path to the init image
+  --end-img <string>                       path to the end image, required by flf2v
+  --mask <string>                          path to the mask image
+  --control-image <string>                 path to control image, control net
+  --ip-adapter-image <string>              path to the IP-Adapter reference image
+  --control-video <string>                 path to control video frames, It must be a directory path. The video frames
+                                           inside should be stored as images in lexicographical (character) order. For
+                                           example, if the control video path is `frames`, the directory contain images
+                                           such as 00.png, 01.png, ... etc.
+  --pm-id-images-dir <string>              path to PHOTOMAKER input id images dir
+  --pm-id-embed-path <string>              path to PHOTOMAKER v2 id embed
+  --pulid-id-embedding <string>            path to PuLID id embedding
+  --hires-upscaler <string>                highres fix upscaler, Lanczos, Nearest, Latent, Latent (nearest), Latent
+                                           (nearest-exact), Latent (antialiased), Latent (bicubic), Latent (bicubic
+                                           antialiased), or a model name under --hires-upscalers-dir (default: Latent)
+  --extra-sample-args <string>             extra sampler/scheduler/guidance args, key=value list. CFG supports
+                                           guidance_schedule; APG supports apg_eta, apg_momentum, apg_norm_threshold,
+                                           apg_norm_threshold_smoothing; SLG supports slg_uncond; lcm supports
+                                           noise_clip_std, noise_scale_start, noise_scale_end; flux supports base_shift,
+                                           max_shift; ltx2 supports max_shift, base_shift, stretch, terminal; euler_ge
+                                           supports gamma; beta scheduler supports alpha, beta; logit_normal supports
+                                           mu, std, logsnr_min, logsnr_max, resolution_aware; lms supports
+                                           lms_max_order, lms_shift, lms_divisions
+  --extra-tiling-args <string>             extra VAE tiling args, key=value list. LTX video VAE supports
+                                           temporal_tile_frames (default: 4), temporal_tile_overlap (default: 1)
+  --ref-image-args <string>                Key-value list to set up the way the reference images are processed (empty =
+                                           auto-detect from model weigths)
+  -H, --height <int>                       image height, in pixel space (default: 512)
+  -W, --width <int>                        image width, in pixel space (default: 512)
+  --steps <int>                            number of sample steps (default: 20)
+  --high-noise-steps <int>                 (high noise) number of sample steps (default: -1 = auto)
+  --clip-skip <int>                        ignore last layers of CLIP network; 1 ignores none, 2 ignores one layer
+                                           (default: -1). <= 0 represents unspecified, will be 1 for SD1.x, 2 for SD2.x
+  -b, --batch-count <int>                  batch count
+  --qwen-image-layers <int>                number of Qwen Image Layered layers; latent/output count is layers + 1
+                                           (default: 3)
+  --video-frames <int>                     video frames (default: 1)
+  --fps <int>                              fps (default: 24)
+  --timestep-shift <int>                   shift timestep for NitroFusion models (default: 0). recommended N for
+                                           NitroSD-Realism around 250 and 500 for NitroSD-Vibrant
+  --upscale-repeats <int>                  Run the ESRGAN upscaler this many times (default: 1)
+  --upscale-tile-size <int>                tile size for ESRGAN upscaling (default: 128)
+  --hires-width <int>                      highres fix target width, 0 to use --hires-scale (default: 0)
+  --hires-height <int>                     highres fix target height, 0 to use --hires-scale (default: 0)
+  --hires-steps <int>                      highres fix second pass sample steps, 0 to reuse --steps (default: 0)
+  --hires-upscale-tile-size <int>          highres fix upscaler tile size, reserved for model-backed upscalers (default:
+                                           128)
+  --cfg-scale <float>                      unconditional guidance scale: (default: 7.0)
+  --img-cfg-scale <float>                  image guidance scale for inpaint or image edit models: (default: same as
+                                           --cfg-scale)
+  --guidance <float>                       distilled guidance scale for models with guidance input (default: 3.5)
+  --slg-scale <float>                      skip layer guidance (SLG) scale, only for DiT models: (default: 0). 0 means
+                                           disabled, a value of 2.5 is nice for sd3.5 medium
+  --skip-layer-start <float>               SLG enabling point (default: 0.01)
+  --skip-layer-end <float>                 SLG disabling point (default: 0.2)
+  --eta <float>                            noise multiplier (default: 0 for ddim_trailing, tcd, res_multistep and
+                                           res_2s; 1 for euler_a, er_sde, dpm++2s_a, dpm++2m_sde and dpm++2m_sde_bt)
+  --flow-shift <float>                     shift value for Flow models like SD3.x or WAN (default: auto)
+  --high-noise-cfg-scale <float>           (high noise) unconditional guidance scale: (default: 7.0)
+  --high-noise-img-cfg-scale <float>       (high noise) image guidance scale for inpaint or image edit models (default:
+                                           same as --cfg-scale)
+  --high-noise-guidance <float>            (high noise) distilled guidance scale for models with guidance input
+                                           (default: 3.5)
+  --high-noise-slg-scale <float>           (high noise) skip layer guidance (SLG) scale, only for DiT models: (default:
+                                           0)
+  --high-noise-skip-layer-start <float>    (high noise) SLG enabling point (default: 0.01)
+  --high-noise-skip-layer-end <float>      (high noise) SLG disabling point (default: 0.2)
+  --high-noise-eta <float>                 (high noise) noise multiplier (default: 0 for ddim_trailing, tcd,
+                                           res_multistep and res_2s; 1 for euler_a, er_sde, dpm++2s_a, dpm++2m_sde and
+                                           dpm++2m_sde_bt)
+  --strength <float>                       strength for noising/unnoising (default: 0.75)
+  --pm-style-strength <float>              
+  --pulid-id-weight <float>                strength of PuLID identity injection
+  --control-strength <float>               strength to apply Control Net (default: 0.9). 1.0 corresponds to full
+                                           destruction of information in init image
+  --ip-adapter-strength <float>            strength to apply IP-Adapter (default: 1.0)
+  --moe-boundary <float>                   timestep boundary for Wan2.2 MoE model. (default: 0.875). Only enabled if
+                                           `--high-noise-steps` is set to -1
+  --vace-strength <float>                  wan vace strength
+  --vae-tile-overlap <float>               tile overlap for vae tiling, in fraction of tile size (default: 0.5)
+  --hires-scale <float>                    highres fix scale when target size is not set (default: 2.0)
+  --hires-denoising-strength <float>       highres fix second pass denoising strength (default: 0.7)
+  --increase-ref-index                     automatically increase the indices of references images based on the order
+                                           they are listed (starting with 1).
+  --disable-auto-resize-ref-image          disable auto resize of ref images
+  --circular                               enable circular padding on both axes for tileable output
+  --circularx                              enable circular padding on x-axis (width) only
+  --circulary                              enable circular padding on y-axis (height) only
+  --disable-image-metadata                 do not embed generation metadata on image files
+  --vae-tiling                             process vae in tiles to reduce memory usage
+  --temporal-tiling                        enable temporal tiling for LTX video VAE decode
+  --hires                                  enable highres fix
+  -s, --seed                               RNG seed (default: 42, use random seed for < 0)
+  --sampling-method                        sampling method, one of [euler, euler_a, heun, dpm2, dpm++2s_a, dpm++2m,
+                                           dpm++2mv2, ipndm, ipndm_v, lcm, ddim_trailing, tcd, res_multistep, res_2s,
+                                           er_sde, euler_cfg_pp, euler_a_cfg_pp, euler_ge, dpm++2m_sde, dpm++2m_sde_bt,
+                                           lms], default: euler for Flux/SD3/Wan, euler_a otherwise
+  --high-noise-sampling-method             (high noise) sampling method, one of [euler, euler_a, heun, dpm2, dpm++2s_a,
+                                           dpm++2m, dpm++2mv2, ipndm, ipndm_v, lcm, ddim_trailing, tcd, res_multistep,
+                                           res_2s, er_sde, euler_cfg_pp, euler_a_cfg_pp, euler_ge, dpm++2m_sde,
+                                           dpm++2m_sde_bt, lms], default: euler for Flux/SD3/Wan, euler_a otherwise
+  --scheduler                              denoiser sigma scheduler, one of [discrete, karras, exponential, ays, gits,
+                                           sgm_uniform, simple, smoothstep, kl_optimal, lcm, bong_tangent, ltx2,
+                                           logit_normal, flux2, flux, beta], alias: normal=discrete, default:
+                                           model-specific
+  --sigmas                                 custom sigma values for the sampler, comma-separated (e.g.,
+                                           "14.61,7.8,3.5,0.0").
+  --hires-sigmas                           custom sigma values for the highres fix second pass, comma-separated (e.g.,
+                                           "0.85,0.725,0.421875,0.0").
+  --skip-layers                            layers to skip for SLG steps (default: [7,8,9])
+  --high-noise-skip-layers                 (high noise) layers to skip for SLG steps (default: [7,8,9])
+  -r, --ref-image                          reference image for Flux Kontext or MiniMax-H3 Ref2VA (can be used multiple
+                                           times)
+  --ref-video                              MiniMax-H3 Ref2VA reference video frame directory at 24 fps (can be used
+                                           multiple times)
+  --ref-video-audio                        WAV soundtrack paired by index with --ref-video (can be used multiple times)
+  --ref-audio                              standalone WAV reference for MiniMax-H3 Ref2VA (can be used multiple times)
+  --cache-mode                             caching method: 'easycache' (DiT), 'ucache' (UNET),
+                                           'dbcache'/'taylorseer'/'cache-dit' (DiT block-level), 'spectrum' (UNET/DiT
+                                           Chebyshev+Taylor forecasting)
+  --cache-option                           named cache params (key=value format, comma-separated). easycache/ucache:
+                                           threshold=,start=,end=,decay=,relative=,reset=; dbcache/taylorseer/cache-dit:
+                                           Fn=,Bn=,threshold=,warmup=; spectrum: w=,m=,lam=,window=,flex=,warmup=,stop=.
+                                           Examples: "threshold=0.25" or "threshold=1.5,reset=0"
+  --scm-mask                               SCM steps mask for cache-dit: comma-separated 0/1 (e.g.,
+                                           "1,1,1,0,0,1,0,0,1,0") - 1=compute, 0=can cache
+  --scm-policy                             SCM policy: 'dynamic' (default) or 'static'
+  --vae-tile-size                          tile size for vae tiling, format [X]x[Y] (default: 32x32)
+  --vae-relative-tile-size                 relative tile size for vae tiling, format [X]x[Y], in fraction of image size
+                                           if < 1, in number of tiles per dim if >=1 (overrides --vae-tile-size)
+  --prompt-file                            path to the file containing the prompt to render
+  --negative-prompt-file                   path to the file containing the negative prompt
+  OPTIMIZED_HELP_RC = 0
+  Executing Optimized SDXS (256x256, 1 step, seed 42)...
+CMD: LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli" -m "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf" -p "a small red robot on a wooden workbench, photorealistic" -n "low quality, blurry, distorted" -W 256 -H 256 --steps 1 --seed 42 --cfg-scale 1.0 -o "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-optimized-sdxs.png"
+[LD_LIBRARY_PATH="/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/lib" "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/optimized/bin/sd-cli" -m "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf" -p "a small red robot on a wooden workbench, photorealistic" -n "low quality, blurry, distorted" -W 256 -H 256 --steps 1 --seed 42 --cfg-scale 1.0 -o "/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-optimized-sdxs.png"] STDOUT:
+[INFO ] stable-diffusion.cpp:713  - loading model from '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf'
+[INFO ] model_loader.cpp:236  - load /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf using gguf format
+[INFO ] stable-diffusion.cpp:908  - Version: SDXS (512-DS) 
+[INFO ] stable-diffusion.cpp:959  - Weight type stat:                      f16: 401  |    q8_0: 209  
+[INFO ] stable-diffusion.cpp:960  - Conditioner weight type stat:          f16: 99   |    q8_0: 97   
+[INFO ] stable-diffusion.cpp:961  - Diffusion model weight type stat:      f16: 168  |    q8_0: 112  
+[INFO ] stable-diffusion.cpp:962  - VAE weight type stat:             
+[INFO ] stable-diffusion.cpp:1502 - using TAE for encoding / decoding
+[INFO ] stable-diffusion.cpp:1760 - total params memory size = 651.92MB (VRAM 0.00MB, RAM 651.92MB): text_encoders 159.13MB(RAM), diffusion_model 488.12MB(RAM), vae 4.67MB(RAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A)
+[INFO ] stable-diffusion.cpp:1849 - running in eps-prediction mode
+[INFO ] stable-diffusion.cpp:5628 - generate_image 256x256
+[INFO ] denoiser.hpp:1051 - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:4380 - sampling using Euler A method
+  |#########################################         | 158/196 - 325.53MB/s[K  |##################################################| 196/196 - 394.94MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.40s (read: 0.27s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5296 - get_learned_condition completed, taking 0.60s
+[INFO ] stable-diffusion.cpp:5679 - generating image: 1/1 - seed 42
+  |######################                            | 118/280 - 632.69MB/s[K  |##############################                    | 166/280 - 626.96MB/s[K  |##################################################| 280/280 - 810.17MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.60s (read: 0.46s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+  |==================================================| 1/1 - 2.32s/it[K
+[INFO ] stable-diffusion.cpp:5711 - sampling completed, taking 2.33s
+[INFO ] stable-diffusion.cpp:5725 - generating 1 latent images completed, taking 2.33s
+[INFO ] stable-diffusion.cpp:5321 - decoding 1 latents
+  |##################################################| 67/67 - 11.54MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5387 - latent 1 decoded, taking 1.15s
+[INFO ] stable-diffusion.cpp:5391 - decode_first_stage completed, taking 1.15s
+[INFO ] stable-diffusion.cpp:5861 - generate_image completed in 4.08s
+[INFO ] main.cpp:490  - save result image 0 to '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-optimized-sdxs.png' (success)
+[INFO ] main.cpp:562  - 1/1 images saved
+  OPTIMIZED_GEN_RC = 0
+  OPTIMIZED Output:
+[INFO ] stable-diffusion.cpp:713  - loading model from '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf'
+[INFO ] model_loader.cpp:236  - load /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/models/sdxs.gguf using gguf format
+[INFO ] stable-diffusion.cpp:908  - Version: SDXS (512-DS) 
+[INFO ] stable-diffusion.cpp:959  - Weight type stat:                      f16: 401  |    q8_0: 209  
+[INFO ] stable-diffusion.cpp:960  - Conditioner weight type stat:          f16: 99   |    q8_0: 97   
+[INFO ] stable-diffusion.cpp:961  - Diffusion model weight type stat:      f16: 168  |    q8_0: 112  
+[INFO ] stable-diffusion.cpp:962  - VAE weight type stat:             
+[INFO ] stable-diffusion.cpp:1502 - using TAE for encoding / decoding
+[INFO ] stable-diffusion.cpp:1760 - total params memory size = 651.92MB (VRAM 0.00MB, RAM 651.92MB): text_encoders 159.13MB(RAM), diffusion_model 488.12MB(RAM), vae 4.67MB(RAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A)
+[INFO ] stable-diffusion.cpp:1849 - running in eps-prediction mode
+[INFO ] stable-diffusion.cpp:5628 - generate_image 256x256
+[INFO ] denoiser.hpp:1051 - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:4380 - sampling using Euler A method
+  |#########################################         | 158/196 - 325.53MB/s[K  |##################################################| 196/196 - 394.94MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.40s (read: 0.27s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5296 - get_learned_condition completed, taking 0.60s
+[INFO ] stable-diffusion.cpp:5679 - generating image: 1/1 - seed 42
+  |######################                            | 118/280 - 632.69MB/s[K  |##############################                    | 166/280 - 626.96MB/s[K  |##################################################| 280/280 - 810.17MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.60s (read: 0.46s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+  |==================================================| 1/1 - 2.32s/it[K
+[INFO ] stable-diffusion.cpp:5711 - sampling completed, taking 2.33s
+[INFO ] stable-diffusion.cpp:5725 - generating 1 latent images completed, taking 2.33s
+[INFO ] stable-diffusion.cpp:5321 - decoding 1 latents
+  |##################################################| 67/67 - 11.54MB/s[K
+[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
+[INFO ] stable-diffusion.cpp:5387 - latent 1 decoded, taking 1.15s
+[INFO ] stable-diffusion.cpp:5391 - decode_first_stage completed, taking 1.15s
+[INFO ] stable-diffusion.cpp:5861 - generate_image completed in 4.08s
+[INFO ] main.cpp:490  - save result image 0 to '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-optimized-sdxs.png' (success)
+[INFO ] main.cpp:562  - 1/1 images saved
+
+CMD: python3 -c "
+import os, hashlib, struct
+path = '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-optimized-sdxs.png'
+if os.path.exists(path):
+    size = os.path.getsize(path)
+    with open(path, 'rb') as f:
+        data = f.read()
+    sha = hashlib.sha256(data).hexdigest()
+    w, h = struct.unpack('>II', data[16:24]) if data[:8] == b'\x89PNG\r\n\x1a\n' else (0, 0)
+    print(f'EXISTS,{size},{sha},{w},{h}')
+else:
+    print('NOT_FOUND')
+" 
+[python3 -c "
+import os, hashlib, struct
+path = '/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/outputs/a35-optimized-sdxs.png'
+if os.path.exists(path):
+    size = os.path.getsize(path)
+    with open(path, 'rb') as f:
+        data = f.read()
+    sha = hashlib.sha256(data).hexdigest()
+    w, h = struct.unpack('>II', data[16:24]) if data[:8] == b'\x89PNG\r\n\x1a\n' else (0, 0)
+    print(f'EXISTS,{size},{sha},{w},{h}')
+else:
+    print('NOT_FOUND')
+" ] STDOUT:
+EXISTS,133697,a747ab877132e064f21b2fb07225c5d3036702309ea7789a5c59f972514a8c3a,256,256
+
+--- STEP 16: Installer Auto-Selection Validation in Isolated Environment ---
+CMD: python3 -m venv /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/staging/venv
+CMD: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/staging/venv/bin/pip install --no-index --find-links=/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads termux-diffusion
+[/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/staging/venv/bin/pip install --no-index --find-links=/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads termux-diffusion] STDOUT:
+Looking in links: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/downloads
+CMD: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/staging/venv/bin/python3 -c "
+import json
+from termux_diffusion.hardware import detect_cpu_features, select_optimal_artifact
+from termux_diffusion.manifest import ReleaseManifest
+
+feats = detect_cpu_features()
+print(json.dumps({
+    'detected_features': list(feats),
+    'dotprod': 'dotprod' in feats,
+    'fp16': 'fp16' in feats,
+}))
+" 
+  Installer Probe: {
+  "INSTALLER_SELECTED_ARTIFACT": "sd-cli-arm64-v8.2a-dotprod-fp16",
+  "EXPECTED_ARTIFACT": "sd-cli-arm64-v8.2a-dotprod-fp16",
+  "INSTALLER_SELECTION_MATCH": true
+}
+
+--- STEP 17: Zero On-Device Compilation Audit ---
+
+--- STEP 18 & 19: Mali-G68 GPU Existence & Track B V0-V9 Probes ---
+CMD: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes/track_b_vulkan_probe
+[/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes/track_b_vulkan_probe] STDOUT:
+=== TRACK B VULKAN PLAYBOOK CAPABILITY PROBE (V0-V3) ===
+[V0] Opening system libvulkan.so via dlopen...
+[V0] SUCCESS: libvulkan.so loaded at 0xc538e032a2114bbb
+[V1] Creating Vulkan Instance...
+[V1] SUCCESS: Vulkan Instance created (0xb4000074a884b140)
+[V2] Enumerating Physical Devices...
+[V2] SUCCESS: Found 1 physical device(s)
+[V3] Inspecting Physical Devices for Mali-G78 Hardware GPU...
+  Device #0: 'Mali-G68'
+    Type       : INTEGRATED_GPU (1)
+    Vendor ID  : 0x13b5
+    Device ID  : 0x92041010
+    Driver Ver : 0x09801000
+    API Ver    : 1.3.219
+    >>> MALI HARDWARE GPU DETECTED: Mali-G68 <<<
+[V3] RESULT: PASS - Mali-G78 Hardware Physical Device Successfully Enumerated!
+CMD: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes/track_b_vulkan_probe_v4_v5
+[/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes/track_b_vulkan_probe_v4_v5] STDOUT:
+=== TRACK B VULKAN PLAYBOOK CAPABILITY PROBE (V0-V5) ===
+V3_DEVICE_NAME=Mali-G68
+V3_DEVICE_TYPE=INTEGRATED_GPU
+V3_VENDOR_ID=0x13b5
+V3_DEVICE_ID=0x92041010
+V3_API_VERSION=1.3.219
+V3_DRIVER_VERSION=0x09801000
+V4_QUEUE_FAMILY_COUNT=1
+[V4] Queue Family #0: count=2, flags=0x00000017 (Compute:YES, Graphics:YES, Transfer:YES)
+V4_SELECTED_QUEUE_INDEX=0
+V4_SELECTED_QUEUE_FLAGS=0x00000017
+V4_DEDICATED_COMPUTE=FALSE
+V4_RESULT=PASS
+
+=== STAGE V5: LOGICAL DEVICE CREATION ===
+V5_REQUESTED_EXTENSIONS=NONE
+V5_REQUESTED_FEATURES=NONE
+V5_VK_CREATE_DEVICE_RESULT=0 (VK_SUCCESS=0)
+V5_QUEUE_HANDLE_VALID=TRUE
+V5_CLEANUP_RESULT=PASS
+PROCESS_RC=0
+RESULT=PASS_V4_V5_MALI_LOGICAL_DEVICE_CREATED
+CMD: /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes/track_b_vulkan_probe_v6
+[/data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes/track_b_vulkan_probe_v6] STDOUT:
+=== TRACK B VULKAN PLAYBOOK CAPABILITY PROBE (V0-V6) ===
+V6_MEMORY_HEAP_COUNT=2
+V6_MEMORY_TYPE_COUNT=4
+[V6] Memory Type #0: heapIndex=0, flags=0x00000007 (HostVisible:YES, HostCoherent:YES, DeviceLocal:YES)
+[V6] Memory Type #1: heapIndex=0, flags=0x0000000b (HostVisible:YES, HostCoherent:NO, DeviceLocal:YES)
+[V6] Memory Type #2: heapIndex=0, flags=0x00000011 (HostVisible:NO, HostCoherent:NO, DeviceLocal:YES)
+[V6] Memory Type #3: heapIndex=1, flags=0x00000021 (HostVisible:NO, HostCoherent:NO, DeviceLocal:YES)
+V6_BUFFER_SIZE=65536
+V6_BUFFER_USAGE=STORAGE_BUFFER_BIT (0x02)
+V6_CREATE_BUFFER_RESULT=0 (VK_SUCCESS=0)
+V6_REQUIREMENT_SIZE=65536
+V6_REQUIREMENT_ALIGNMENT=64
+V6_MEMORY_TYPE_BITS=0x00000003
+V6_SELECTED_MEMORY_TYPE_INDEX=0
+V6_SELECTED_MEMORY_FLAGS=0x00000007
+V6_HOST_VISIBLE=TRUE
+V6_HOST_COHERENT=TRUE
+V6_ALLOCATE_MEMORY_RESULT=0 (VK_SUCCESS=0)
+V6_BIND_BUFFER_RESULT=0 (VK_SUCCESS=0)
+V6_MAP_MEMORY_RESULT=0 (VK_SUCCESS=0)
+V6_FLUSH_REQUIRED=FALSE
+V6_PATTERN_WRITE_VERIFY=PASS
+V6_CLEANUP_RESULT=PASS
+PROCESS_RC=0
+RESULT=PASS_V6_MALI_MEMORY_ALLOCATION_AND_HOST_MAPPING
+CMD: cd /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes && ./track_b_vulkan_probe_v7_v8_v9 compute_shader.spv
+[cd /data/data/com.termux/files/home/tmp/termux-diffusion-a35-v130-validation/probes && ./track_b_vulkan_probe_v7_v8_v9 compute_shader.spv] STDOUT:
+=== TRACK B VULKAN PLAYBOOK CAPABILITY PROBE (V7-V9) ===
+V7_SPIRV_SIZE=1180
+V7_SPIRV_SHA256=f47bacb187a854e13abfb3794151485cce1c49f9089353600e1e8719b7b2b1b9
+V7_SHADER_MODULE_RESULT=0
+V7_DESCRIPTOR_LAYOUT_RESULT=0
+V7_PIPELINE_LAYOUT_RESULT=0
+V7_COMPUTE_PIPELINE_RESULT=0
+V7_RESULT=PASS
+V8_COMMAND_POOL_RESULT=0
+V8_COMMAND_BUFFER_RESULT=0
+V8_DISPATCH_GROUPS=(4, 1, 1)
+V8_QUEUE_SUBMIT_RESULT=0
+V8_FENCE_WAIT_RESULT=0
+V8_RESULT=PASS
+V9_ELEMENT_COUNT=256
+V9_EXPECTED_CHECKSUM=65536
+V9_ACTUAL_CHECKSUM=65536
+V9_MISMATCH_COUNT=0
+V9_RESULT=PASS
+CLEANUP_RESULT=PASS
+PROCESS_RC=0
+RESULT=PASS_V7_V8_V9_MALI_COMPUTE_DISPATCH_SUCCESSFUL
+
+--- STEP 20: Downloading Validation Artifacts to Local Workspace ---

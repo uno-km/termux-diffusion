@@ -22,14 +22,20 @@
     "patch_path": "patches/v10-v11-mali-g78-vulkan.patch",
     "patch_sha256": "8cddc5b4f753eadb4180ad21f724876113deb8c00c82abe19d7efafdff82f21b"
   },
-  "package": {
-    "status": "candidate_staged",
-    "filename": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
-    "sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
-    "tracked_in_git": false
+  "release": {
+    "tag_name": "v1.3.1-vulkan-mali-experimental",
+    "html_url": "https://github.com/uno-km/termux-diffusion/releases/tag/v1.3.1-vulkan-mali-experimental",
+    "prerelease": true,
+    "signature_status": "UNSIGNED_EXPERIMENTAL",
+    "package_filename": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+    "package_size_bytes": 56678669,
+    "package_sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+    "public_package_url": "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+    "public_manifest_url": "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/manifest-v1.3.1-vulkan-mali-experimental.json",
+    "public_sha256sums_url": "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/SHA256SUMS"
   },
   "publication": {
     "publish_ready": false,
-    "next_action": "release_packaging_and_signature_preparation"
+    "next_action": "termux_diffusion_operator_build_one_touch_installer_and_run_public_s21_e2e"
   }
 }

@@ -1,0 +1,7 @@
+{
+  "auto_cpu_fallback_result": "PASS",
+  "auto_cpu_fallback_active": true,
+  "explicit_gpu_fail_fast_result": "PASS",
+  "explicit_gpu_fail_fast_prevented_fallback": true,
+  "status": "VERIFIED"
+}

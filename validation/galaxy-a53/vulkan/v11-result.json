@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "model_family": "SDXS-512-0.9",
+  "quantization": "Q8_0",
+  "width": 256,
+  "height": 256,
+  "steps": 1,
+  "sampler": "euler_a",
+  "cfg_scale": 1.0,
+  "seed": 42,
+  "device": "Mali-G68 (Vulkan)",
+  "model_load_result": "PASS",
+  "text_encoder_result": "PASS",
+  "text_encoder_seconds": 2.91,
+  "diffusion_graph_result": "PASS",
+  "sampling_result": "PASS",
+  "sampling_seconds": 14.19,
+  "vae_decode_result": "PASS",
+  "vae_decode_seconds": 10.76,
+  "png_write_result": "PASS",
+  "total_seconds": 27.9,
+  "process_rc": 0
+}

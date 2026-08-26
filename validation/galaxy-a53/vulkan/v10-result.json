@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "operation": "mul_mat",
+  "data_type": "FP32",
+  "matrix_shape": "32x32",
+  "element_count": 1024,
+  "backend_selected": "Vulkan",
+  "gpu_device": "Mali-G68",
+  "mismatch_count": 0,
+  "max_abs_error": 0.0,
+  "mean_abs_error": 0.0,
+  "process_rc": 0
+}

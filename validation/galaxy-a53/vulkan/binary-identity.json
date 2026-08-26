@@ -1,0 +1,22 @@
+{
+  "sd_cli_vulkan": {
+    "path": "bin/sd-cli-vulkan",
+    "sha256": "1f10b3c91b34764cbeb79bc2a8360c8e2f1580cbd41d7160b028a0b512ced6db",
+    "match": true
+  },
+  "v10_self_test": {
+    "path": "bin/v10-self-test",
+    "sha256": "c60280d65e75e8c089325979973386754f6eff0b831d3d1eae91bb488f45e110",
+    "match": true
+  },
+  "libcxx_shared": {
+    "path": "lib/libc++_shared.so",
+    "sha256": "4e843755cda12ed65cd2b450be720b122d6657b24b690bf32de74fdc3f529447",
+    "match": true
+  },
+  "libomp": {
+    "path": "lib/libomp.so",
+    "sha256": "1e542457489e1355838573a303cb186ebd70c724fbddac0c739fa9a42e13fe75",
+    "match": true
+  }
+}

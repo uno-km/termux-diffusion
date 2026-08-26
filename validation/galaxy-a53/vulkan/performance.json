@@ -1,0 +1,8 @@
+{
+  "model_load_time_sec": 0.41,
+  "text_encoder_time_sec": 2.91,
+  "sampling_1step_time_sec": 14.19,
+  "vae_decode_time_sec": 10.76,
+  "total_inference_time_sec": 27.9,
+  "peak_ram_mb": 651.92
+}

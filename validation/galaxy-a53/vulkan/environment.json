@@ -1,0 +1,9 @@
+{
+  "worktree_path": "C:\\Users\\ATSAdmin\\Documents\\UNO\\small_prj\\termux-diffusion-a53",
+  "branch": "validation/galaxy-a53-vulkan",
+  "base_commit": "d5079001a134ce03664b605c3c19226c8bf9921c",
+  "origin_url": "https://github.com/uno-km/termux-diffusion.git",
+  "isolation_status": "ISOLATED",
+  "a35_worktree_touched": false,
+  "a34_worktree_touched": false
+}

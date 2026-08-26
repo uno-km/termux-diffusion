@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/uno-km/termux-diffusion.git",
+  "branch": "validation/galaxy-a53-vulkan",
+  "worktree": "C:\\Users\\ATSAdmin\\Documents\\UNO\\small_prj\\termux-diffusion-a53",
+  "device": {
+    "model": "SM-A536N",
+    "codename": "a53x",
+    "soc": "Exynos 1280",
+    "gpu": "Mali-G68",
+    "android_version": "16",
+    "api_level": "36"
+  },
+  "vulkan": {
+    "api_version": "1.1.177",
+    "driver_version": "0x8001000",
+    "compute_queue": "Universal Family 0 (Count: 2)",
+    "subgroup_size": 16,
+    "max_workgroup_invocations": 512,
+    "max_shared_memory_bytes": 32768,
+    "min_storage_buffer_offset_alignment": 64,
+    "warmup_result": "PASS"
+  },
+  "package": {
+    "candidate": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+    "sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+    "canonical_size_bytes": 56678669,
+    "availability": "public",
+    "compatibility_assessment": "VERIFIED_COMPATIBLE"
+  },
+  "validation_results": {
+    "v10_matmul": "PASS",
+    "v11_sdxs_256": "PASS",
+    "v11_elapsed_sec": 27.9,
+    "png_decode": "PASS",
+    "png_sha256": "18571130ed87ab404671c76e760591f227593ea7620a060c5cce920f91629808",
+    "cli_auto": "PASS",
+    "cli_vulkan": "PASS",
+    "cli_cpu": "PASS",
+    "auto_cpu_fallback": "PASS",
+    "explicit_vulkan_fail_fast": "PASS",
+    "cpu_protected": true,
+    "active_cpu_unchanged": true
+  },
+  "profile_status": {
+    "fast_preset": "verified",
+    "balanced_preset": "pending_device_validation",
+    "auto_activation": true
+  },
+  "verdict": "PASS_A53_MALI_G68_VULKAN_PRODUCT_VALIDATION",
+  "next_action": "HAND_OVER_A53_PROFILE_TO_TERMUX_DIFFUSION_RELEASE_OPERATOR"
+}

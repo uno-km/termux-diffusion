@@ -1,0 +1,8 @@
+{
+  "auto_result": "PASS",
+  "auto_selected_backend": "vulkan",
+  "explicit_vulkan_result": "PASS",
+  "explicit_vulkan_backend": "vulkan",
+  "explicit_cpu_result": "PASS",
+  "explicit_cpu_backend": "cpu"
+}

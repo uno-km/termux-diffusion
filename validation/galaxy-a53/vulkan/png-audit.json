@@ -1,0 +1,17 @@
+{
+  "output_exists": true,
+  "output_format": "PNG",
+  "output_mode": "RGB3",
+  "output_width": 256,
+  "output_height": 256,
+  "output_size_bytes": 133686,
+  "output_sha256": "18571130ed87ab404671c76e760591f227593ea7620a060c5cce920f91629808",
+  "png_decode_valid": true,
+  "pixel_min": 0,
+  "pixel_max": 255,
+  "pixel_mean": 93.58,
+  "pixel_stddev": 119.91,
+  "unique_color_count": 240,
+  "output_all_black": false,
+  "output_all_white": false
+}

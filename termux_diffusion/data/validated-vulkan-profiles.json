@@ -1,14 +1,21 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "profiles": [
     {
       "device_model": "SM-S931N",
-      "device_codename": "pa1q",
+      "device_aliases": [
+        "SM-S931",
+        "SM-S936",
+        "SM-S938",
+        "pa1q"
+      ],
       "soc": "SM8750",
       "gpu": "Adreno (TM) 830",
       "backend_profile": "adreno-vulkan",
+      "package_tag": "v1.3.1-vulkan-experimental",
+      "package_tarball": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz",
+      "package_sha256": "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92",
       "vulkan_api_version": "1.3.284",
-      "driver_version": "vulkan.adreno.so v0800.64.7",
       "presets": {
         "fast": {
           "model_family": "sdxs",
@@ -67,6 +74,100 @@
           "status": "blocked_cpu_quality_failure"
         }
       ]
+    },
+    {
+      "device_model": "SM-G991N",
+      "device_aliases": [
+        "SM-G991",
+        "SM-G996",
+        "SM-G998",
+        "o1s"
+      ],
+      "soc": "Exynos 2100",
+      "gpu": "Mali-G78",
+      "backend_profile": "mali-vulkan",
+      "package_tag": "v1.3.1-vulkan-mali-experimental",
+      "package_tarball": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+      "package_sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+      "vulkan_api_version": "1.3",
+      "presets": {
+        "fast": {
+          "model_family": "sdxs",
+          "quantization": "Q8_0",
+          "width": 256,
+          "height": 256,
+          "steps": 1,
+          "sampler": "euler_a",
+          "cfg_scale": 1.0,
+          "backend": "vulkan",
+          "status": "verified"
+        },
+        "balanced": {
+          "model_family": "sdxs",
+          "quantization": "Q8_0",
+          "width": 512,
+          "height": 512,
+          "steps": 2,
+          "sampler": "euler_a",
+          "cfg_scale": 1.0,
+          "vae_tiling": true,
+          "backend": "vulkan",
+          "status": "verified"
+        }
+      },
+      "blocked": [
+        {
+          "model_family": "dreamshaper",
+          "backend": "cpu",
+          "reason": "all_white_output",
+          "status": "blocked_cpu_quality_failure"
+        }
+      ]
+    },
+    {
+      "device_model": "SM-G981N",
+      "device_aliases": [
+        "SM-G981",
+        "SM-G986",
+        "SM-G988",
+        "SM-G781",
+        "hub1",
+        "r8q",
+        "z3q"
+      ],
+      "soc": "Exynos 990 / Snapdragon 865",
+      "gpu": "Mali-G77 / Adreno 650",
+      "backend_profile": "mali-vulkan",
+      "package_tag": "v1.3.1-vulkan-mali-experimental",
+      "package_tarball": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
+      "package_sha256": "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8",
+      "vulkan_api_version": "1.1",
+      "presets": {
+        "fast": {
+          "model_family": "sdxs",
+          "quantization": "Q8_0",
+          "width": 256,
+          "height": 256,
+          "steps": 1,
+          "sampler": "euler_a",
+          "cfg_scale": 1.0,
+          "backend": "vulkan",
+          "status": "verified"
+        },
+        "balanced": {
+          "model_family": "sdxs",
+          "quantization": "Q8_0",
+          "width": 512,
+          "height": 512,
+          "steps": 2,
+          "sampler": "euler_a",
+          "cfg_scale": 1.0,
+          "vae_tiling": true,
+          "backend": "vulkan",
+          "status": "verified"
+        }
+      },
+      "blocked": []
     }
   ]
 }

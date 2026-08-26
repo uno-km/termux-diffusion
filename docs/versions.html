@@ -1,82 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Version Archive & Changelog | Termux-Diffusion</title>
-  <meta name="description" content="Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/i18n.js" defer></script>
-  <script src="assets/i18n-translations.js" defer></script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Version Archive & Changelog | Termux-Diffusion</title>
+    <meta name="description" content="Historical release archive, changelogs, and integrity verification hashes for termux-diffusion from v1.0.0 to v1.3.0.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
+    <meta name="author" content="uno-km">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
+    <link rel="alternate" type="application/rss+xml" title="Termux-Diffusion RSS Feed" href="https://uno-km.github.io/termux-diffusion/rss.xml">
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Version Archive & Changelog | Termux-Diffusion">
+    <meta property="og:description" content="Historical release archive, changelogs, and integrity verification hashes for termux-diffusion from v1.0.0 to v1.3.0.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
+    <meta property="og:site_name" content="Termux-Diffusion">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Version Archive & Changelog | Termux-Diffusion">
+    <meta name="twitter:description" content="Historical release archive, changelogs, and integrity verification hashes for termux-diffusion from v1.0.0 to v1.3.0.">
+
+    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Termux-Diffusion",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
+      "applicationCategory": "DeveloperApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.3.0",
+      "description": "Historical release archive, changelogs, and integrity verification hashes for termux-diffusion from v1.0.0 to v1.3.0.",
+      "url": "https://uno-km.github.io/termux-diffusion/",
+      "sameAs": [
+        "https://github.com/uno-km/termux-diffusion",
+        "https://pypi.org/project/termux-diffusion/",
+        "https://www.npmjs.com/package/termux-diffusion"
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="assets/i18n.js"></script>
+    <script src="assets/i18n-translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="i18n-translations.js"></script>
+    <link rel="stylesheet" href="/shared/style.css">
+    <script src="/shared/common.js" defer></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="header-brand">
-      <img src="favicon.svg" alt="Termux-Diffusion Logo">
-      <h1 data-i18n="common.brand">Termux-Diffusion</h1>
-    </a>
-    <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Production Stable)</span>
-      <div class="lang-selector-wrapper"></div>
-      <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
-      <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
-      <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub</a>
+    <header>
+        <a href="index.html" class="header-brand">
+            <img src="favicon.svg" alt="Termux-Diffusion Logo">
+            <h1 data-i18n="common.brand">Termux-Diffusion</h1>
+        </a>
+        <div class="header-controls">
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
+            <div class="lang-selector-wrapper">
+                <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+            <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (Python)</a>
+            <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn" style="background:#cb3837;color:#fff;" data-i18n="common.npmBtn">npm (Node.js)</a>
+            <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
+        </div>
+    </header>
+    <div class="container">
+        <nav class="sidebar">
+            <h3 data-i18n="common.nav.overview">Overview</h3>
+            <ul>
+                <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
+                <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
+                <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
+                <li><a href="models.html" data-i18n="common.nav.models">Model Hub & Presets</a></li>
+                <li><a href="gallery.html" data-i18n="common.nav.gallery">Visual Showcase & Gallery</a></li>
+                <li><a href="api-reference.html" data-i18n="common.nav.apiReference">100% Full API Reference</a></li>
+                <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">High-Precision Parameters</a></li>
+                <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
+                <li><a href="versions.html" class="active" data-i18n="common.nav.versions">Version Archive</a></li>
+            </ul>
+            <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+            <ul>
+                <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
+                <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
+                <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
+                <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
+                <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
+                <li><a href="/lib/diffusion/">Termux-Diffusion (Image AI)</a></li>
+                <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
+                <li><a href="/app/workstation/">AMEVA Workstation (Web App)</a></li>
+                <li><a href="/foundation/">AMEVA Foundation</a></li>
+                <li><a href="/index.html">Founder Digital CV</a></li>
+            </ul>
+            <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
+            <ul>
+                <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
+                <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Architecture Spec)</a></li>
+                <li><a href="rss.xml" target="_blank">rss.xml (Crawler News Feed)</a></li>
+                <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h2 data-i18n="versions.title">Version Archive &amp; Release History</h2>
+            <p data-i18n="versions.subtitle">Detailed changelogs, cryptographic artifact checksums, and architectural evolution across all public releases of termux-diffusion.</p>
+
+            <div class="alert alert-tip">
+                <span class="alert-title">🚀 Current Active Production Release: v1.3.0</span>
+                <p>Features signed dual ARM64 prebuilt artifacts with hardware DotProd/FP16 auto-selection, zero-compilation 1-click provisioning, and empirical validation across Samsung Galaxy A35 and Galaxy S21.</p>
+            </div>
+
+            <!-- SECTION 1: VERSION MATRIX TABLE -->
+            <h3>1. Release Timeline &amp; Package Distribution</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Release Date</th>
+                            <th>PyPI Status</th>
+                            <th>npm Status</th>
+                            <th>Key Milestones &amp; Architecture Upgrades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(0, 68, 153, 0.05); font-weight: 700;">
+                            <td><strong>v1.3.0</strong> (Latest)</td>
+                            <td>2026-08-25</td>
+                            <td><span style="color: #2e7d32;">● Live (53.5 KB)</span></td>
+                            <td><span style="color: #2e7d32;">● Live (85.6 KB)</span></td>
+                            <td>ARMv8.2-A DotProd/FP16 Signed Dual-Prebuilts, Galaxy A35/S21 E2E Validated, Python 3.14 Argparse Fix, Bionic WebP NDK Patch</td>
+                        </tr>
+                        <tr>
+                            <td><strong>v1.1.2</strong></td>
+                            <td>2026-08-23</td>
+                            <td><span style="color: #666;">Archived</span></td>
+                            <td><span style="color: #2e7d32;">● Live</span></td>
+                            <td>Node.js TypeScript Definitions, Global CLI Bindings (<code>bin/cli.js</code>), Package Size Optimization</td>
+                        </tr>
+                        <tr>
+                            <td><strong>v1.1.1</strong></td>
+                            <td>2026-08-20</td>
+                            <td><span style="color: #2e7d32;">● Live</span></td>
+                            <td><span style="color: #2e7d32;">● Live</span></td>
+                            <td>Samsung Gallery Auto-Sync (MediaScanner Broadcast), SIGINT Child Process Reaper, High-Precision Parameter Controls</td>
+                        </tr>
+                        <tr>
+                            <td><strong>v1.1.0</strong></td>
+                            <td>2026-08-18</td>
+                            <td><span style="color: #666;">Archived</span></td>
+                            <td><span style="color: #666;">Archived</span></td>
+                            <td>Dual-Engine Node.js JavaScript Bridge, 8-Tier Doctor Diagnostic Tool, Memory Headroom Guard</td>
+                        </tr>
+                        <tr>
+                            <td><strong>v1.0.0</strong></td>
+                            <td>2026-08-15</td>
+                            <td><span style="color: #666;">Archived</span></td>
+                            <td><span style="color: #666;">Archived</span></td>
+                            <td>Initial Production Release, Zero-PRoot ARM64 Bionic libc C++ Engine, Basic GGUF Tensor Support</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECTION 2: DETAILED CHANGELOGS -->
+            <h3>2. Comprehensive Release Notes</h3>
+
+            <h4>v1.3.0 (2026-08-25) — Dual-Prebuilt &amp; Hardware Auto-Selection Release</h4>
+            <ul>
+                <li><strong>Hardware SIMD Vector Auto-Selection:</strong> Introduces <code>sd-cli-arm64-v8.2a-dotprod-fp16</code> yielding 1.98x faster inference on Exynos 1380 (Galaxy A35) and Exynos 2100 (Galaxy S21) over baseline ARMv8-A.</li>
+                <li><strong>Zero-Compilation Instant Provisioning:</strong> 100% prebuilt artifact delivery eliminating on-device Clang/CMake/Ninja build bottlenecks.</li>
+                <li><strong>Python 3.14 Compatibility:</strong> Escaped <code>argparse</code> help string formatting (<code>~70%% lower peak memory</code>) resolving <code>TypeError: %o format</code> exceptions on Termux Python 3.14.</li>
+                <li><strong>Bionic WebP Healer:</strong> Neutralized <code>if(ANDROID)</code> NDK <code>cpu-features</code> dependency in <code>libwebp</code> CMakeLists.</li>
+                <li><strong>Adreno / Mali Vulkan Protection:</strong> Disabled unsupported desktop NV extensions to prevent <code>shaderc</code> 5447 errors during shader generation.</li>
+                <li><strong>Cryptographic Manifest Verification:</strong> Release artifacts secured via Ed25519 detached signatures (RFC 8032).</li>
+            </ul>
+
+            <h4>v1.1.2 (2026-08-23) — TypeScript &amp; npm Packaging Stabilization</h4>
+            <ul>
+                <li>Added full TypeScript interface definitions (<code>index.d.ts</code>) for Node.js developers.</li>
+                <li>Optimized npm tarball structure reducing unpacked size to 85.6 KB.</li>
+            </ul>
+
+            <h4>v1.1.1 (2026-08-20) — Gallery MediaSync &amp; Process Reaper</h4>
+            <ul>
+                <li><strong>Samsung Gallery Integration:</strong> Automatic dispatch of <code>android.intent.action.MEDIA_SCANNER_SCAN_FILE</code> broadcasts to index generated PNG/WebP files in Samsung Gallery and Google Photos.</li>
+                <li><strong>Process Reaper:</strong> Attached process group cleanup ensuring zero orphan/zombie <code>sd-cli</code> instances on SIGINT / Ctrl+C.</li>
+                <li><strong>Advanced CLI Parameters:</strong> Added <code>--clip-skip</code>, <code>--lora-dir</code>, <code>--control-net</code>, and <code>--taesd</code> flags.</li>
+            </ul>
+
+            <h4>v1.1.0 (2026-08-18) — Node.js Dual Engine &amp; 8-Tier Doctor</h4>
+            <ul>
+                <li>Published official npm package <code>termux-diffusion</code> providing native CLI and programmatic JS binding.</li>
+                <li>Implemented 8-Tier hardware diagnostic suite (<code>termux-diffusion doctor</code>) checking Bionic linker, Vulkan driver, memory limits, and ISA extensions.</li>
+            </ul>
+
+            <h4>v1.0.0 (2026-08-15) — Foundation Release</h4>
+            <ul>
+                <li>Initial open-source release on PyPI.</li>
+                <li>Native C++ ARM64 Bionic engine execution without PRoot or virtual containers.</li>
+                <li>Support for GGUF quantized models (Q8_0, Q4_0, Q4_K).</li>
+            </ul>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
+        </main>
     </div>
-  </header>
-
-  <div class="container">
-  <nav class="sidebar">
-    <h3 data-i18n="common.nav.overview">Overview</h3>
-    <ul>
-      <li><a href="index.html" data-i18n="common.nav.home">Home / Architecture</a></li>
-      <li><a href="installation.html" data-i18n="common.nav.installation">Installation Guide</a></li>
-      <li><a href="quickstart.html" data-i18n="common.nav.quickstart">Quickstart & Recipes</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.reference">Official Reference</h3>
-    <ul>
-      <li><a href="api-reference.html" data-i18n="common.nav.apiReference">API Reference</a></li>
-      <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Profiling</a></li>
-      <li><a href="advanced-parameters.html" data-i18n="common.nav.advancedParams">Advanced Parameters</a></li>
-      <li><a href="versions.html" class="active" data-i18n="common.nav.versions">Version Archive</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
-    <ul>
-      <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
-      <li><a href="/lib/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
-      <li><a href="/lib/forge/">AMEVA-Forge (WebGPU Autograd)</a></li>
-      <li><a href="/lib/bitnet/">Termux-BitNet (1.58-bit LLM)</a></li>
-      <li><a href="/lib/playwright/">Termux-Playwright (Automation)</a></li>
-      <li><a href="/lib/diffusion/" class="active">Termux-Diffusion (Image AI)</a></li>
-      <li><a href="/lib/stt/">Termux-STT (Voice STT)</a></li>
-      <li><a href="/lib/train/">Termux-Train (LoRA Engine)</a></li>
-      <li><a href="https://ameva-workstation-web-core.vercel.app/" target="_blank">AMEVA Workstation (Web App)</a></li>
-      <li><a href="/foundation/">AMEVA Foundation</a></li>
-      <li><a href="/">Founder Digital CV</a></li>
-    </ul>
-    <h3 data-i18n="common.nav.aiSpecs">AI Agent Protocols</h3>
-    <ul>
-      <li><a href="llms.txt" target="_blank">llms.txt (AI Fast Context)</a></li>
-      <li><a href="llms-full.txt" target="_blank">llms-full.txt (Full Spec)</a></li>
-      <li><a href="robots.txt" target="_blank">robots.txt (AI Crawlers)</a></li>
-      <li><a href="sitemap.xml" target="_blank">sitemap.xml (Sitemap)</a></li>
-    </ul>
-  </nav>
-
-    <main class="content">
-      <h2>Version Archive & Changelog</h2>
-      <p class="subtitle">Changelog history and immutable releases</p>
-      <h3>v1.1.1 - Production Stable (Current)</h3>
-         <ul>
-           <li>Standardized on Tomcat/Apache Classic Engineering Design System.</li>
-           <li>Integrated 6-language client-side i18n DOM translation engine.</li>
-           <li>Implemented AI Agent feed generation (llms.txt, llms-full.txt).</li>
-         </ul>
-    </main>
-  </div>
-
-  <footer>
-    <span data-i18n="common.footerText">&copy; 2026 AMEVA Open-Source Foundation. Released under the Apache-2.0 License.</span>
-  </footer>
 </body>
 </html>

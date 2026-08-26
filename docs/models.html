@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
+    <script>if(location.pathname.match(/\/(lib|sdk)\/[^\/]+$/)){location.replace(location.pathname+'/'+location.search+location.hash);}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Model Hub & GGUF Presets | Termux-Diffusion</title>
-    <meta name="description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
-    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy ai, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, snapdragon ai, exynos ai, mobile generative ai, zero-proot diffusion, text to image android">
+    <meta name="description" content="Curated mobile-optimized GGUF diffusion models for Android Termux, including SDXS distilled, DreamShaper8 LCM, and Realistic Vision.">
+    <meta name="keywords" content="termux diffusion, stable diffusion termux, android ai image generation, samsung galaxy a35, samsung galaxy s21, on-device diffusion, gguf mobile tensor, bionic arm64, python termux diffusion, nodejs termux diffusion, exynos 1380, exynos 2100, zero-proot diffusion, vae tiling, golden recipe">
     <meta name="author" content="uno-km">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://uno-km.github.io/termux-diffusion/">
@@ -14,7 +14,7 @@
 
     <!-- Open Graph Metadata -->
     <meta property="og:title" content="Model Hub & GGUF Presets | Termux-Diffusion">
-    <meta property="og:description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <meta property="og:description" content="Curated mobile-optimized GGUF diffusion models for Android Termux, including SDXS distilled, DreamShaper8 LCM, and Realistic Vision.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://uno-km.github.io/termux-diffusion/">
     <meta property="og:site_name" content="Termux-Diffusion">
@@ -23,7 +23,7 @@
     <!-- Twitter Card Metadata -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Model Hub & GGUF Presets | Termux-Diffusion">
-    <meta name="twitter:description" content="Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.">
+    <meta name="twitter:description" content="Curated mobile-optimized GGUF diffusion models for Android Termux, including SDXS distilled, DreamShaper8 LCM, and Realistic Vision.">
 
     <!-- Schema.org SoftwareApplication JSON-LD -->
     <script type="application/ld+json">
@@ -31,61 +31,20 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Termux-Diffusion",
-      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy)",
+      "operatingSystem": "Android Termux (ARM64, aarch64, Samsung Galaxy A35 / S21)",
       "applicationCategory": "DeveloperApplication",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD"
       },
-      "softwareVersion": "1.1.1",
-      "description": "Model catalog, GGUF quantization formats, and memory specifications for on-device Stable Diffusion on Android.",
+      "softwareVersion": "1.3.0",
+      "description": "Curated mobile-optimized GGUF diffusion models for Android Termux, including SDXS distilled, DreamShaper8 LCM, and Realistic Vision.",
       "url": "https://uno-km.github.io/termux-diffusion/",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "reviewCount": "128",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
       "sameAs": [
         "https://github.com/uno-km/termux-diffusion",
         "https://pypi.org/project/termux-diffusion/",
         "https://www.npmjs.com/package/termux-diffusion"
-      ]
-    }
-    </script>
-
-    <!-- Schema.org FAQPage JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How to run Stable Diffusion on Android Termux without root?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Run 'curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/docs/install.sh | bash' in Termux to bootstrap the native ARM64 Bionic engine. Then generate images in Python or Node.js via generate('prompt', model='realistic')."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does termux-diffusion require PRoot Linux or virtual containers?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. termux-diffusion executes directly on Android native Bionic libc using ARM64 NEON SIMD vectorization and GGML quantized weights, avoiding virtual container memory overhead."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How are generated images exported to the Samsung Gallery app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "termux-diffusion automatically copies outputs to ~/storage/pictures/TermuxDiffusion/ and broadcasts an Android MEDIA_SCANNER intent to index the image immediately in Samsung Gallery."
-          }
-        }
       ]
     }
     </script>
@@ -107,7 +66,7 @@
             <h1 data-i18n="common.brand">Termux-Diffusion</h1>
         </a>
         <div class="header-controls">
-            <span class="release-tag" data-i18n="common.releaseTag">v1.1.1 (Dual Engine)</span>
+            <span class="release-tag" data-i18n="common.releaseTag">v1.3.0 (Dual Prebuilt)</span>
             <div class="lang-selector-wrapper">
                 <select class="lang-select" onchange="if(window.i18nManager) window.i18nManager.setLanguage(this.value)">
                     <option value="en">🇺🇸 English</option>
@@ -121,7 +80,6 @@
             <a href="https://github.com/uno-km/termux-diffusion" target="_blank" class="header-btn primary" data-i18n="common.githubBtn">GitHub Repository</a>
         </div>
     </header>
-
     <div class="container">
         <nav class="sidebar">
             <h3 data-i18n="common.nav.overview">Overview</h3>
@@ -136,7 +94,7 @@
                 <li><a href="benchmarks.html" data-i18n="common.nav.benchmarks">Benchmarks & Hardware</a></li>
                 <li><a href="versions.html" data-i18n="common.nav.versions">Version Archive</a></li>
             </ul>
-                        <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
+            <h3 data-i18n="common.nav.ecosystem">AMEVA Ecosystem</h3>
             <ul>
                 <li><a href="/lib/mcp/">AMEVA-MCP-Hub (Polyglot WASM)</a></li>
                 <li><a href="/sdk/sentinel/">AMEVA Sentinel (Security SDK)</a></li>
@@ -149,7 +107,6 @@
                 <li><a href="/foundation/">AMEVA Foundation</a></li>
                 <li><a href="/index.html">Founder Digital CV</a></li>
             </ul>
-
             <h3 data-i18n="common.nav.advanced">AI Agent Protocol &amp; Feeds</h3>
             <ul>
                 <li><a href="llms.txt" target="_blank">llms.txt (AI Agent Context)</a></li>
@@ -158,107 +115,144 @@
                 <li><a href="sitemap.xml" target="_blank">sitemap.xml (Search Sitemap)</a></li>
             </ul>
         </nav>
-
         <main class="content">
-            <h2 data-i18n="models.title">Model Hub &amp; GGUF Quantization Presets</h2>
-            <p data-i18n="models.subtitle">Specifications for built-in mobile-optimized presets and custom weight resolution.</p>
-
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Preset Name</th>
-                        <th>Base Architecture &amp; Quantization</th>
-                        <th>File Size</th>
-                        <th>Optimal Steps &amp; CFG</th>
-                        <th>Recommended Sampler</th>
-                        <th>Key Visual Workload</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong><code>"sdxs"</code></strong></td>
-                        <td>SDXS 512 Tiny SD Distilled (Q8_0)</td>
-                        <td><strong>651 MB</strong></td>
-                        <td><strong>1 ~ 2 steps (CFG 1.0)</strong></td>
-                        <td><code>euler_a</code></td>
-                        <td>Ultra-low latency mobile prototyping (Instant 1-2s, sharp)</td>
-                    </tr>
-                    <tr>
-                        <td><strong><code>"anime"</code></strong></td>
-                        <td>DreamShaper 8 LCM (Q4_0)</td>
-                        <td>1.55 GB</td>
-                        <td><strong>4 ~ 8 steps (CFG 1.5)</strong></td>
-                        <td><code>lcm</code></td>
-                        <td>2D / 2.5D stylized anime art (Crisp lineart, rich cel-shading)</td>
-                    </tr>
-                    <tr>
-                        <td><strong><code>"realistic"</code></strong></td>
-                        <td>Realistic Vision V6.0 B1 (Q4_K)</td>
-                        <td>1.55 GB</td>
-                        <td><strong>20 ~ 25 steps (CFG 7.0)</strong></td>
-                        <td><code>dpm2</code> / <code>karras</code></td>
-                        <td>Ultra-detailed photorealism (Pores, eyes, cinematic lighting)</td>
-                    </tr>
-                    <tr>
-                        <td><strong><code>"speed"</code></strong></td>
-                        <td>Stable Diffusion 1.5 Base (Q4_1)</td>
-                        <td>1.68 GB</td>
-                        <td><strong>15 ~ 20 steps (CFG 6.0)</strong></td>
-                        <td><code>euler_a</code> / <code>dpm++2m</code></td>
-                        <td>General-purpose drafting and balanced composition</td>
-                    </tr>
-                    <tr>
-                        <td><strong><code>"turbo"</code></strong></td>
-                        <td>Stable Diffusion 1.5 Pruned (Q4_0)</td>
-                        <td>1.49 GB</td>
-                        <td><strong>15 ~ 20 steps (CFG 6.0)</strong></td>
-                        <td><code>euler_a</code> / <code>dpm++2m</code></td>
-                        <td>Lightweight SD1.5 base generation</td>
-                    </tr>
-                </tbody>
-            </table>
+            <h2 data-i18n="models.title">Model Hub &amp; GGUF Presets</h2>
+            <p data-i18n="models.subtitle">Curated collection of quantized diffusion models optimized for Android ARM64 architecture, Samsung Galaxy hardware, and Termux memory budgets.</p>
 
             <div class="alert alert-tip">
-                <span class="alert-title">💡 Denoising Architecture Rules (정석 파라미터 가이드)</span>
-                <p><strong>1. Distilled Models (<code>sdxs</code>, <code>anime</code>):</strong> Keep CFG low (1.0~1.5) and use 1st-order samplers (<code>euler_a</code>, <code>lcm</code>). High CFG or 2nd-order ODE samplers (<code>dpm2</code>) will collapse the latent space.</p>
-                <p><strong>2. Full SD1.5 Models (<code>realistic</code>, <code>speed</code>, <code>turbo</code>):</strong> Require at least 15~20 steps and CFG 6.0~7.5 with quality-guard negative prompts to fully resolve photorealistic details.</p>
+                <span class="alert-title">🎯 Model Selection Strategy for Mobile Devices</span>
+                <p>For instant interactive applications, use <strong><code>sdxs</code></strong> (generates in ~4s on Galaxy A35/S21). For high-fidelity artwork and portraits, use <strong><code>anime</code> (LCM)</strong> or <strong><code>realistic</code> (Realistic Vision)</strong> with the <code>--vae-tiling</code> flag enabled.</p>
             </div>
 
-            <h3>Custom Model Management API</h3>
-            <pre><code>from termux_diffusion import (
-    set_cache_dir,       # Route cache to external storage / SD card
-    get_cache_dir,       # Inspect active cache directory
-    download_model,      # Pre-download models in background with progress
-    register_model,      # Register custom Hugging Face GGUF models
-    list_cached_models,  # Inspect downloaded models
-    clear_cache          # Purge cache to reclaim storage
-)
+            <!-- SECTION 1: OFFICIAL PRESETS -->
+            <h3>1. Official Model Presets (공식 사전탑재 프리셋)</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Preset ID</th>
+                            <th>Architecture / Base</th>
+                            <th>GGUF Checkpoint</th>
+                            <th>Size</th>
+                            <th>Optimal Steps</th>
+                            <th>Optimal CFG</th>
+                            <th>A35 Latency</th>
+                            <th>VAE Tiling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong><code>sdxs</code></strong> (Default)</td>
+                            <td>Tiny-SD (1-Step Distilled)</td>
+                            <td><code>sdxs-512-tinySDdistilled_Q8_0.gguf</code></td>
+                            <td><strong>651 MB</strong></td>
+                            <td>1 ~ 2</td>
+                            <td><strong>1.0 (Fixed)</strong></td>
+                            <td><strong>4.08s</strong> (256p)<br>23.2s (512p)</td>
+                            <td>Optional (TAESD)</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>anime</code></strong></td>
+                            <td>DreamShaper 8 (LCM Accelerated)</td>
+                            <td><code>DreamShaper8_LCM_q4_0.gguf</code></td>
+                            <td><strong>1,550 MB</strong></td>
+                            <td>4 ~ 6</td>
+                            <td><strong>1.5 ~ 2.0</strong></td>
+                            <td>422s (6-step)</td>
+                            <td><strong>Required</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>realistic</code></strong></td>
+                            <td>Realistic Vision V6.0 B1</td>
+                            <td><code>realisticVisionV60B1_v51HyperVAE-Q4_k.gguf</code></td>
+                            <td><strong>1,547 MB</strong></td>
+                            <td>6 ~ 8</td>
+                            <td><strong>3.5 ~ 4.5</strong></td>
+                            <td>447s (6-step)</td>
+                            <td><strong>Required</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>speed</code></strong></td>
+                            <td>SD 1.5 Turbo Base</td>
+                            <td><code>sd15-turbo-q4_0.gguf</code></td>
+                            <td><strong>1,420 MB</strong></td>
+                            <td>4 ~ 5</td>
+                            <td>2.0 ~ 3.0</td>
+                            <td>~380s (5-step)</td>
+                            <td><strong>Required</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-# 1. Configure custom cache storage path (e.g. SD Card)
-set_cache_dir("~/storage/external-1/ai_models")
+            <!-- SECTION 2: GOLDEN RULES & ARCHITECTURE -->
+            <h3>2. Golden Rules by Model Architecture (아키텍처별 필수 지침)</h3>
+            
+            <h4>2.1 SDXS (512-tinySDdistilled / 651 MB) — Ultra-Fast Mobile Distillation</h4>
+            <ul>
+                <li><strong>Distillation Principle:</strong> Recovers full latent distribution in 1~2 steps via advanced score distillation. TAESD decoder completes VAE stage in under 0.2s.</li>
+                <li><strong>Golden Rule:</strong> <strong>Never set CFG Scale above 2.0</strong>. CFG 1.0 with Euler A sampler yields the sharpest, uncorrupted output. 2nd-order solvers (Heun, DPM2) destroy the distilled manifold.</li>
+                <li><strong>CLI Example:</strong> <code>termux-diffusion generate "a small robot on workbench" -m sdxs -W 256 -H 256 -s 1 --cfg-scale 1.0</code></li>
+            </ul>
 
-# 2. Pre-fetch preset weights
-download_model("sdxs", force=False)
+            <h4>2.2 DreamShaper 8 LCM (1.55 GB) — 2D/2.5D Illustration</h4>
+            <ul>
+                <li><strong>LCM Principle:</strong> Latent Consistency Model formulation reduces standard 20+ steps down to 4~6 steps with vibrant cel-shading and particle effects.</li>
+                <li><strong>Golden Rule:</strong> Use <code>--sampler lcm</code> with <code>--schedule karras</code> or <code>default</code>. Always enable <code>--vae-tiling</code> to prevent Android low-memory kills.</li>
+                <li><strong>CLI Example:</strong> <code>termux-diffusion generate "anime warrior girl, cyber armor, 8k" -m anime -s 4 --cfg-scale 1.5 --sampling-method lcm --vae-tiling</code></li>
+            </ul>
 
-# 3. Register custom repository alias
-register_model(
-    name="waifu",
-    repo_id="second-state/DreamShaper-8-GGUF",
-    filename="dreamshaper-8-Q4_k.gguf",
-    description="DreamShaper 8 Q4_K model for stylized anime portraits"
-)
+            <h4>2.3 Realistic Vision V6.0 B1 (1.55 GB) — Photorealism &amp; Portraits</h4>
+            <ul>
+                <li><strong>Burnout Prevention:</strong> High CFG (6.5+) causes color burn and dark vein artifacts. <strong>Set CFG to 3.5 ~ 4.5</strong> for pristine, translucent skin tones.</li>
+                <li><strong>Prompt Strategy:</strong> Avoid literal keyword <code>'skin pores'</code> (causes clustered hole artifacts). Instead, use lighting and lens terms: <code>85mm f1.4 lens, natural skin texture, soft morning window light</code>.</li>
+                <li><strong>Negative Defense:</strong> Always include <code>(deformed iris, deformed pupils:1.3), plastic skin, doll, cgi, 3d, render</code> to eliminate uncanny valley effects.</li>
+                <li><strong>CLI Example:</strong> <code>termux-diffusion generate "portrait of 24yo woman, cozy sweater, 85mm f1.4" -n "low quality, cgi, doll" -m realistic -s 6 --cfg-scale 4.0 --vae-tiling</code></li>
+            </ul>
 
-# 4. View cached weights
-models = list_cached_models()
-for m in models:
-    print(f"Model: {m['name']}, Size: {m['size_mb']:.1f}MB")</code></pre>
+            <!-- SECTION 3: QUANTIZATION FORMATS -->
+            <h3>3. GGUF Quantization Formats &amp; Memory Matrix</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Quantization Type</th>
+                            <th>Bits Per Weight (bpw)</th>
+                            <th>Model RAM Footprint</th>
+                            <th>Perplexity / Quality Loss</th>
+                            <th>Recommended Device Tier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong><code>Q8_0</code></strong></td>
+                            <td>8.50 bpw</td>
+                            <td>~650 MB (SDXS) / ~2.2 GB (SD1.5)</td>
+                            <td>&lt; 0.05% (Near Lossless)</td>
+                            <td>All Devices (SDXS) / 8GB+ RAM</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>Q4_K</code></strong></td>
+                            <td>4.50 bpw</td>
+                            <td>~1.55 GB (SD1.5 Full)</td>
+                            <td>&lt; 0.80% (High Visual Fidelity)</td>
+                            <td>6GB RAM (Galaxy A35) &amp; 8GB RAM</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>Q4_0</code></strong></td>
+                            <td>4.00 bpw</td>
+                            <td>~1.50 GB (LCM Full)</td>
+                            <td>&lt; 1.20% (Fast Computation)</td>
+                            <td>6GB RAM (Galaxy A35) &amp; 8GB RAM</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <footer style="margin-top: 50px; padding: 25px 0; border-top: 1px solid var(--border-color, #e0e0e0); font-size: 0.85rem; color: #666; text-align: center;">
+                <p>Termux-Diffusion v1.3.0 &bull; Licensed under Apache-2.0 &bull; Developed by <a href="https://github.com/uno-km" target="_blank" style="color: #004499; text-decoration: none; font-weight: 600;">uno-km</a> (AMEVA Foundation)</p>
+                <p style="margin-top: 5px;">Validated on Samsung Galaxy A35 5G (Exynos 1380) &amp; Galaxy S21 5G (Exynos 2100) &bull; Zero-PRoot Bionic Native Execution</p>
+            </footer>
         </main>
     </div>
-    <footer>
-        <div style="margin-bottom: 8px; font-size: 0.85em; opacity: 0.85;">
-            <strong>Disclaimer:</strong> Termux-Diffusion is an independent open-source project developed for the Android Termux environment and is not officially affiliated with, endorsed by, or sponsored by the Termux project.
-        </div>
-        <span data-i18n="common.footerText">&copy; 2026 Termux-Diffusion Project (uno-km). Released under the MIT License.</span>
-    </footer>
 </body>
 </html>

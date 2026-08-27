@@ -70,14 +70,14 @@
       <p class="subtitle">Complete history of official releases, prebuilt binary assets, and kernel patches</p>
 
       <section class="doc-section">
-        <h3>v1.3.1 - Multi-SoC Vulkan Acceleration & Product Presets <span class="badge badge-success">Latest</span></h3>
-        <p><strong>Release Date:</strong> 2026-08-26 | <strong>Tag:</strong> <code>v1.3.1-vulkan-experimental</code></p>
+        <h3>v1.3.1 - Structured Error Diagnostics & Dual Registry Production Release <span class="badge badge-success">Latest</span></h3>
+        <p><strong>Release Date:</strong> 2026-08-27 | <strong>Tag:</strong> <code>v1.3.1</code></p>
         <ul>
-          <li><strong>Galaxy S25 (Adreno 830) Support:</strong> Native Vulkan acceleration delivering 4.39s (FAST, 256p 1-step) and 16.24s (BALANCED, 512p 2-step) inference.</li>
-          <li><strong>Galaxy S21 (Mali-G78) Fix:</strong> Resolved Node 1055 <code>VK_ERROR_DEVICE_LOST</code> driver crash, enabling full SDXS on-device inference.</li>
-          <li><strong>Product Presets Architecture:</strong> Added <code>--preset fast</code>, <code>--preset balanced</code>, and <code>--preset anime_experimental</code>.</li>
-          <li><strong>Strict Fail-Fast Protection:</strong> Prohibits silent CPU fallback when Vulkan is explicitly requested.</li>
-          <li><strong>Lightweight Gateway Distribution:</strong> 67.7MB native binaries served via GitHub Release Assets, preserving 53KB PyPI and 85KB npm footprints.</li>
+          <li><strong>Structured Error Diagnostics:</strong> Formatted fail-fast diagnostic error messages with parameter name, resolved absolute path, and targeted recovery remedies.</li>
+          <li><strong>CLI Exception Handling:</strong> Integrated comprehensive try-catch wrappers returning deterministic process exit codes (<code>ExitCode.CLI_ERROR</code>, <code>ExitCode.BUILD_ERROR</code>).</li>
+          <li><strong>Dual Registry Synchronization:</strong> Fully aligned npm and PyPI distribution metadata, including automated PyPI release pipelines.</li>
+          <li><strong>Multi-SoC Vulkan Acceleration:</strong> Native Vulkan acceleration on Snapdragon Adreno 830 (Galaxy S25) and Exynos Mali-G68/G78 with safe memory fences.</li>
+          <li><strong>Production Presets:</strong> Pre-calibrated <code>--preset fast</code>, <code>--preset balanced</code>, and <code>--preset anime_experimental</code>.</li>
         </ul>
       </section>
 

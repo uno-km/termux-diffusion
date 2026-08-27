@@ -1,4 +1,4 @@
-name: Publish to npm & GitHub Packages
+name: Publish to npm, PyPI & GitHub Packages
 
 on:
   push:
@@ -28,6 +28,37 @@ jobs:
           npm publish --access public || echo "npm version already exists or publish skipped"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip build twine
+
+      - name: Build sdist and wheel
+        run: |
+          python -m build
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          twine upload --skip-existing dist/* || echo "PyPI release already exists or token skipped"
 
   publish-github-packages:
     name: Publish to GitHub Packages Registry
@@ -63,3 +94,4 @@ jobs:
           npm publish --registry=https://npm.pkg.github.com || echo "GitHub package publish skipped or already exists"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,5 +1,0 @@
-[termux-diffusion] Processing inference with model='sdxs' (steps=1, threads=4, device=cpu)...
-  > [INFO ] stable-diffusion.cpp:4380 - sampling using Euler A method
-  > [INFO ] stable-diffusion.cpp:5711 - sampling completed, taking 1.39s
-[termux-diffusion] Artifact generated in 4.48s -> /data/data/com.termux/files/home/termux-diffusion-results/generation-20260825-124737/output_robot.png
-[termux-diffusion] Synchronized to Android MediaStore: /sdcard/Pictures/TermuxDiffusion/output_robot.png

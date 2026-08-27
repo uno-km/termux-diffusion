@@ -119,33 +119,43 @@ def main(argv: Optional[List[str]] = None) -> int:
                 if not vae_tiling and p_cfg.get("default_vae_tiling"):
                     vae_tiling = True
 
-        res = generate(
-            prompt=args.prompt,
-            model=model_name,
-            negative_prompt=args.negative,
-            device=device,
-            steps=steps,
-            cfg_scale=cfg,
-            width=width,
-            height=height,
-            threads=args.threads,
-            seed=args.seed,
-            output=args.output,
-            sampling_method=sampler,
-            schedule=args.schedule,
-            vae_tiling=vae_tiling,
-            init_img=args.init_img,
-            strength=args.strength,
-            lora_dir=args.lora_dir,
-            clip_skip=args.clip_skip,
-            control_net=args.control_net,
-            control_image=args.control_image,
-            control_strength=args.control_strength,
-            taesd=args.taesd,
-            strict_vulkan=args.strict_vulkan,
-            auto_provision=True
-        )
-        return 0 if res.path.exists() else 1
+        try:
+            res = generate(
+                prompt=args.prompt,
+                model=model_name,
+                negative_prompt=args.negative,
+                device=device,
+                steps=steps,
+                cfg_scale=cfg,
+                width=width,
+                height=height,
+                threads=args.threads,
+                seed=args.seed,
+                output=args.output,
+                sampling_method=sampler,
+                schedule=args.schedule,
+                vae_tiling=vae_tiling,
+                init_img=args.init_img,
+                strength=args.strength,
+                lora_dir=args.lora_dir,
+                clip_skip=args.clip_skip,
+                control_net=args.control_net,
+                control_image=args.control_image,
+                control_strength=args.control_strength,
+                taesd=args.taesd,
+                strict_vulkan=args.strict_vulkan,
+                auto_provision=True
+            )
+            return 0 if res.path.exists() else 1
+        except FileNotFoundError as fnf_err:
+            print(f"[ERROR] [FILE_NOT_FOUND]: {fnf_err}", file=sys.stderr)
+            return ExitCode.CLI_ERROR
+        except ValueError as val_err:
+            print(f"[ERROR] [INVALID_ARGUMENT]: {val_err}", file=sys.stderr)
+            return ExitCode.CLI_ERROR
+        except TermuxDiffusionError as td_err:
+            print(f"[ERROR] [{td_err.code}]: {td_err}", file=sys.stderr)
+            return ExitCode.BUILD_ERROR
 
     elif args.command == "install":
         provision_engine(force=args.force, backend=args.backend)

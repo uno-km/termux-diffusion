@@ -348,7 +348,12 @@ def generate(
     if init_img is not None and str(init_img).strip():
         effective_init_path = Path(init_img).resolve()
         if not effective_init_path.is_file():
-            raise FileNotFoundError(f"Img2Img source image file does not exist: {effective_init_path}")
+            raise FileNotFoundError(
+                f"[termux-diffusion] Img2Img source image file does not exist.\n"
+                f"  -> Input parameter: '{init_img}'\n"
+                f"  -> Resolved absolute path: '{effective_init_path}'\n"
+                f"  -> Remedy: Check if the image file exists and Termux storage permission ('termux-setup-storage') is granted."
+            )
         cmd.extend(["-i", str(effective_init_path)])
         
         # Denoising strength for Img2Img
@@ -370,7 +375,12 @@ def generate(
     if lora_dir is not None and str(lora_dir).strip():
         effective_lora_path = Path(lora_dir).resolve()
         if not effective_lora_path.is_dir():
-            raise FileNotFoundError(f"LoRA directory does not exist: {effective_lora_path}")
+            raise FileNotFoundError(
+                f"[termux-diffusion] LoRA weights directory not found.\n"
+                f"  -> Input parameter: '{lora_dir}'\n"
+                f"  -> Resolved absolute path: '{effective_lora_path}'\n"
+                f"  -> Remedy: Create directory or verify location containing .safetensors/.gguf LoRA adapters."
+            )
         cmd.extend(["--lora-model-dir", str(effective_lora_path)])
 
     effective_clip_skip = None
@@ -395,13 +405,23 @@ def generate(
     if control_net is not None and str(control_net).strip():
         effective_cnet_path = Path(control_net).resolve()
         if not effective_cnet_path.is_file():
-            raise FileNotFoundError(f"ControlNet model file does not exist: {effective_cnet_path}")
+            raise FileNotFoundError(
+                f"[termux-diffusion] ControlNet model file not found.\n"
+                f"  -> Input parameter: '{control_net}'\n"
+                f"  -> Resolved absolute path: '{effective_cnet_path}'\n"
+                f"  -> Remedy: Place valid ControlNet GGUF/model file at specified path."
+            )
         cmd.extend(["--control-net", str(effective_cnet_path)])
 
         if control_image is not None and str(control_image).strip():
             effective_cimg_path = Path(control_image).resolve()
             if not effective_cimg_path.is_file():
-                raise FileNotFoundError(f"ControlNet control image does not exist: {effective_cimg_path}")
+                raise FileNotFoundError(
+                    f"[termux-diffusion] ControlNet guide/hint image not found.\n"
+                    f"  -> Input parameter: '{control_image}'\n"
+                    f"  -> Resolved absolute path: '{effective_cimg_path}'\n"
+                    f"  -> Remedy: Check existence of pose/edge reference image."
+                )
             cmd.extend(["--control-image", str(effective_cimg_path)])
 
         if control_strength is not None:
@@ -422,7 +442,12 @@ def generate(
     if taesd is not None and str(taesd).strip():
         effective_taesd_path = Path(taesd).resolve()
         if not effective_taesd_path.is_file():
-            raise FileNotFoundError(f"TAESD model file does not exist: {effective_taesd_path}")
+            raise FileNotFoundError(
+                f"[termux-diffusion] TAESD fast VAE model file not found.\n"
+                f"  -> Input parameter: '{taesd}'\n"
+                f"  -> Resolved absolute path: '{effective_taesd_path}'\n"
+                f"  -> Remedy: Check TAESD file path or omit --taesd to use standard built-in VAE."
+            )
         cmd.extend(["--taesd", str(effective_taesd_path)])
 
     # 5.1 Configure Environment with companion library search paths

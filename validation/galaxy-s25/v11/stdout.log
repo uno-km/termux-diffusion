@@ -1,31 +1,0 @@
-[WARN ] ggml_extend_backend.cpp:530  - unable to get CPU features
-[INFO ] stable-diffusion.cpp:713  - loading model from 'models/sdxs-512-tinySDdistilled_Q8_0.gguf'
-[INFO ] model_loader.cpp:236  - load models/sdxs-512-tinySDdistilled_Q8_0.gguf using gguf format
-[INFO ] stable-diffusion.cpp:908  - Version: SDXS (512-DS) 
-[INFO ] stable-diffusion.cpp:959  - Weight type stat:                      f16: 401  |    q8_0: 209  
-[INFO ] stable-diffusion.cpp:960  - Conditioner weight type stat:          f16: 99   |    q8_0: 97   
-[INFO ] stable-diffusion.cpp:961  - Diffusion model weight type stat:      f16: 168  |    q8_0: 112  
-[INFO ] stable-diffusion.cpp:962  - VAE weight type stat:             
-[INFO ] stable-diffusion.cpp:1502 - using TAE for encoding / decoding
-[INFO ] stable-diffusion.cpp:1760 - total params memory size = 651.92MB (VRAM 651.92MB, RAM 0.00MB): text_encoders 159.13MB(VRAM), diffusion_model 488.12MB(VRAM), vae 4.67MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A)
-[INFO ] stable-diffusion.cpp:1849 - running in eps-prediction mode
-[INFO ] stable-diffusion.cpp:5628 - generate_image 256x256
-[INFO ] denoiser.hpp:1051 - get_sigmas with discrete scheduler
-[INFO ] stable-diffusion.cpp:4380 - sampling using Euler A method
-  |#                                                 | 1/196 - 0.00MB/s[K  |##################################################| 196/196 - 789.87MB/s[K
-[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.06s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.02s)
-[INFO ] stable-diffusion.cpp:5296 - get_learned_condition completed, taking 1.22s
-[INFO ] stable-diffusion.cpp:5679 - generating image: 1/1 - seed 42
-  |#                                                 | 3/280 - 0.00MB/s[K  |##############################                    | 166/280 - 1.63GB/s[K  |##################################################| 280/280 - 1.18GB/s[K
-[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.40s (read: 0.09s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.16s)
-  |==================================================| 1/1 - 2.21s/it[K
-[INFO ] stable-diffusion.cpp:5711 - sampling completed, taking 2.22s
-[INFO ] stable-diffusion.cpp:5725 - generating 1 latent images completed, taking 2.22s
-[INFO ] stable-diffusion.cpp:5321 - decoding 1 latents
-  |###                                               | 4/67 - 4.52MB/s[K  |##################################################| 67/67 - 11.54MB/s[K
-[INFO ] model_loader.cpp:1309 - loading tensors completed, taking 0.20s (read: 0.00s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s)
-[INFO ] stable-diffusion.cpp:5387 - latent 1 decoded, taking 0.94s
-[INFO ] stable-diffusion.cpp:5391 - decode_first_stage completed, taking 0.94s
-[INFO ] stable-diffusion.cpp:5861 - generate_image completed in 4.39s
-[INFO ] main.cpp:490  - save result image 0 to 'outputs/track-b-v11-sdxs-adreno830.png' (success)
-[INFO ] main.cpp:562  - 1/1 images saved

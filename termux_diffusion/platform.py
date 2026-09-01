@@ -19,8 +19,22 @@ TERMUX_PREFIX = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
 TERMUX_HOME = os.environ.get("HOME", "/data/data/com.termux/files/home")
 
 
+# [B방안] Platform SSOT: ameva-vulkan-runtime.platform 에서 공유 구현을 가져옵니다.
+try:
+    from ameva_vulkan_runtime.platform import is_termux as _ameva_is_termux
+    _AMEVA_PLATFORM_AVAILABLE = True
+except ImportError:
+    _AMEVA_PLATFORM_AVAILABLE = False
+
+
 def is_android_termux() -> bool:
-    """Check whether the current runtime environment is native Android Termux."""
+    """Check whether the current runtime environment is native Android Termux.
+
+    [B방안] ameva-vulkan-runtime.platform.is_termux() 를 SSOT 로 사용하며,
+    미설치 환경에서는 인라인 구현으로 안전하게 폴백합니다.
+    """
+    if _AMEVA_PLATFORM_AVAILABLE:
+        return _ameva_is_termux()
     if os.environ.get("TERMUX_VERSION") or os.environ.get("TERMUX_APP_PID"):
         return True
     if os.path.exists("/data/data/com.termux"):

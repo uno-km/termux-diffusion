@@ -67,13 +67,18 @@ class HardwareProfile:
 # 1. CPU & GPU Feature Detection
 # ------------------------------------------------------------------------------
 
+# [중요] Vulkan ICD 탐색 순서: Android Bionic ICD 최우선.
+# Termux Mesa($PREFIX/lib/libvulkan.so)를 시스템 ICD보다 먼저 로드하면
+# Bionic linker 이중 dispatch 테이블 충돌로 SIGABRT 가 발생합니다.
+# ameva-vulkan-runtime 의 ICD 탐색 정책과 동일하게 유지합니다.
 _VULKAN_LIB_SEARCH_PATHS = [
-    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib", "libvulkan.so"),
-    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib64", "libvulkan.so"),
-    "/system/lib64/libvulkan.so",
+    "/system/lib64/libvulkan.so",   # Android Bionic ICD (최우선 — A35/S25/S21 모두 존재)
     "/system/lib/libvulkan.so",
     "/vendor/lib64/libvulkan.so",
     "/vendor/lib/libvulkan.so",
+    # Termux Mesa: 시스템 ICD 가 없는 순수 Linux/PRoot 환경 전용 fallback
+    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib64", "libvulkan.so"),
+    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib", "libvulkan.so"),
 ]
 
 _OPENCL_LIB_SEARCH_PATHS = [

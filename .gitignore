@@ -131,3 +131,7 @@ tmp/
 temp/
 *.log
 .turbo/
+
+state.json
+*.tmp
+

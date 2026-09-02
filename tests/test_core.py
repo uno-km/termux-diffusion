@@ -527,6 +527,7 @@ def test_strict_vulkan_failure_raises(tmp_path):
         ]
         mock_proc.returncode = 0
         mock_proc.wait = lambda timeout=None: 0
+        mock_proc.communicate.return_value = ("", "")
         return mock_proc
 
     with patch("termux_diffusion.hardware.resolve_device_backend", return_value=("vulkan", 99)), \

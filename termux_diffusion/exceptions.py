@@ -61,6 +61,12 @@ class ModelDownloadError(TermuxDiffusionError):
     pass
 
 
+class DownloadError(TermuxDiffusionError):
+    """Raised when file download, size, or SHA-256 verification fails."""
+    def __init__(self, message: str, code: str = ErrorCode.ARTIFACT_DOWNLOAD):
+        super().__init__(message, code=code)
+
+
 class ProvisioningError(TermuxDiffusionError):
     """Raised when the native C++ engine (sd-cli) fails to build or provision."""
     def __init__(self, message: str, code: str = ErrorCode.SOURCE_BUILD):

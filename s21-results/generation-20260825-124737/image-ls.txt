@@ -1,1 +1,0 @@
--rw-------. 1 u0_a328 u0_a328 132K 2026-08-25 12:47:42.440997327 +0900 /data/data/com.termux/files/home/termux-diffusion-results/generation-20260825-124737/output_robot.png

@@ -40,6 +40,9 @@ keywords = [
     "webui-alternative"
 ]
 dynamic = ["classifiers"]
+dependencies = [
+    "ameva-vulkan-runtime>=1.0.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/uno-km/termux-diffusion"
@@ -58,3 +61,6 @@ termux_diffusion = [
     "data/*.json",
     "data/*.pub"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

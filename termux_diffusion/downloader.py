@@ -8,61 +8,11 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from .exceptions import TermuxDiffusionError
+from .exceptions import DownloadError, InstallLockError, TermuxDiffusionError
+from .locking import InstallLock
 from .manifest import verify_file_sha256
 
 logger = logging.getLogger("termux_diffusion.downloader")
-
-
-class InstallLockError(TermuxDiffusionError):
-    """Raised when install lock cannot be acquired due to concurrent process."""
-    pass
-
-
-class DownloadError(TermuxDiffusionError):
-    """Raised when file download, size, or SHA-256 verification fails."""
-    pass
-
-
-class InstallLock:
-    """File lock manager to prevent concurrent installation processes."""
-    def __init__(self, lock_file: Path, timeout_sec: float = 5.0):
-        self.lock_file = lock_file
-        self.timeout_sec = timeout_sec
-        self._acquired = False
-
-    def acquire(self):
-        self.lock_file.parent.mkdir(parents=True, exist_ok=True)
-        start = time.time()
-        while time.time() - start < self.timeout_sec:
-            try:
-                # O_CREAT | O_EXCL atomic creation
-                fd = os.open(str(self.lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-                os.write(fd, f"pid={os.getpid()}\n".encode("utf-8"))
-                os.close(fd)
-                self._acquired = True
-                return
-            except FileExistsError:
-                time.sleep(0.2)
-        raise InstallLockError(
-            f"E_CONCURRENCY_LOCK: Another installation process holds the lock file at {self.lock_file}. "
-            f"If stale, remove {self.lock_file} and retry."
-        )
-
-    def release(self):
-        if self._acquired and self.lock_file.exists():
-            try:
-                self.lock_file.unlink(missing_ok=True)
-            except Exception as e:
-                logger.warning("Failed deleting lock file: %s", e)
-            self._acquired = False
-
-    def __enter__(self):
-        self.acquire()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.release()
 
 
 def atomic_download_file(

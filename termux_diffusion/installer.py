@@ -85,32 +85,52 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
     lock_file = get_default_cache_dir() / "install.lock"
 
     with InstallLock(lock_file, timeout_sec=5.0):
-        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali)
+        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali via validated profiles)
         if backend in ("auto", "vulkan"):
             vulkan_bin = bin_dir / "sd-cli-vulkan"
             print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
             try:
                 if not vulkan_bin.is_file():
-                    from .hardware import detect_hardware_profile
+                    from .hardware import detect_hardware_profile, get_profile_gating_manager, _detect_device_model
                     hw = detect_hardware_profile()
-                    is_mali = "mali" in hw.gpu_name.lower() or "exynos" in hw.soc_name.lower()
+                    gating_mgr = get_profile_gating_manager()
+                    dev_model = _detect_device_model()
+                    matched = gating_mgr.find_matching_profile(dev_model, hw.soc_name, hw.gpu_name)
                     
-                    if is_mali:
-                        # Galaxy S21 / S20 Mali Prebuilt
-                        pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz"
-                        pkg_sha256 = "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+                    if matched and matched.get("package_tarball") and matched.get("package_sha256"):
+                        pkg_tag = matched.get("package_tag", "v1.3.1-vulkan-experimental")
+                        pkg_tarball = matched.get("package_tarball")
+                        pkg_url = f"https://github.com/uno-km/termux-diffusion/releases/download/{pkg_tag}/{pkg_tarball}"
+                        pkg_sha256 = matched.get("package_sha256")
                     else:
-                        # Galaxy S25 / Snapdragon Adreno Prebuilt
-                        pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
-                        pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
+                        is_mali = "mali" in hw.gpu_name.lower() or "exynos" in hw.soc_name.lower()
+                        if is_mali:
+                            pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz"
+                            pkg_sha256 = "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+                        else:
+                            pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
+                            pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
 
                     tar_dest = bin_dir / "vulkan-prebuilt.tar.gz"
                     try:
                         atomic_download_file(pkg_url, tar_dest, expected_sha256=pkg_sha256)
                         import tarfile
+                        extract_target = get_default_cache_dir()
                         with tarfile.open(tar_dest, "r:gz") as tar:
-                            tar.extractall(path=get_default_cache_dir())
+                            # 경로 탈출(Directory Traversal) 방지 검증
+                            for member in tar.getmembers():
+                                member_path = os.path.realpath(
+                                    os.path.join(extract_target, member.name)
+                                )
+                                if not member_path.startswith(os.path.realpath(extract_target)):
+                                    raise ProvisioningError(
+                                        f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 "
+                                        f"경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
+                                    )
+                            tar.extractall(path=extract_target)
                         tar_dest.unlink(missing_ok=True)
+                    except ProvisioningError:
+                        raise
                     except Exception as dl_err:
                         logger.debug("Vulkan prebuilt download skipped/failed: %s", dl_err)
 
@@ -302,42 +322,15 @@ def provision_engine(
         except Exception as e:
             logger.warning("ggml-vulkan patch note: %s", e)
 
-    # Bionic Healer: Patch vulkan-shaders-gen.cpp for Android Termux
+    # Bionic Path Fix: Patch vulkan-shaders-gen.cpp for Android Termux temporary directory
     vulkan_gen = repo_dir / "ggml" / "src" / "ggml-vulkan" / "vulkan-shaders" / "vulkan-shaders-gen.cpp"
     if vulkan_gen.is_file():
         try:
             gen_content = vulkan_gen.read_text(encoding="utf-8")
             if 'output_dir = "/tmp"' in gen_content:
                 gen_content = gen_content.replace('output_dir = "/tmp"', 'output_dir = "."')
-            
-            old_err_block = (
-                "        int exit_code = execute_command(cmd, stdout_str, stderr_str);\n"
-                "        if (exit_code != 0 || !stderr_str.empty()) {\n"
-                '            std::cerr << "cannot compile " << name << " (exit code " << exit_code << ")\\n\\n";\n'
-                "            for (const auto& part : cmd) {\n"
-                '                std::cerr << part << " ";\n'
-                "            }\n"
-                '            std::cerr << "\\n\\n" << stderr_str << std::endl;\n'
-                "            compile_failed = true;\n"
-                "            return;\n"
-                "        }"
-            )
-            new_err_block = (
-                "        int exit_code = execute_command(cmd, stdout_str, stderr_str);\n"
-                "        if (exit_code != 0 || !stderr_str.empty()) {\n"
-                "            uint32_t dummy_spv[] = {0x07230203, 0x00010000, 0x00080001, 1, 0};\n"
-                "            std::ofstream f(out_path, std::ios::binary);\n"
-                "            f.write(reinterpret_cast<const char*>(dummy_spv), sizeof(dummy_spv));\n"
-                "            f.close();\n"
-                "            std::lock_guard<std::mutex> guard(lock);\n"
-                "            shader_fnames.push_back(std::make_pair(name, out_path));\n"
-                "            return;\n"
-                "        }"
-            )
-            if old_err_block in gen_content:
-                gen_content = gen_content.replace(old_err_block, new_err_block)
             vulkan_gen.write_text(gen_content, encoding="utf-8")
-            logger.info("Patched vulkan-shaders-gen.cpp with Universal Mobile GPU Healer.")
+            logger.info("Configured vulkan-shaders-gen.cpp for mobile working directory.")
         except Exception as e:
             logger.warning("vulkan-shaders-gen patch note: %s", e)
 

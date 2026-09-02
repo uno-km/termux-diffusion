@@ -113,24 +113,37 @@ def run_binary_self_test(
         return result
 
     # --------------------------------------------------------------------------
-    # Stage 2 & 3: Backend Probe & Compute Queue Test
+    # Stage 2 & 3: Backend Probe & Compute Queue Test (Real Hardware Probe)
     # --------------------------------------------------------------------------
     if expected_backend == "cpu":
-        # Pure CPU binary dependency check
         has_readelf, deps = check_dynamic_library_dependencies(binary_path)
         vulkan_deps = [d for d in deps if "libvulkan.so" in d or "libOpenCL.so" in d]
         if vulkan_deps:
             logger.warning("CPU binary has unwanted GPU library linkage: %s", vulkan_deps)
         result.stage2_probe_passed = True
         result.stage3_compute_passed = True
-        print("[termux-diffusion] Stage 1-3 Self-Test: CPU Baseline Binary validated successfully.")
         _SELF_TEST_CACHE[cache_key] = result
         return result
 
-    # Vulkan backend self-test
+    # [수정] Vulkan 백엔드 실측 검증: ameva-vulkan-runtime 연동
     print(f"[termux-diffusion] Stage 2 Self-Test: Vulkan runtime validation ({binary_path.name})...")
-    result.stage2_probe_passed = True
-    result.stage3_compute_passed = True
-    print("[termux-diffusion] Stage 1-3 Self-Test: Vulkan Backend validated successfully.")
+    try:
+        import ameva_vulkan_runtime as avr
+        doc = avr.Doctor()
+        if doc.quick_probe():
+            result.stage2_probe_passed = True
+            result.stage3_compute_passed = True
+            print(f"[termux-diffusion] Stage 1-3 Self-Test: Vulkan Backend ({doc.quick_probe_device() or 'GPU'}) validated.")
+        else:
+            result.stage2_probe_passed = False
+            result.stage3_compute_passed = False
+            result.error_code = "E_VULKAN_PROBE_FAILED"
+            result.error_message = "Vulkan ICD loader or hardware compute queue is unavailable on this device."
+    except Exception as exc:
+        result.stage2_probe_passed = False
+        result.stage3_compute_passed = False
+        result.error_code = "E_VULKAN_EXCEPTION"
+        result.error_message = f"Vulkan probe exception: {exc}"
+
     _SELF_TEST_CACHE[cache_key] = result
     return result

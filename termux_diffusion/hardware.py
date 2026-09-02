@@ -92,6 +92,18 @@ _OPENCL_LIB_SEARCH_PATHS = [
 ]
 
 
+def _find_vulkan_driver_path() -> Optional[str]:
+    """Find the first genuinely accessible Vulkan driver library on the filesystem."""
+    for p in _VULKAN_LIB_SEARCH_PATHS:
+        p_obj = Path(p)
+        try:
+            if p_obj.is_file() and p_obj.stat().st_size >= 1024:
+                return str(p_obj.resolve())
+        except (OSError, PermissionError):
+            continue
+    return None
+
+
 def _read_cpuinfo_features() -> List[str]:
     """Parse /proc/cpuinfo to extract ARM CPU feature flags."""
     cpuinfo_path = Path("/proc/cpuinfo")
@@ -111,8 +123,13 @@ def _read_cpuinfo_features() -> List[str]:
         return []
 
 
+from .platform import is_android_termux
+
+
 def _detect_soc_name() -> str:
     """Identify the SoC model from Android system properties."""
+    if not is_android_termux():
+        return "Unknown"
     prop_keys = [
         "ro.soc.model",
         "ro.chipname",
@@ -137,8 +154,30 @@ def _detect_soc_name() -> str:
     return "Unknown"
 
 
+def _detect_device_model() -> str:
+    """Identify Android device model for hardware profile matching."""
+    if not is_android_termux():
+        return "Unknown"
+    for prop in ["ro.product.model", "ro.product.device", "ro.build.product"]:
+        try:
+            result = subprocess.run(
+                ["getprop", prop],
+                capture_output=True,
+                text=True,
+                timeout=2.0,
+            )
+            val = result.stdout.strip()
+            if val and val != "unknown":
+                return val
+        except Exception:
+            continue
+    return "Unknown"
+
+
 def _detect_gpu_name() -> str:
     """Identify the GPU model from Android properties and hardware nodes."""
+    if not is_android_termux():
+        return "Unknown"
     # 1. Check Adreno kgsl sysfs node
     kgsl_model = Path("/sys/class/kgsl/kgsl-3d0/gpu_model")
     if kgsl_model.exists():
@@ -171,33 +210,34 @@ def _detect_gpu_name() -> str:
 
 
 def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:
-    """Probe for a usable Vulkan driver by checking library paths on disk."""
-    for lib_path in _VULKAN_LIB_SEARCH_PATHS:
-        p = Path(lib_path)
-        if p.is_file():
-            try:
-                size = p.stat().st_size
-                if size < 1024:
-                    continue
-                gpu_name = _detect_gpu_name()
-                return GPUDriverInfo(
-                    name=f"Vulkan Driver ({gpu_name})",
-                    vendor=gpu_name,
-                    api="Vulkan",
-                    library_path=lib_path,
-                    version="",
-                    usable=True,
-                )
-            except PermissionError as pe:
-                logger.warning(
-                    "Vulkan driver found at '%s' but access was denied (SELinux permission): %s",
-                    lib_path,
-                    pe,
-                )
-                continue
-            except OSError as oe:
-                logger.debug("Vulkan driver stat note on '%s': %s", lib_path, oe)
-                continue
+    """Probe for a usable Vulkan driver via ameva-vulkan-runtime SSOT."""
+    try:
+        import ameva_vulkan_runtime as avr
+        report = avr.Doctor().run_self_test(verbose=False)
+        if report.overall_success or report.recommended_backend in ("vulkan", "vulkan_driver_only") or getattr(report, "passed_stages", 0) >= 7:
+            return GPUDriverInfo(
+                name=f"Vulkan Driver ({report.device_name})",
+                vendor=report.device_name,
+                api=f"Vulkan {getattr(report, 'driver_version', '1.3')}",
+                library_path=getattr(report, "loader_path", "") or _find_vulkan_driver_path() or "/system/lib64/libvulkan.so",
+                version=getattr(report, "driver_version", ""),
+                usable=True,
+            )
+    except Exception as e:
+        logger.debug("[termux-diffusion] ameva-vulkan-runtime probe exception: %s", e)
+
+    # 안전 폴백: 시스템 기본 Bionic 경로 검사
+    detected_path = _find_vulkan_driver_path()
+    if detected_path and Path(detected_path).is_file():
+        gpu_name = _detect_gpu_name()
+        return GPUDriverInfo(
+            name=f"Vulkan Driver ({gpu_name})",
+            vendor=gpu_name,
+            api="Vulkan",
+            library_path=detected_path,
+            version="",
+            usable=True,
+        )
     return None
 
 
@@ -433,3 +473,100 @@ def format_hardware_report(profile: HardwareProfile) -> str:
         lines.append(f"CMake Build Flags: {' '.join(profile.cmake_extra_flags)}")
     lines.append("=" * 40)
     return "\n".join(lines)
+
+
+# ------------------------------------------------------------------------------
+# 4. Profile Gating Manager (Runtime Model/Preset Safety)
+# ------------------------------------------------------------------------------
+
+import json
+
+@dataclass
+class ProfileGatingManager:
+    """Manages runtime matching against validated-vulkan-profiles.json for safe device/model execution."""
+    profiles: List[Dict] = field(default_factory=list)
+
+    @classmethod
+    def load_from_json(cls, json_path: Optional[Path] = None) -> "ProfileGatingManager":
+        if json_path is None:
+            json_path = Path(__file__).parent / "data" / "validated-vulkan-profiles.json"
+        if json_path.is_file():
+            try:
+                data = json.loads(json_path.read_text(encoding="utf-8"))
+                return cls(profiles=data.get("profiles", []))
+            except Exception as e:
+                logger.warning("Failed to load validated-vulkan-profiles.json: %s", e)
+        return cls(profiles=[])
+
+    def find_matching_profile(self, model_name: str, soc_name: str = "", gpu_name: str = "") -> Optional[Dict]:
+        model_clean = model_name.strip().upper()
+        soc_clean = soc_name.strip().upper()
+        gpu_clean = gpu_name.strip().upper()
+
+        for prof in self.profiles:
+            target_model = prof.get("device_model", "").strip().upper()
+            if target_model and (target_model == model_clean or target_model in model_clean or model_clean in target_model):
+                return prof
+            aliases = [a.strip().upper() for a in prof.get("device_aliases", [])]
+            if any(a == model_clean or a in model_clean for a in aliases):
+                return prof
+
+        # Fallback matching by SoC / GPU
+        for prof in self.profiles:
+            prof_soc = prof.get("soc", "").strip().upper()
+            prof_gpu = prof.get("gpu", "").strip().upper()
+            if prof_soc and soc_clean and (prof_soc in soc_clean or soc_clean in prof_soc):
+                return prof
+            if prof_gpu and gpu_clean and (prof_gpu in gpu_clean or gpu_clean in prof_gpu):
+                return prof
+        return None
+
+    def validate_execution(self, preset_or_model: str, device: str) -> Tuple[bool, Optional[str]]:
+        """Validate if the requested model/preset and device backend are safe for current hardware."""
+        device_clean = device.lower().strip()
+        if device_clean not in ("vulkan", "gpu"):
+            return True, None
+
+        dev_model = _detect_device_model()
+        soc_name = _detect_soc_name()
+        gpu_name = _detect_gpu_name()
+        matched = self.find_matching_profile(dev_model, soc_name, gpu_name)
+        if not matched:
+            return True, None
+
+        # 1. Check blocked list
+        blocked = matched.get("blocked", [])
+        preset_clean = preset_or_model.lower().strip()
+        for blk in blocked:
+            fam = blk.get("model_family", "").lower()
+            backend = blk.get("backend", "").lower()
+            if backend in (device_clean, "all") and fam in preset_clean:
+                reason = blk.get("reason", "Incompatible hardware backend configuration")
+                return False, (
+                    f"Model '{preset_or_model}' is blocked on device '{matched.get('device_model')}' "
+                    f"under backend '{device_clean}' due to: {reason}."
+                )
+
+        # 2. Check preset gating if preset exists in profile
+        presets = matched.get("presets", {})
+        if preset_clean in presets:
+            p_info = presets[preset_clean]
+            if p_info.get("status") == "pending_device_validation" and not p_info.get("auto_activation", True):
+                return False, (
+                    f"Preset '{preset_clean}' is currently pending device validation on '{matched.get('device_model')}' "
+                    f"and auto_activation is disabled."
+                )
+
+        return True, None
+
+
+_gating_manager: Optional[ProfileGatingManager] = None
+
+
+def get_profile_gating_manager() -> ProfileGatingManager:
+    """Get singleton instance of ProfileGatingManager."""
+    global _gating_manager
+    if _gating_manager is None:
+        _gating_manager = ProfileGatingManager.load_from_json()
+    return _gating_manager
+

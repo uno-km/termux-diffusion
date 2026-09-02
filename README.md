@@ -39,7 +39,7 @@ termux-setup-storage
 
 # 2. Install Toolchains & Provision Native Engine
 pkg update -y && pkg install python clang make cmake git termux-api wget vulkan-loader vulkan-headers vulkan-tools -y
-pip install termux-diffusion && termux-diffusion-install
+pip install termux-diffusion && termux-diffusion install
 ```
 
 #### [Node.js] Node.js / TypeScript:
@@ -50,6 +50,11 @@ termux-setup-storage
 # 2. Install Toolchains & Provision Native Engine
 pkg update -y && pkg install nodejs-lts clang make cmake git termux-api wget vulkan-loader vulkan-headers vulkan-tools -y
 npm install -g termux-diffusion && npx termux-diffusion install
+```
+
+#### [Universal] One-Line Automated Bootstrap (curl):
+```bash
+curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/scripts/install.sh | bash
 ```
 
 ---

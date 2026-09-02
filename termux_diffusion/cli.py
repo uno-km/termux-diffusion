@@ -4,16 +4,18 @@ import argparse
 import sys
 from typing import List, Optional
 
+import logging as _logging
+
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+    except Exception as _e:
+        _logging.getLogger(__name__).debug("stdout reconfigure failed: %s", _e)
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+    except Exception as _e:
+        _logging.getLogger(__name__).debug("stderr reconfigure failed: %s", _e)
 
 from .core import generate
 from .hub import clear_cache, download_model, list_cached_models, list_presets

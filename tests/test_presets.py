@@ -109,3 +109,20 @@ def test_a53_mali_profile_and_preset_gating():
     assert "balanced" in a53_prof["presets"]
     assert a53_prof["presets"]["balanced"]["status"] == "pending_device_validation"
     assert a53_prof["presets"]["balanced"]["auto_activation"] is False
+
+
+def test_runtime_profile_gating_manager():
+    from termux_diffusion.hardware import get_profile_gating_manager
+    mgr = get_profile_gating_manager()
+    assert len(mgr.profiles) > 0
+
+    # 1. Matching Galaxy S25
+    s25_prof = mgr.find_matching_profile("SM-S931N")
+    assert s25_prof is not None
+    assert s25_prof["gpu"] == "Adreno (TM) 830"
+
+    # 2. Matching Galaxy A35 alias
+    a35_prof = mgr.find_matching_profile("a35x")
+    assert a35_prof is not None
+    assert a35_prof["gpu"] == "Mali-G68"
+

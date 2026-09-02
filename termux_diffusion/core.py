@@ -68,13 +68,15 @@ class GenerationResult:
 import signal
 
 def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -> None:
-    """Safely terminate and reap child process groups to prevent zombie handles."""
+    """Safely terminate and reap child process groups with granular exception handling and zero zombie leak."""
     if proc is None:
         return
+
     try:
         if proc.poll() is not None:
             return
-    except Exception:
+    except (OSError, ValueError) as poll_err:
+        logger.debug("Process poll inspection note: %s", poll_err)
         return
 
     pid = getattr(proc, "pid", None)
@@ -83,12 +85,17 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
 
     logger.warning("Initiating child process termination (PID: %s)...", pid)
 
-    # Step 1: Attempt graceful SIGTERM to process group (POSIX) or single process (Windows)
+    # Step 1: Graceful termination attempt (SIGTERM / proc.terminate)
     try:
         if sys.platform != "win32":
             try:
-                os.killpg(os.getpgid(pid), signal.SIGTERM)
-            except OSError:
+                pgid = os.getpgid(pid)
+                os.killpg(pgid, signal.SIGTERM)
+            except ProcessLookupError:
+                logger.debug("Process group (PGID: %s) already exited.", pid)
+                return
+            except (OSError, PermissionError) as pg_err:
+                logger.debug("killpg SIGTERM note (PGID: %s): %s, falling back to proc.terminate()", pid, pg_err)
                 proc.terminate()
         else:
             proc.terminate()
@@ -103,15 +110,25 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
                 pid,
                 timeout,
             )
-    except Exception as e:
-        logger.debug("SIGTERM dispatch note for PID %s: %s", pid, e)
+    except ProcessLookupError:
+        logger.debug("Child process (PID: %s) already terminated before SIGTERM dispatch.", pid)
+        return
+    except PermissionError as perm_err:
+        logger.warning("Permission denied while sending SIGTERM to PID %s: %s", pid, perm_err)
+    except OSError as os_err:
+        logger.warning("OS error during SIGTERM dispatch to PID %s: %s", pid, os_err)
 
-    # Step 2: Forceful SIGKILL to process group if still alive
+    # Step 2: Forceful termination (SIGKILL / proc.kill)
     try:
         if sys.platform != "win32":
             try:
-                os.killpg(os.getpgid(pid), signal.SIGKILL)
-            except OSError:
+                pgid = os.getpgid(pid)
+                os.killpg(pgid, signal.SIGKILL)
+            except ProcessLookupError:
+                logger.debug("Process group (PGID: %s) already terminated.", pid)
+                return
+            except (OSError, PermissionError) as pg_err:
+                logger.debug("killpg SIGKILL note (PGID: %s): %s, falling back to proc.kill()", pid, pg_err)
                 proc.kill()
         else:
             proc.kill()
@@ -121,8 +138,12 @@ def _safe_kill_process(proc: Optional[subprocess.Popen], timeout: float = 2.0) -
             logger.debug("Child process (PID: %s) forcefully terminated and reaped.", pid)
         except subprocess.TimeoutExpired:
             logger.error("Child process (PID: %s) did not exit after SIGKILL (kernel D-state or pending I/O).", pid)
-    except Exception as exc:
-        logger.error("Error during child process termination (PID: %s): %s", pid, exc)
+    except ProcessLookupError:
+        logger.debug("Child process (PID: %s) already reaped before SIGKILL.", pid)
+    except PermissionError as perm_err:
+        logger.error("Permission denied while sending SIGKILL to PID %s: %s", pid, perm_err)
+    except OSError as os_err:
+        logger.error("OS error during SIGKILL dispatch to PID %s: %s", pid, os_err)
 
 
 DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT = "lowres, bad quality, blur, deformed, distorted, extra limbs, artifacts"
@@ -159,7 +180,7 @@ def generate(
     prompt: str,
     model: str = "realistic",
     negative_prompt: Optional[str] = None,
-    device: str = "cpu",
+    device: str = "auto",
     steps: Optional[int] = None,
     cfg_scale: Optional[float] = None,
     width: int = 512,
@@ -193,7 +214,7 @@ def generate(
         prompt: Detailed text description of the desired image.
         model: Preset keyword ('realistic', 'speed', 'sdxs', 'turbo', 'anime'), custom repo ('org/repo/file.gguf'), direct URL, or path to .gguf file.
         negative_prompt: Optional negative text guidance describing elements to avoid (default: None).
-        device: Computing device ('cpu', 'gpu', 'opencl', 'vulkan', 'auto'). Default is 'cpu'.
+        device: Computing device ('auto', 'gpu', 'vulkan', 'cpu', 'opencl', 'npu', 'tpu'). Default is 'auto'.
         steps: Number of denoising steps (default determined by preset, e.g. 10).
         cfg_scale: Classifier-Free Guidance scale (default determined by preset, e.g. 4.0).
         width: Output image width in pixels (default: 512).
@@ -224,13 +245,22 @@ def generate(
     if not prompt or not str(prompt).strip():
         raise ValueError("Prompt must not be empty.")
 
-    device_mode = device.lower().strip()
+    device_mode = str(device or "auto").lower().strip()
     if device_mode not in ("cpu", "gpu", "opencl", "vulkan", "npu", "tpu", "auto"):
-        raise ValueError(f"Invalid device '{device}'. Options: 'cpu', 'gpu', 'opencl', 'vulkan', 'npu', 'tpu', 'auto'.")
+        raise ValueError(f"Invalid device '{device}'. Options: 'auto', 'gpu', 'vulkan', 'cpu', 'opencl', 'npu', 'tpu'.")
 
     # Resolve device to actual available backend using hardware probing
-    from .hardware import resolve_device_backend, get_sd_cli_gpu_args
+    from .hardware import resolve_device_backend, get_sd_cli_gpu_args, get_profile_gating_manager
     effective_device, ngl_layers = resolve_device_backend(device_mode)
+
+    # 0. Runtime Profile & Model Gating Validation (Zero Test Illusion)
+    gating_mgr = get_profile_gating_manager()
+    is_safe, gate_reason = gating_mgr.validate_execution(model, effective_device)
+    if not is_safe:
+        from .exceptions import PlatformNotSupportedError
+        raise PlatformNotSupportedError(
+            f"[termux-diffusion] [GATING-BLOCKED] {gate_reason}"
+        )
 
     # 1. Pre-flight Memory Safety Inspection (Informational only, non-blocking)
     if low_ram_guard:
@@ -450,8 +480,9 @@ def generate(
             )
         cmd.extend(["--taesd", str(effective_taesd_path)])
 
-    # 5.1 Configure Environment with companion library search paths
+    # 5.1 Configure Environment with companion library search paths (Bionic priority on Android)
     env = os.environ.copy()
+    bionic_sys_dirs = ["/system/lib64", "/vendor/lib64", "/vendor/lib64/egl"]
     lib_dirs = [
         str(sd_cli.parent),
         str(sd_cli.parent.parent / "lib"),
@@ -460,9 +491,44 @@ def generate(
         str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
     ]
     cur_ld = env.get("LD_LIBRARY_PATH", "")
-    valid_dirs = [d for d in lib_dirs if Path(d).is_dir()]
+    valid_dirs = [d for d in bionic_sys_dirs + lib_dirs if Path(d).is_dir()]
     if valid_dirs:
         env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
+
+    # 5.2 ameva-vulkan-runtime DiffusionAdapter Binding (Vulkan / GPU mode)
+    if effective_device in ("vulkan", "gpu") or device_mode in ("vulkan", "gpu"):
+        try:
+            import ameva_vulkan_runtime as avr
+            from ameva_vulkan_runtime.adapters import DiffusionAdapter
+
+            avr_ctx = avr.get_or_create_context(device_mode)
+            report = getattr(avr_ctx, "doctor", avr.Doctor()).run_self_test(verbose=False)
+
+            class EngineProxy:
+                def __init__(self, hw):
+                    self.hw_profile = hw
+
+            from .hardware import detect_hardware_profile
+            engine_proxy = EngineProxy(detect_hardware_profile())
+            binding = DiffusionAdapter.bind(engine_proxy, report)
+            
+            cfg = getattr(binding, "config", {})
+            if cfg.get("unet_tiling") and "--vae-tiling" not in cmd:
+                cmd.append("--vae-tiling")
+
+            logger.info(
+                "[termux-diffusion] DiffusionAdapter bound: backend=%s, status=%s",
+                cfg.get("backend", "vulkan"),
+                getattr(binding.status, "name", str(binding.status))
+            )
+        except Exception as e:
+            if device_mode in ("gpu", "vulkan") or strict_vulkan:
+                from .exceptions import PlatformNotSupportedError
+                raise PlatformNotSupportedError(
+                    f"[termux-diffusion] [FAIL-FAST] Vulkan execution requested (device='{device_mode}'), "
+                    f"but hardware validation failed: {e}"
+                ) from e
+            avr_ctx = None
 
     logger.info("Executing diffusion inference: %s", " ".join(cmd[:6]) + " ...")
     print(f"[termux-diffusion] Processing inference with model='{model}' (steps={steps}, threads={threads}, device={device_mode})...")
@@ -489,23 +555,33 @@ def generate(
                 _safe_kill_process(process)
                 raise TermuxDiffusionError("Inference cancelled by caller.")
 
+            init_logs = []
             recent_logs = deque(maxlen=20)
-            # Stream real-time progress to terminal
+            # Stream real-time progress to terminal with FD safety
             if process.stdout:
-                for line in process.stdout:
-                    if _cancel_event and _cancel_event.is_set():
-                        _safe_kill_process(process)
-                        raise TermuxDiffusionError("Inference cancelled by caller.")
-                    line_str = line.strip()
-                    if line_str:
-                        recent_logs.append(line_str)
-                        if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
-                            print(f"  > {line_str}")
-                        else:
-                            logger.debug("sd-cli: %s", line_str)
+                try:
+                    for line in process.stdout:
+                        if _cancel_event and _cancel_event.is_set():
+                            _safe_kill_process(process)
+                            raise TermuxDiffusionError("Inference cancelled by caller.")
+                        line_str = line.strip()
+                        if line_str:
+                            if len(init_logs) < 50 or "ggml_vulkan" in line_str or "error" in line_str.lower() or "failed" in line_str.lower():
+                                init_logs.append(line_str)
+                            recent_logs.append(line_str)
+                            if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
+                                print(f"  > {line_str}")
+                            else:
+                                logger.debug("sd-cli: %s", line_str)
+                finally:
+                    try:
+                        process.stdout.close()
+                    except Exception:
+                        pass
 
             process.wait(timeout=timeout)
-            if (strict_vulkan or device_mode in ("vulkan", "gpu")) and any("ggml_vulkan: No devices found" in l for l in recent_logs):
+            all_critical_logs = init_logs + list(recent_logs)
+            if (strict_vulkan or device_mode in ("vulkan", "gpu")) and any("ggml_vulkan: No devices found" in l for l in all_critical_logs):
                 raise TermuxDiffusionError(
                     "Strict Vulkan execution mode requested (--strict-vulkan or device='vulkan'), but Vulkan physical device discovery failed: 'ggml_vulkan: No devices found'."
                 )
@@ -582,7 +658,7 @@ def generate(
         prompt=prompt,
         negative_prompt=negative_prompt,
         model=model,
-        device=device_mode,
+        device=effective_device,
         steps=steps,
         cfg_scale=cfg_scale,
         width=width,

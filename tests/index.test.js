@@ -99,10 +99,10 @@ async function runTests() {
     assert(['cpu', 'vulkan', 'opencl'].includes(autoRes.effectiveDevice));
 
     const gpuArgs = getSdCliGpuArgs('vulkan', 99);
-    assert.deepStrictEqual(gpuArgs, ['-ngl', '99']);
+    assert.deepStrictEqual(gpuArgs, []);
 
     const cpuArgs = getSdCliGpuArgs('cpu', 0);
-    assert.deepStrictEqual(cpuArgs, []);
+    assert.deepStrictEqual(cpuArgs, ['--offload-to-cpu']);
   });
 
   // 6. GGUF Magic Header Validation

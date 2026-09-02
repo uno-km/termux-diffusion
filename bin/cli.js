@@ -12,6 +12,7 @@ const {
   listCachedModels,
   clearCache,
   locateSdCli,
+  provisionEngine,
   detectHardwareProfile,
   DEFAULT_PRESETS
 } = require('../index');
@@ -143,6 +144,18 @@ async function main() {
       if (args[i] === '--control-image') controlImage = args[++i];
       if (args[i] === '--control-strength') controlStrength = parseFloat(args[++i]);
       if (args[i] === '--taesd') taesd = args[++i];
+      if (args[i] === '--preset') {
+        const pKey = String(args[++i]).replace(/_/g, '-');
+        if (DEFAULT_PRESETS[pKey]) {
+          const pCfg = DEFAULT_PRESETS[pKey];
+          model = pCfg.alias || pKey;
+          if (steps === undefined) steps = pCfg.default_steps;
+          if (cfg === undefined) cfg = pCfg.default_cfg;
+          if (sampler === undefined) sampler = pCfg.default_sampler;
+          if (device === 'cpu' && pCfg.default_device) device = pCfg.default_device;
+          if (pCfg.default_vae_tiling) vaeTiling = true;
+        }
+      }
       if (args[i] === '--seed') {
         seed = parseInt(args[++i], 10);
         if (isNaN(seed) || seed < -1 || seed > 4294967295) {

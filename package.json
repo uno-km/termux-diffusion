@@ -55,6 +55,9 @@
     "url": "https://github.com/uno-km/termux-diffusion/issues"
   },
   "homepage": "https://uno-km.github.io/termux-diffusion/",
+  "dependencies": {
+    "ameva-vulkan-runtime": "^1.0.0"
+  },
   "engines": {
     "node": ">=16.0.0"
   }

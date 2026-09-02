@@ -1,1 +1,0 @@
-edc829d1784132448c43b9dc49d8035977ff169801e5635fa58a58d4f4b92443  /data/data/com.termux/files/home/termux-diffusion-results/generation-20260825-124737/output_robot.png

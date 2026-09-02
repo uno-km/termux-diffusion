@@ -512,10 +512,11 @@ function resolveDeviceBackend(requestedDevice) {
 }
 
 function getSdCliGpuArgs(device, ngl) {
-  if ((device === 'vulkan' || device === 'opencl' || device === 'gpu' || device === 'npu' || device === 'tpu') && ngl > 0) {
-    return ['-ngl', String(ngl)];
+  const args = [];
+  if (device === 'cpu') {
+    args.push('--offload-to-cpu');
   }
-  return [];
+  return args;
 }
 
 // ------------------------------------------------------------------------------
@@ -848,9 +849,16 @@ async function resolveModelPath(modelNameOrPath, cacheDir) {
   throw new Error(`Could not resolve model '${modelNameOrPath}'`);
 }
 
-function locateSdCli() {
+function locateSdCli(backend) {
   const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
-  const candidates = ['sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+  let candidates;
+  if (backend === 'cpu') {
+    candidates = ['sd-cli-cpu', 'sd-cli-source-cpu', 'sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+  } else if (backend === 'vulkan' || backend === 'gpu') {
+    candidates = ['sd-cli-vulkan', 'sd-cli-source-vulkan', 'sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+  } else {
+    candidates = ['sd-cli', 'sd-cli.exe', 'sd', 'sd.exe', 'sd-cli-vulkan', 'sd-cli-cpu'];
+  }
 
   for (const name of candidates) {
     const p = path.join(binDir, name);
@@ -1179,7 +1187,7 @@ async function generate(options) {
   }
 
   // Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
-  let sdCli = locateSdCli();
+  let sdCli = locateSdCli(effectiveDevice);
 
   if (!sdCli) {
     if (options.autoProvision) {
@@ -1216,10 +1224,10 @@ async function generate(options) {
     const sanitizedNeg = String(effectiveNegative).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
     if (sanitizedNeg) cmdArgs.push('-n', sanitizedNeg);
   }
-  if (seed >= 0) cmdArgs.push('-s', String(seed));
+  if (seed >= 0) cmdArgs.push('--seed', String(seed));
 
   if (effectiveSampler) cmdArgs.push('--sampling-method', effectiveSampler);
-  if (effectiveSchedule && effectiveSchedule !== 'default') cmdArgs.push('--scheduler', effectiveSchedule);
+  if (effectiveSchedule && effectiveSchedule !== 'default') cmdArgs.push('--schedule', effectiveSchedule);
   if (vaeTiling) cmdArgs.push('--vae-tiling');
   if (effectiveInitPath) {
     cmdArgs.push('-i', effectiveInitPath);
@@ -1236,6 +1244,9 @@ async function generate(options) {
 
   const gpuArgs = getSdCliGpuArgs(effectiveDevice, nglLayers);
   cmdArgs.push(...gpuArgs);
+  if (effectiveDevice === 'vulkan' || effectiveDevice === 'gpu') {
+    cmdArgs.push('--backend', 'vulkan0');
+  }
 
   console.log(`[Render] [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
   const startTime = Date.now();
@@ -1402,6 +1413,7 @@ async function generate(options) {
     galleryPath: galleryPath,
     prompt: prompt,
     model: model,
+    device: effectiveDevice,
     steps: steps,
     cfgScale: options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0),
     elapsedSec: elapsedSec,
@@ -1443,5 +1455,6 @@ module.exports = {
   getDefaultNegativePrompt,
   setDefaultNegativePrompt,
   getQualityGuardNegativePrompt,
+  provisionEngine,
   DEFAULT_PRESETS
 };

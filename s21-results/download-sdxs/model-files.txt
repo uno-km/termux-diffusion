@@ -1,1 +1,0 @@
--rw-------. 1 u0_a328 u0_a328 652M 2026-08-25 12:47:24.352997340 +0900 /data/data/com.termux/files/home/.cache/termux-diffusion/models/sdxs.gguf

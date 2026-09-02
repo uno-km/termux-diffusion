@@ -81,6 +81,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     # clear-cache command
     subparsers.add_parser("clear-cache", help="Purge cached model weights to reclaim disk space")
 
+    # ── AMEVA Component Protocol v1 ─────────────────────────────────────────
+    try:
+        from ameva_component.cli_support import build_protocol_subcommands
+        build_protocol_subcommands(subparsers)
+    except ImportError:
+        pass
+    # ────────────────────────────────────────────────────────────────────────
+
     if len(argv) == 0:
         parser.print_help()
         return 0
@@ -187,6 +195,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.command == "clear-cache":
         removed = clear_cache()
         print(f"[Clean] Removed {removed} cached model files.")
+        return 0
+
+    elif args.command in ("component", "model", "instance"):
+        try:
+            from ameva_component.cli_support import dispatch_protocol
+            from termux_diffusion.control import DiffusionControl
+            dispatch_protocol(args, DiffusionControl())
+        except ImportError:
+            print("[ERROR] ameva-component-sdk not installed.", file=sys.stderr)
+            return 1
         return 0
 
     parser.print_help()

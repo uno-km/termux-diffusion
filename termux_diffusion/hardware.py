@@ -185,8 +185,11 @@ def _detect_gpu_name() -> str:
             val = kgsl_model.read_text(encoding="utf-8").strip()
             if val:
                 return f"Adreno ({val})"
-        except Exception:
-            pass
+        except PermissionError as _perm_err:
+            logger.warning("[hardware] kgsl gpu_model read PermissionError: %s", _perm_err)
+        except OSError as _os_err:
+            logger.warning("[hardware] kgsl gpu_model read OSError: %s", _os_err)
+        # 예상 밖 예외는 재발생
 
     # 2. Check Android system properties
     for prop in ["ro.hardware.vulkan", "ro.hardware.egl", "ro.board.platform"]:
@@ -207,6 +210,8 @@ def _detect_gpu_name() -> str:
         except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             continue
     return "Unknown"
+
+
 
 
 def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:

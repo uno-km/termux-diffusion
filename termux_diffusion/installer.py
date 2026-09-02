@@ -1,23 +1,28 @@
 """Automated C++ core engine provisioning, binary locator, build healer, and doctor diagnostics."""
 
 import logging
+import io
 import os
 import shutil
 import subprocess
 import sys
+
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except (AttributeError, io.UnsupportedOperation):
+        # reconfigure 미지원 환경 (pytest capture, non-TTY). 최선 노력. 성공 변환 없음.
         pass
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except (AttributeError, io.UnsupportedOperation):
         pass
+
+
 
 from .exceptions import ProvisioningError
 from .platform import (
@@ -64,16 +69,30 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
         try:
             os.symlink(target_name, temporary)
             os.replace(temporary, active)
-        except Exception:
-            # Fallback for OS where symlinks are restricted
+        except (NotImplementedError, OSError):
+            # symlink 미지원 OS(일부 Windows, FAT32 등) — copy2 fallback.
+            # fallback_used=True: 호출자가 symlink를 기대했다면 알아야 한다.
+            # activate_binary는 Path를 반환하므로 메타데이터는 logger에 기록.
+            logger.warning(
+                "[installer] symlink not supported; using copy2 fallback for %s -> %s",
+                target_name, active,
+            )
             shutil.copy2(target, active)
         return active
     finally:
         if temporary.exists() or temporary.is_symlink():
             try:
                 temporary.unlink()
-            except Exception:
-                pass
+            except (PermissionError, OSError) as _tmp_err:
+                # 임시 symlink 삭제 실패 — 디렉토리에 .tmp 파일이 남을 수 있음.
+                # 기능적으로는 activate_binary가 이미 완료됨. 경고 필수.
+                logger.warning(
+                    "[installer] Failed to clean up temporary symlink %s: %s. "
+                    "Manual cleanup may be required.",
+                    temporary, _tmp_err,
+                )
+
+
 
 
 def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-first") -> Optional[Path]:

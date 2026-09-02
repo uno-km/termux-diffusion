@@ -86,7 +86,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         from ameva_component.cli_support import build_protocol_subcommands
         build_protocol_subcommands(subparsers)
     except ImportError:
-        pass
+        pass  # Allowed: optional rich/click dependency. Not installed is normal fallback.
     # ────────────────────────────────────────────────────────────────────────
 
     if len(argv) == 0:

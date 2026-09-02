@@ -93,15 +93,38 @@ class DiffusionControl(ComponentControl):
                            "updated_at": state_data.get("updated_at") if state_data else None},
         }
 
-    def _check_pid(self) -> tuple[int | None, bool]:
+    def _check_pid(self) -> tuple[int | None, bool | None]:
+        """PID 파일에서 sd-cli 프로세스 생존 여부 확인.
+
+        반환:
+            alive=True  → 프로세스 확인됨
+            alive=False → 종료됨
+            alive=None  → PermissionError 등 측정 불가
+        """
+        from ameva_component import log_stderr
+
         pid_file = Path.home() / ".local" / "run" / "termux-diffusion.pid"
         if pid_file.exists():
             try:
                 pid = int(pid_file.read_text().strip())
+            except (ValueError, OSError) as _parse_err:
+                log_stderr(f"[diffusion] PID file parse error: {_parse_err}")
+                return None, False
+
+            try:
                 os.kill(pid, 0)
                 return pid, True
-            except Exception: pass
+            except ProcessLookupError:
+                return pid, False
+            except PermissionError:
+                log_stderr(f"[diffusion] PID {pid} alive check: PermissionError (unmeasurable)")
+                return pid, None
+            except OSError as _os_err:
+                log_stderr(f"[diffusion] PID {pid} alive check OSError: {_os_err}")
+                return pid, None
         return None, False
+
+
 
     def _check_engine_binary(self) -> bool:
         """엔진 바이너리 존재 여부만 확인 — 실행 금지."""
@@ -109,7 +132,7 @@ class DiffusionControl(ComponentControl):
             from termux_diffusion.installer import provision_engine
             return True  # 모듈 import 성공 = 설치 가능 상태
         except ImportError:
-            return False
+            return False  # Allowed: engine not installed -> binary check fails-closed.
 
     def doctor_full(self) -> dict:
         """기존 installer.run_doctor() 전체 실행."""

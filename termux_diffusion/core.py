@@ -576,8 +576,13 @@ def generate(
                 finally:
                     try:
                         process.stdout.close()
-                    except Exception:
-                        pass
+                    except OSError as _close_err:
+                        # stdout 파이프 close 실패 — 프로세스가 이미 파이프를 닫은 경우 정상.
+                        # 이 오류는 생성 성공/실패와 독립적. debug 수준 로그.
+                        logger.debug("[termux-diffusion] stdout.close() OSError (pipe already closed): %s", _close_err)
+                    # MemoryError 등 예상 밖 예외는 재발생
+
+
 
             process.wait(timeout=timeout)
             all_critical_logs = init_logs + list(recent_logs)

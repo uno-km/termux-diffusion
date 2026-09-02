@@ -67,20 +67,25 @@ def get_galaxy_gallery_dir() -> Path:
         try:
             termux_storage.mkdir(parents=True, exist_ok=True)
             return termux_storage
-        except (PermissionError, OSError):
-            pass
+        except (PermissionError, OSError) as _perm_err:
+            # 외부 스토리지 권한 거부 — 다음 경로 시도. 성공 변환 없음.
+            logger.debug("[platform] termux_storage mkdir failed: %s", _perm_err)
 
     sdcard_pictures = Path("/sdcard/Pictures/TermuxDiffusion")
     if Path("/sdcard/Pictures").is_dir():
         try:
             sdcard_pictures.mkdir(parents=True, exist_ok=True)
             return sdcard_pictures
-        except (PermissionError, OSError):
-            pass
+        except (PermissionError, OSError) as _perm_err:
+            logger.debug("[platform] sdcard mkdir failed: %s", _perm_err)
 
     fallback = get_default_cache_dir() / "outputs"
     fallback.mkdir(parents=True, exist_ok=True)
     return fallback
+
+
+
+
 
 
 def export_to_android_gallery(image_path: Path) -> Optional[Path]:
@@ -287,7 +292,10 @@ def get_memory_info() -> Dict[str, int]:
         metrics["effective_available_mb"] = metrics["mem_available_mb"] + metrics["swap_free_mb"]
         return metrics
     except ImportError:
+        # psutil은 선택적 의존성. 미설치 환경에서 ImportError는 정상.
+        # 이 경로는 기본 metrics를 반환하며 성공으로 위장하지 않음.
         pass
+
 
     return metrics
 

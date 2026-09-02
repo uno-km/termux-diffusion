@@ -17,7 +17,15 @@ class InstallLock:
         self.timeout_sec = timeout_sec
         self._acquired = False
 
-    def _is_pid_alive(self, pid: int) -> bool:
+    def _is_pid_alive(self, pid: int) -> bool | None:
+        """Check if PID is alive.
+
+        반환:
+            True  → 프로세스 확인됨
+            False → 프로세스 종료됨
+            None  → 측정 불가 (PermissionError 등)
+                   → 호출자는 None을 alive=True로 변환하지 말 것
+        """
         if pid <= 0:
             return False
         if sys.platform == "win32":
@@ -28,15 +36,33 @@ class InstallLock:
                 if h:
                     ctypes.windll.kernel32.CloseHandle(h)
                     return True
+                # OpenProcess가 NULL 반환 — 프로세스 없음 또는 접근 거부
+                # GetLastError()로 구분 가능하나 여기서는 False(종료)로 처리
                 return False
-            except Exception:
-                return True
+            except PermissionError:
+                # 측정 불가 — 스테일 판정을 False로 하지 않음
+                logger.warning("[locking] _is_pid_alive PermissionError for pid=%d (unmeasurable)", pid)
+                return None
+            except (AttributeError, OSError) as _win_err:
+                # ctypes.windll 미지원 또는 Win32 API 오류
+                logger.warning("[locking] _is_pid_alive Win32 error for pid=%d: %s (unmeasurable)", pid, _win_err)
+                return None
+            # 예상 밖 예외는 재발생
         else:
             try:
                 os.kill(pid, 0)
                 return True
-            except (OSError, ProcessLookupError):
-                return False
+            except ProcessLookupError:
+                return False  # Allowed: process gone -> correctly identified as not alive.
+            except PermissionError:
+                # 권한 없음 — 측정 불가
+                logger.warning("[locking] _is_pid_alive PermissionError for pid=%d (unmeasurable)", pid)
+                return None
+            except OSError as _os_err:
+                logger.warning("[locking] _is_pid_alive OSError for pid=%d: %s", pid, _os_err)
+                return None
+
+
 
     def _check_and_clear_stale_lock(self) -> bool:
         """Check if existing lock file belongs to a deceased process, removing it if stale."""
@@ -49,13 +75,23 @@ class InstallLock:
                     pid_str = line.split("=", 1)[1].strip()
                     if pid_str.isdigit():
                         pid = int(pid_str)
-                        if not self._is_pid_alive(pid):
+                        alive = self._is_pid_alive(pid)
+                        if alive is None:
+                            # 측정 불가 — 스테일 판정 금지. 잠금을 보존 (fail-closed).
+                            logger.warning(
+                                "[locking] Cannot determine if PID %d is alive (unmeasurable). "
+                                "Preserving lock to avoid data corruption.",
+                                pid,
+                            )
+                            return False
+                        if not alive:
                             logger.warning(
                                 "[termux-diffusion] Stale installation lock detected (PID: %d is dead). Auto-reclaiming lock.",
                                 pid,
                             )
                             self.lock_file.unlink(missing_ok=True)
                             return True
+
         except Exception as e:
             logger.debug("Stale lock inspection note: %s", e)
         return False

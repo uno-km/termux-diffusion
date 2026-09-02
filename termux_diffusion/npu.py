@@ -87,15 +87,28 @@ ANDROID_NNAPI_LIBS = [
 
 
 def _read_android_prop(key: str) -> str:
-    """Query Android system property via getprop."""
+    """Query Android system property via getprop.
+
+    반환: 값 문자열, 실패/미지원 시 "" (fail-closed).
+    """
+    import logging as _logging
+    _npu_logger = _logging.getLogger("termux_diffusion.npu")
     try:
         res = subprocess.run(["getprop", key], capture_output=True, text=True, timeout=2.0)
         val = res.stdout.strip()
         if val and val != "unknown":
             return val
-    except Exception:
-        pass
+    except FileNotFoundError:
+        # getprop 바이너리 없음 — 비-Android 환경. fail-closed.
+        _npu_logger.debug("[npu] getprop not found (non-Android environment)")
+    except subprocess.TimeoutExpired:
+        _npu_logger.debug("[npu] getprop timed out for key=%s", key)
+    except OSError as _os_err:
+        _npu_logger.warning("[npu] getprop OSError for key=%s: %s", key, _os_err)
+    # 예상 밖 예외는 재발생
     return ""
+
+
 
 
 def _probe_first_existing_lib(paths: List[str]) -> Optional[str]:

@@ -11,8 +11,8 @@ if os.path.exists(readme_path):
 
 setup(
     name="termux-diffusion",
-    version="1.4.0",
-    description="Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
+    version="1.4.3",
+    description="On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="uno-km (AMEVA Foundation)",

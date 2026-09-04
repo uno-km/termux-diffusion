@@ -1,7 +1,7 @@
 {
   "name": "termux-diffusion",
-  "version": "1.4.0",
-  "description": "Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
+  "version": "1.4.3",
+  "description": "On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
   "main": "index.js",
   "types": "index.d.ts",
   "bin": {

@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.4.0] - 2026-09-04
+## [1.4.3] - 2026-09-04
 
 ### Added
+- **Truthfulness Documentation Overhaul**: Replaced speculative GPU marketing claims with ground-truth device telemetry, highlighting native ARM64 ARMv8.2-A DotProd/FP16 SIMD vector execution (Cortex-A78 x4: 61s benchmark) and adaptive device resource routing.
 - **AMEVA Component Protocol v1 Integration**: Added `DiffusionControl` and `DiffusionOrchestratorAdapter` (`BaseOrchestratorAdapter` compliant) for orchestrator pluggability, and wired `HeartbeatWriter` for real-time instance state tracking.
 - **AMEVA CLI Subcommands**: Integrated `component`, `model`, and `instance` management commands directly into the unified CLI.
 

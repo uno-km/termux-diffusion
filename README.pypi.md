@@ -1,34 +1,39 @@
-﻿# termux-diffusion
+# Termux-Diffusion (Python)
 
-> **Hardware-Accelerated On-Device Image Generation & Stable Diffusion Runtime for Android Termux**  
-> *Non-Root Native Vulkan GPU Execution · ARM64 DotProd SIMD · Android Bionic ICD Driver Priority · Resilient Memory Pipeline*
+[![PyPI](https://img.shields.io/pypi/v/termux-diffusion.svg?style=flat-square&color=0369a1)](https://pypi.org/project/termux-diffusion/)
+[![Python](https://img.shields.io/pypi/pyversions/termux-diffusion.svg?style=flat-square)](https://pypi.org/project/termux-diffusion/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-004499.svg?style=flat-square)](https://github.com/uno-km/termux-diffusion)
 
----
+> **디바이스 리소스를 활용한 Android Termux 네이티브 온디바이스 Stable Diffusion 런타임**  
+> *Native On-Device Stable Diffusion Runtime Utilizing Device Resources for Android Termux*
 
-## ⚡ 5-Minute Quickstart
+## Installation
 
-### Python Installation
-
-`ash
-# In Android Termux:
-pkg update && pkg install -y python python-numpy git
+```bash
 pip install termux-diffusion
-`
+```
 
-### Python SDK Usage
+## Quickstart
 
-`python
-from termux_diffusion import DiffusionPipeline
+```python
+import termux_diffusion as td
 
-pipeline = DiffusionPipeline.from_pretrained("sd-turbo-arm64")
-image = pipeline.generate("cyberpunk street cat, 4k", steps=4)
-image.save("output.png")
-`
+# 1. Generate image on Android hardware
+image_path = td.generate(
+    prompt="Cyberpunk Seoul city at night, neon lights, 8k",
+    model="sd-turbo",
+    steps=4
+)
+print(f"Generated and saved to Gallery: {image_path}")
 
----
+```
 
-## 📚 Official Documentation
+## Description
+Executes quantized Stable Diffusion models utilizing device resources with ARMv8.2-A DotProd/FP16 SIMD vector execution (Cortex-A78 x4 61s) and direct Samsung Gallery indexing.
 
-- **Official Web Documentation**: [https://uno-km.vercel.app/lib/diffusion/](https://uno-km.vercel.app/lib/diffusion/)
-- **GitHub Repository**: [https://github.com/uno-km/termux-diffusion](https://github.com/uno-km/termux-diffusion)
-- **License**: Apache-2.0
+## Documentation
+- [Official Documentation & API Reference](https://uno-km.vercel.app/lib/diffusion/)
+- [GitHub Repository](https://github.com/uno-km/termux-diffusion)
+
+## License
+Apache-2.0 License. Copyright (c) 2026 Eunho Kim (@uno-km).

@@ -67,7 +67,9 @@ class DiffusionControl(ComponentControl):
         ts = now_timestamps()
         state_data = self._state_file.read()
         stale = self._state_file.is_stale(threshold_ms=30_000)
-        pid, pid_alive = self._check_pid()
+        pid_info = self._check_pid()
+        pid = pid_info.get("pid")
+        pid_alive = pid_info.get("alive")
         instances = self._inst_reg.list_all()
         hot = [i for i in instances if i.state == InstanceState.HOT]
 
@@ -75,14 +77,24 @@ class DiffusionControl(ComponentControl):
         engine_present = self._check_engine_binary()
 
         ready = engine_present
-        degraded = stale or not pid_alive
+        degraded = stale or not engine_present or (pid_alive is not True)
+
+        proc_dict: dict[str, Any] = {
+            "running": pid_alive,
+            "pid": pid,
+            "verified": pid_info.get("verified", False),
+        }
+        if "inspection_error" in pid_info:
+            proc_dict["inspection_error"] = pid_info["inspection_error"]
+        if "reason" in pid_info:
+            proc_dict["reason"] = pid_info["reason"]
 
         return {
             "protocol": "ameva-component-status/1",
             "component_id": self.COMPONENT_ID, "component_type": self.COMPONENT_TYPE,
             "version": self._get_version(), "ready": ready, "degraded": degraded,
             **ts,
-            "process": {"running": pid_alive, "pid": pid},
+            "process": proc_dict,
             "capabilities": list(self.CAPABILITIES),
             "active_models": [i.model_id for i in hot],
             "engine": {"present": engine_present},
@@ -93,36 +105,66 @@ class DiffusionControl(ComponentControl):
                            "updated_at": state_data.get("updated_at") if state_data else None},
         }
 
-    def _check_pid(self) -> tuple[int | None, bool | None]:
-        """PID 파일에서 sd-cli 프로세스 생존 여부 확인.
-
-        반환:
-            alive=True  → 프로세스 확인됨
-            alive=False → 종료됨
-            alive=None  → PermissionError 등 측정 불가
-        """
+    def _check_pid(self) -> dict[str, Any]:
+        """BLOCKER 1: PID 파일에서 sd-cli 프로세스 생존 여부 확인.
+        PermissionError/OSError 발생 시 alive=None, verified=False, inspection_error 반환."""
         from ameva_component import log_stderr
 
         pid_file = Path.home() / ".local" / "run" / "termux-diffusion.pid"
         if pid_file.exists():
             try:
-                pid = int(pid_file.read_text().strip())
+                raw = pid_file.read_text().strip()
+                pid = int(raw)
             except (ValueError, OSError) as _parse_err:
                 log_stderr(f"[diffusion] PID file parse error: {_parse_err}")
-                return None, False
+                return {
+                    "pid": None,
+                    "alive": None,
+                    "verified": False,
+                    "inspection_error": {
+                        "code": "PID_PARSE_ERROR",
+                        "message": str(_parse_err),
+                    },
+                }
 
             try:
                 os.kill(pid, 0)
-                return pid, True
+                return {"pid": pid, "alive": True, "verified": True}
             except ProcessLookupError:
-                return pid, False
-            except PermissionError:
-                log_stderr(f"[diffusion] PID {pid} alive check: PermissionError (unmeasurable)")
-                return pid, None
+                return {
+                    "pid": pid,
+                    "alive": False,
+                    "verified": True,
+                    "reason": "process_lookup_failed",
+                }
+            except PermissionError as perm_err:
+                log_stderr(f"[diffusion] PID {pid} alive check: PermissionError")
+                return {
+                    "pid": pid,
+                    "alive": None,
+                    "verified": False,
+                    "inspection_error": {
+                        "code": "PROCESS_INSPECTION_PERMISSION_DENIED",
+                        "message": str(perm_err),
+                    },
+                }
             except OSError as _os_err:
                 log_stderr(f"[diffusion] PID {pid} alive check OSError: {_os_err}")
-                return pid, None
-        return None, False
+                return {
+                    "pid": pid,
+                    "alive": None,
+                    "verified": False,
+                    "inspection_error": {
+                        "code": "PROCESS_INSPECTION_OS_ERROR",
+                        "message": str(_os_err),
+                    },
+                }
+        return {
+            "pid": None,
+            "alive": False,
+            "verified": True,
+            "reason": "pid_file_missing",
+        }
 
 
 

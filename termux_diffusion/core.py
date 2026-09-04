@@ -341,8 +341,6 @@ def generate(
         cmd.extend(["--seed", str(seed)])
     # Append GPU offloading args from hardware detection
     cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
-    if effective_device in ("vulkan", "gpu"):
-        cmd.extend(["--backend", "vulkan0"])
 
     # --- Advanced TOP 7 Parameters Integration & Defense ---
     effective_sampler = None
@@ -480,18 +478,19 @@ def generate(
             )
         cmd.extend(["--taesd", str(effective_taesd_path)])
 
-    # 5.1 Configure Environment with companion library search paths (Bionic priority on Android)
+    # 5.1 Configure Environment with companion library search paths (Termux native isolation)
     env = os.environ.copy()
-    bionic_sys_dirs = ["/system/lib64", "/vendor/lib64", "/vendor/lib64/egl"]
+    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
     lib_dirs = [
         str(sd_cli.parent),
         str(sd_cli.parent.parent / "lib"),
         str(sd_cli.parent / "lib"),
+        f"{prefix}/lib",
         str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
         str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
     ]
     cur_ld = env.get("LD_LIBRARY_PATH", "")
-    valid_dirs = [d for d in bionic_sys_dirs + lib_dirs if Path(d).is_dir()]
+    valid_dirs = [d for d in lib_dirs if Path(d).is_dir()]
     if valid_dirs:
         env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
 
@@ -575,7 +574,8 @@ def generate(
                                 logger.debug("sd-cli: %s", line_str)
                 finally:
                     try:
-                        process.stdout.close()
+                        if hasattr(process.stdout, "close"):
+                            process.stdout.close()
                     except OSError as _close_err:
                         # stdout 파이프 close 실패 — 프로세스가 이미 파이프를 닫은 경우 정상.
                         # 이 오류는 생성 성공/실패와 독립적. debug 수준 로그.

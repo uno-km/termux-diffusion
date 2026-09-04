@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "termux-diffusion"
-version = "1.3.2"
+version = "1.4.0"
 description = "Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -55,6 +55,10 @@ Documentation = "https://uno-km.github.io/termux-diffusion/"
 termux-diffusion = "termux_diffusion.cli:main"
 termux-diffusion-install = "termux_diffusion.cli:run_install_cli"
 termux-diffusion-doctor = "termux_diffusion.cli:run_doctor_cli"
+
+[project.entry-points."ameva.components"]
+termux-diffusion = "termux_diffusion.adapter:create_adapter"
+
 
 [tool.setuptools.package-data]
 termux_diffusion = [

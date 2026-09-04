@@ -2,7 +2,7 @@
 name: "Termux-Diffusion"
 package_name_pypi: "termux-diffusion"
 package_name_npm: "termux-diffusion"
-version: "v1.3.1"
+version: "v1.4.0"
 release_name: "Dual-Engine Production Release"
 license: "Apache-2.0"
 platform: "Android ARM64 / Samsung Galaxy A35 & S21"

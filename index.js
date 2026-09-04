@@ -1244,9 +1244,6 @@ async function generate(options) {
 
   const gpuArgs = getSdCliGpuArgs(effectiveDevice, nglLayers);
   cmdArgs.push(...gpuArgs);
-  if (effectiveDevice === 'vulkan' || effectiveDevice === 'gpu') {
-    cmdArgs.push('--backend', 'vulkan0');
-  }
 
   console.log(`[Render] [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
   const startTime = Date.now();

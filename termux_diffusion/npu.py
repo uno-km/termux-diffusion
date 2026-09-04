@@ -9,7 +9,7 @@ for mobile NPU/TPU chipsets on Android Termux:
 
 Architectural Note:
 In v1.3+, inference is driven by the native Bionic sd-cli engine using Vulkan GPU
-(--backend vulkan0) and ARM64 NEON CPU acceleration. Direct Qualcomm QNN / Hexagon NPU subgraph
+compute and ARM64 NEON CPU acceleration. Direct Qualcomm QNN / Hexagon NPU subgraph
 partitioning is the architectural blueprint for the upcoming v2.0 runtime.
 """
 
@@ -242,7 +242,7 @@ def get_optimal_heterogeneous_pipeline(device: str = "auto") -> Dict[str, str]:
     
     Note:
         In v1.3+, diffusion inference is executed via the native Bionic sd-cli engine using
-        Vulkan GPU compute (--backend vulkan0) and ARM64 NEON CPU math. Direct Qualcomm QNN / Hexagon
+        Vulkan GPU compute and ARM64 NEON CPU math. Direct Qualcomm QNN / Hexagon
         NPU subgraph partitioning is the architectural target for the upcoming v2.0 runtime.
     """
     req = device.lower().strip()
@@ -258,7 +258,7 @@ def get_optimal_heterogeneous_pipeline(device: str = "auto") -> Dict[str, str]:
     else:
         return {
             "text_encoder": "CPU / GPU (ARM NEON / Vulkan)",
-            "denoiser_unet": "GPU (Vulkan Compute / --backend vulkan0)",
+            "denoiser_unet": "GPU (Vulkan Compute Shader Pipeline)",
             "vae_decoder": "GPU (Vulkan Compute FP16)",
             "scheduler": "CPU (Single-Core Fast Math)",
             "summary": "GPU-Accelerated [Vulkan Compute Shader Pipeline]"

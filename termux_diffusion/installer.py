@@ -501,12 +501,20 @@ def run_doctor() -> bool:
         print(f"   -> {m['name']} ({m['size_mb']} MB){valid_tag}")
 
     # 8. Hardware Acceleration (GPU / NPU / TPU / Vulkan / OpenCL)
+    try:
+        from ameva_vulkan_runtime.adapters import find_system_vulkan_driver_dir, DiffusionAdapter
+        discovered_vulkan = find_system_vulkan_driver_dir()
+    except ImportError:
+        discovered_vulkan = None
+
     from .hardware import detect_hardware_profile, format_hardware_report
     hw = detect_hardware_profile()
     print(f"8. Hardware Acceleration Profile:")
     print(f"   SoC: {hw.soc_name}, GPU Architecture: {hw.gpu_name}")
-    print(f"   GPU Vulkan: {'Available [OK]' if hw.vulkan_available else 'Not Found [WARN]'}")
-    if hw.vulkan_driver:
+    print(f"   GPU Vulkan: {'Available [OK]' if (hw.vulkan_available or discovered_vulkan) else 'Not Found [WARN]'}")
+    if discovered_vulkan:
+        print(f"     -> Vulkan Driver (ameva-vulkan-runtime): {discovered_vulkan}")
+    elif hw.vulkan_driver:
         print(f"     -> Vulkan Driver: {hw.vulkan_driver.library_path}")
     print(f"   GPU OpenCL: {'Available [OK]' if hw.opencl_available else 'Not Found [WARN]'}")
     if hw.opencl_driver:

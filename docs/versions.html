@@ -17,7 +17,7 @@
       <h1 data-i18n="common.brand">Termux-Diffusion</h1>
     </a>
     <div class="header-controls">
-      <span class="release-tag" data-i18n="common.releaseTag">v1.3.1 (Multi-SoC Vulkan)</span>
+      <span class="release-tag" data-i18n="common.releaseTag">v1.4.0 (AMEVA Protocol v1)</span>
       <div class="lang-selector-wrapper"></div>
       <a href="https://pypi.org/project/termux-diffusion/" target="_blank" class="header-btn" data-i18n="common.pypiBtn">PyPI (pip)</a>
       <a href="https://www.npmjs.com/package/termux-diffusion" target="_blank" class="header-btn npm-btn" data-i18n="common.npmBtn">npm (Node.js)</a>
@@ -70,7 +70,19 @@
       <p class="subtitle">Complete history of official releases, prebuilt binary assets, and kernel patches</p>
 
       <section class="doc-section">
-        <h3>v1.3.1 - Structured Error Diagnostics & Dual Registry Production Release <span class="badge badge-success">Latest</span></h3>
+        <h3>v1.4.0 - AMEVA Component Protocol v1 & Native Linker Isolation <span class="badge badge-success">Latest</span></h3>
+        <p><strong>Release Date:</strong> 2026-09-04 | <strong>Tag:</strong> <code>v1.4.0</code></p>
+        <ul>
+          <li><strong>AMEVA Component Protocol v1:</strong> Integrated <code>DiffusionControl</code> component layer, <code>HeartbeatWriter</code> instance lifecycle tracking, and standard <code>DiffusionOrchestratorAdapter</code> entry point for centralized orchestration.</li>
+          <li><strong>Unified CLI Subcommands:</strong> Integrated <code>component</code>, <code>model</code>, and <code>instance</code> commands for automated workload provisioning.</li>
+          <li><strong>sd-cli Execution Crash Prevention:</strong> Eliminated unsupported <code>--backend vulkan0</code> CLI flag injection that caused immediate process crashes on C++ engine invocation.</li>
+          <li><strong>Bionic Linker Isolation:</strong> Excluded <code>/system/lib64</code> and <code>/vendor/lib64</code> from <code>LD_LIBRARY_PATH</code> to eliminate Android 15 Bionic namespace linker collisions and EGL symbol <code>SIGABRT</code> signals.</li>
+          <li><strong>Process Locking & Hardware Telemetry Truthfulness:</strong> Resolved <code>_is_pid_alive</code> lock retention defect and strengthened KGSL/NPU driver validation.</li>
+        </ul>
+      </section>
+
+      <section class="doc-section">
+        <h3>v1.3.1 - Structured Error Diagnostics & Dual Registry Production Release</h3>
         <p><strong>Release Date:</strong> 2026-08-27 | <strong>Tag:</strong> <code>v1.3.1</code></p>
         <ul>
           <li><strong>Structured Error Diagnostics:</strong> Formatted fail-fast diagnostic error messages with parameter name, resolved absolute path, and targeted recovery remedies.</li>

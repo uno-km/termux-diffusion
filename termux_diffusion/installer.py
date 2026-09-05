@@ -512,7 +512,7 @@ def run_doctor() -> bool:
     print(f"   SoC: {hw.soc_name}, GPU Architecture: {hw.gpu_name}")
     print(f"   GPU Vulkan: {'Available [OK]' if (hw.vulkan_available or discovered_vulkan) else 'Not Found [WARN]'}")
     if discovered_vulkan:
-        print(f"     -> Vulkan Driver (ameva-vulkan-runtime): {discovered_vulkan}")
+        print(f"     -> Vulkan Driver (ameva-runtime): {discovered_vulkan}")
     elif hw.vulkan_driver:
         print(f"     -> Vulkan Driver: {hw.vulkan_driver.library_path}")
     print(f"   GPU OpenCL: {'Available [OK]' if hw.opencl_available else 'Not Found [WARN]'}")

@@ -125,7 +125,7 @@ def run_binary_self_test(
         _SELF_TEST_CACHE[cache_key] = result
         return result
 
-    # [수정] Vulkan 백엔드 실측 검증: ameva-vulkan-runtime 연동
+    # [수정] Vulkan 백엔드 실측 검증: ameva-runtime 연동
     print(f"[termux-diffusion] Stage 2 Self-Test: Vulkan runtime validation ({binary_path.name})...")
     try:
         from ameva_runtime import vulkan as avr

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # termux-diffusion Universal One-Line Bootstrap Installer
 # Usage: curl -sL https://raw.githubusercontent.com/uno-km/termux-diffusion/main/scripts/install.sh | bash
@@ -54,9 +54,9 @@ if [ "${IS_TERMUX}" = "true" ] && command -v pkg >/dev/null 2>&1; then
 fi
 
 # 4. Install Python & Node.js Core Packages
-echo "-> Installing Python packages (ameva-vulkan-runtime, termux-diffusion)..."
+echo "-> Installing Python packages (ameva-runtime, termux-diffusion)..."
 python -m pip install --upgrade pip setuptools wheel
-python -m pip install --upgrade ameva-vulkan-runtime termux-diffusion
+python -m pip install --upgrade ameva-runtime termux-diffusion
 
 if command -v npm >/dev/null 2>&1; then
     echo "-> Installing Node.js CLI (termux-diffusion)..."

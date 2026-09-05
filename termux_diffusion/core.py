@@ -494,7 +494,7 @@ def generate(
     if valid_dirs:
         env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
 
-    # 5.2 ameva-vulkan-runtime DiffusionAdapter Binding (Vulkan / GPU mode)
+    # 5.2 ameva-runtime DiffusionAdapter Binding (Vulkan / GPU mode)
     if effective_device in ("vulkan", "gpu") or device_mode in ("vulkan", "gpu"):
         try:
             from ameva_runtime import vulkan as avr

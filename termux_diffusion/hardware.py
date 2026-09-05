@@ -70,7 +70,7 @@ class HardwareProfile:
 # [중요] Vulkan ICD 탐색 순서: Android Bionic ICD 최우선.
 # Termux Mesa($PREFIX/lib/libvulkan.so)를 시스템 ICD보다 먼저 로드하면
 # Bionic linker 이중 dispatch 테이블 충돌로 SIGABRT 가 발생합니다.
-# ameva-vulkan-runtime 의 ICD 탐색 정책과 동일하게 유지합니다.
+# ameva-runtime 의 ICD 탐색 정책과 동일하게 유지합니다.
 _VULKAN_LIB_SEARCH_PATHS = [
     "/system/lib64/libvulkan.so",   # Android Bionic ICD (최우선 — A35/S25/S21 모두 존재)
     "/system/lib/libvulkan.so",
@@ -215,7 +215,7 @@ def _detect_gpu_name() -> str:
 
 
 def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:
-    """Probe for a usable Vulkan driver via ameva-vulkan-runtime SSOT."""
+    """Probe for a usable Vulkan driver via ameva-runtime SSOT."""
     try:
         from ameva_runtime import vulkan as avr
         report = avr.Doctor().run_self_test(verbose=False)
@@ -229,7 +229,7 @@ def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:
                 usable=True,
             )
     except Exception as e:
-        logger.debug("[termux-diffusion] ameva-vulkan-runtime probe exception: %s", e)
+        logger.debug("[termux-diffusion] ameva-runtime probe exception: %s", e)
 
     # 안전 폴백: 시스템 기본 Bionic 경로 검사
     detected_path = _find_vulkan_driver_path()

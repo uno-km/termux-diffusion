@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "termux-diffusion"
-version = "1.4.4"
+version = "1.4.5"
 description = "On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)"
 readme = "README.md"
 requires-python = ">=3.8"

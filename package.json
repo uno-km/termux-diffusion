@@ -1,6 +1,6 @@
 {
   "name": "termux-diffusion",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
   "main": "index.js",
   "types": "index.d.ts",

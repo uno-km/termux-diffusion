@@ -217,7 +217,7 @@ def _detect_gpu_name() -> str:
 def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:
     """Probe for a usable Vulkan driver via ameva-vulkan-runtime SSOT."""
     try:
-        import ameva_vulkan_runtime as avr
+        from ameva_runtime import vulkan as avr
         report = avr.Doctor().run_self_test(verbose=False)
         if report.overall_success or report.recommended_backend in ("vulkan", "vulkan_driver_only") or getattr(report, "passed_stages", 0) >= 7:
             return GPUDriverInfo(

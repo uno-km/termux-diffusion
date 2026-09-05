@@ -13,14 +13,13 @@ from typing import Dict, List, Optional, Tuple
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except (AttributeError, io.UnsupportedOperation):
-        # reconfigure 미지원 환경 (pytest capture, non-TTY). 최선 노력. 성공 변환 없음.
-        pass
+    except (AttributeError, io.UnsupportedOperation) as _out_err:
+        _ = _out_err
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except (AttributeError, io.UnsupportedOperation):
-        pass
+    except (AttributeError, io.UnsupportedOperation) as _err_err:
+        _ = _err_err
 
 
 
@@ -502,7 +501,7 @@ def run_doctor() -> bool:
 
     # 8. Hardware Acceleration (GPU / NPU / TPU / Vulkan / OpenCL)
     try:
-        from ameva_vulkan_runtime.adapters import find_system_vulkan_driver_dir, DiffusionAdapter
+        from ameva_runtime.vulkan.adapters import find_system_vulkan_driver_dir, DiffusionAdapter
         discovered_vulkan = find_system_vulkan_driver_dir()
     except ImportError:
         discovered_vulkan = None

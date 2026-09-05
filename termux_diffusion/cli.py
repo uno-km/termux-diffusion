@@ -85,8 +85,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         from ameva_component.cli_support import build_protocol_subcommands
         build_protocol_subcommands(subparsers)
-    except ImportError:
-        pass  # Allowed: optional rich/click dependency. Not installed is normal fallback.
+    except ImportError as _proto_err:
+        import logging
+        logging.getLogger("termux_diffusion.cli").debug(
+            "Optional AMEVA component CLI protocol subcommands omitted: %s", _proto_err
+        )
     # ────────────────────────────────────────────────────────────────────────
 
     if len(argv) == 0:

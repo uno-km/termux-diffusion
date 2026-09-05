@@ -128,7 +128,7 @@ def run_binary_self_test(
     # [수정] Vulkan 백엔드 실측 검증: ameva-vulkan-runtime 연동
     print(f"[termux-diffusion] Stage 2 Self-Test: Vulkan runtime validation ({binary_path.name})...")
     try:
-        import ameva_vulkan_runtime as avr
+        from ameva_runtime import vulkan as avr
         doc = avr.Doctor()
         if doc.quick_probe():
             result.stage2_probe_passed = True

@@ -497,8 +497,8 @@ def generate(
     # 5.2 ameva-vulkan-runtime DiffusionAdapter Binding (Vulkan / GPU mode)
     if effective_device in ("vulkan", "gpu") or device_mode in ("vulkan", "gpu"):
         try:
-            import ameva_vulkan_runtime as avr
-            from ameva_vulkan_runtime.adapters import DiffusionAdapter
+            from ameva_runtime import vulkan as avr
+            from ameva_runtime.vulkan.adapters import DiffusionAdapter
 
             avr_ctx = avr.get_or_create_context(device_mode)
             report = getattr(avr_ctx, "doctor", avr.Doctor()).run_self_test(verbose=False)

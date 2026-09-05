@@ -21,7 +21,7 @@ TERMUX_HOME = os.environ.get("HOME", "/data/data/com.termux/files/home")
 
 # [B방안] Platform SSOT: ameva-vulkan-runtime.platform 에서 공유 구현을 가져옵니다.
 try:
-    from ameva_vulkan_runtime.platform import is_termux as _ameva_is_termux
+    from ameva_runtime.vulkan.platform import is_termux as _ameva_is_termux
     _AMEVA_PLATFORM_AVAILABLE = True
 except ImportError:
     _AMEVA_PLATFORM_AVAILABLE = False
@@ -291,10 +291,8 @@ def get_memory_info() -> Dict[str, int]:
         metrics["effective_total_mb"] = metrics["mem_total_mb"] + metrics["swap_total_mb"]
         metrics["effective_available_mb"] = metrics["mem_available_mb"] + metrics["swap_free_mb"]
         return metrics
-    except ImportError:
-        # psutil은 선택적 의존성. 미설치 환경에서 ImportError는 정상.
-        # 이 경로는 기본 metrics를 반환하며 성공으로 위장하지 않음.
-        pass
+    except ImportError as _psutil_err:
+        logger.debug("Optional dependency psutil not available for memory info: %s", _psutil_err)
 
 
     return metrics

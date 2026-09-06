@@ -515,10 +515,14 @@ def generate(
             if cfg.get("unet_tiling") and "--vae-tiling" not in cmd:
                 cmd.append("--vae-tiling")
 
+            # Auto-inject mobile Vulkan HAL shim (Samsung GOS & BDA sanitizer) into process environment
+            env = DiffusionAdapter.get_execution_env(env)
+
             logger.info(
-                "[termux-diffusion] DiffusionAdapter bound: backend=%s, status=%s",
+                "[termux-diffusion] DiffusionAdapter bound: backend=%s, status=%s, LD_PRELOAD=%s",
                 cfg.get("backend", "vulkan"),
-                getattr(binding.status, "name", str(binding.status))
+                getattr(binding.status, "name", str(binding.status)),
+                env.get("LD_PRELOAD", "None")
             )
         except Exception as e:
             if device_mode in ("gpu", "vulkan") or strict_vulkan:

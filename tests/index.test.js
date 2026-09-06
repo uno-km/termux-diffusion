@@ -218,6 +218,13 @@ async function runTests() {
     assert.strictEqual(caughtCnet, true, 'Should reject non-existent controlNet file');
   });
 
+  // 14. E001 Fail-Fast on GPU without ameva-runtime
+  await it('resolveDeviceBackend fails fast with E001 when gpu requested without ameva-runtime', () => {
+    assert.throws(() => {
+      resolveDeviceBackend('gpu');
+    }, /AMEVA-DIFFUSION-E001/);
+  });
+
   if (fs.existsSync(dummyModelGguf)) {
     fs.unlinkSync(dummyModelGguf);
   }

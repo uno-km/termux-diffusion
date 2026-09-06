@@ -120,15 +120,16 @@ async function main() {
       console.error('[FAIL] Error: Prompt text is required (e.g. npx termux-diffusion generate "prompt")');
       process.exit(1);
     }
-    let model = 'realistic';
-    let steps, cfg, output, seed = -1, threads, device = 'cpu', negative;
+    let model = 'realistic', steps, cfg, output, seed = -1, threads, device = 'auto', negative;
     let sampler, schedule, vaeTiling = false, initImg, strength;
     let loraDir, clipSkip, controlNet, controlImage, controlStrength, taesd;
 
     for (let i = 2; i < args.length; i++) {
       if (args[i] === '-m' || args[i] === '--model') model = args[++i];
       if (args[i] === '-n' || args[i] === '--negative') negative = args[++i];
-      if (args[i] === '-d' || args[i] === '--device') device = args[++i];
+      if (args[i] === '-d' || args[i] === '--device' || args[i] === '-b' || args[i] === '--backend') device = args[++i];
+      if (args[i] === '--gpu') device = 'gpu';
+      if (args[i] === '--cpu') device = 'cpu';
       if (args[i] === '-s' || args[i] === '--steps') steps = parseInt(args[++i], 10);
       if (args[i] === '-c' || args[i] === '--cfg') cfg = parseFloat(args[++i]);
       if (args[i] === '-t' || args[i] === '--threads') threads = parseInt(args[++i], 10);

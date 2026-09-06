@@ -119,3 +119,46 @@ def test_cpuinfo_features_returns_list():
     """_read_cpuinfo_features must return a list (possibly empty on non-ARM)."""
     features = _read_cpuinfo_features()
     assert isinstance(features, list)
+
+
+def test_gpu_without_ameva_runtime_raises_e001():
+    """Requesting GPU when ameva-runtime is not installed must Fail-Fast with E001."""
+    from termux_diffusion.exceptions import PlatformNotSupportedError
+    with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=None):
+        with pytest.raises(PlatformNotSupportedError) as exc_info:
+            resolve_device_backend("gpu")
+        assert "AMEVA-DIFFUSION-E001" in str(exc_info.value)
+        assert "pip install ameva-runtime" in str(exc_info.value)
+
+
+def test_auto_without_ameva_runtime_defaults_to_cpu():
+    """Auto mode without ameva-runtime must default cleanly to CPU with info message."""
+    with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=None):
+        backend, ngl = resolve_device_backend("auto")
+        assert backend == "cpu"
+        assert ngl == 0
+
+
+def test_adreno_650_auto_defaults_to_cpu():
+    """Auto mode on Adreno 650 must default to CPU due to missing 8-bit storage buffer."""
+    mock_ameva = MagicMock()
+    with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=mock_ameva):
+        with patch("termux_diffusion.hardware._detect_gpu_name", return_value="Adreno (TM) 650"):
+            with patch("termux_diffusion.hardware._detect_soc_name", return_value="SM8250"):
+                backend, ngl = resolve_device_backend("auto")
+                assert backend == "cpu"
+                assert ngl == 0
+
+
+def test_adreno_650_gpu_failfast_e003():
+    """Explicit GPU mode on Adreno 650 must Fail-Fast with E003."""
+    from termux_diffusion.exceptions import PlatformNotSupportedError
+    mock_ameva = MagicMock()
+    with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=mock_ameva):
+        with patch("termux_diffusion.hardware._detect_gpu_name", return_value="Adreno (TM) 650"):
+            with patch("termux_diffusion.hardware._detect_soc_name", return_value="SM8250"):
+                with pytest.raises(PlatformNotSupportedError) as exc_info:
+                    resolve_device_backend("gpu")
+                assert "AMEVA-DIFFUSION-E003" in str(exc_info.value)
+                assert "storageBuffer8BitAccess" in str(exc_info.value)
+

@@ -10,10 +10,11 @@ import os
 import platform
 import re
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 
 from .exceptions import PlatformNotSupportedError
 from .npu import NPUProfile, NPUVendor, detect_npu_capabilities, get_optimal_heterogeneous_pipeline
@@ -387,10 +388,52 @@ def _build_cmake_flags(profile: HardwareProfile, backend: Optional[str] = None) 
 # 3. Device Selection for generate()
 # ------------------------------------------------------------------------------
 
+def _resolve_ameva_runtime() -> Optional[Any]:
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("ameva_runtime")
+        if spec is not None:
+            import ameva_runtime
+            return ameva_runtime
+    except (ImportError, AttributeError):
+        pass
+    return None
+
+
 def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
     """Resolve the user's device= argument to an actual backend and ngl count."""
-    profile = detect_hardware_profile()
     req = requested_device.lower().strip()
+    ameva_mod = _resolve_ameva_runtime()
+
+    if req in ("vulkan", "gpu"):
+        if ameva_mod is None:
+            raise PlatformNotSupportedError(
+                "[ERROR: AMEVA-DIFFUSION-E001] GPU acceleration requires 'ameva-runtime'.\n"
+                "Cause: Hardware abstraction provider 'ameva-runtime' is not installed.\n"
+                "Action Required: Install the hardware acceleration package via:\n"
+                "  pip install ameva-runtime\n"
+                "Documentation: https://uno-km.vercel.app/lib/diffusion/"
+            )
+        soc_name = _detect_soc_name()
+        gpu_name = _detect_gpu_name()
+        if "650" in gpu_name or "8250" in soc_name:
+            raise PlatformNotSupportedError(
+                "[ERROR: AMEVA-DIFFUSION-E003] Vulkan GPU acceleration failed on Adreno 650.\n"
+                "Cause: Missing required Vulkan extension storageBuffer8BitAccess for FP16/INT8 diffusion.\n"
+                "Action Required: Use CPU inference: termux-diffusion generate --device cpu ..."
+            )
+
+    if req == "auto":
+        if ameva_mod is None:
+            sys.stdout.write("[INFO] ameva-runtime is not installed. Defaulting to CPU backend.\n")
+            sys.stdout.flush()
+            return "cpu", 0
+        soc_name = _detect_soc_name()
+        gpu_name = _detect_gpu_name()
+        if "650" in gpu_name or "8250" in soc_name:
+            return "cpu", 0
+
+    profile = detect_hardware_profile()
     
     if req == "auto":
         backend = profile.recommended_backend
@@ -417,7 +460,7 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
         if profile.vulkan_available:
             return "vulkan", 99
         raise PlatformNotSupportedError(
-            "Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), "
+            "[ERROR: AMEVA-DIFFUSION-E003] Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), "
             "but no accessible Vulkan driver (.so) was found on this system. "
             "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
         )
@@ -574,4 +617,26 @@ def get_profile_gating_manager() -> ProfileGatingManager:
     if _gating_manager is None:
         _gating_manager = ProfileGatingManager.load_from_json()
     return _gating_manager
+
+
+def resolve_hardware(model_name: str = "sdxs-512-dreamshaper", backend: str = "vulkan") -> Dict[str, Any]:
+    """Resolves execution plan via ameva-runtime HAL SSOT."""
+    try:
+        from ameva_runtime.adapters import DiffusionAdapter
+    except ImportError as err:
+        raise PlatformNotSupportedError(
+            "[ERROR: AMEVA-DIFFUSION-E001] ameva-runtime HAL is not installed.\n"
+            "Run: pip install ameva-runtime\n"
+            "Raw Cause: " + str(err)
+        ) from err
+
+    adapter = DiffusionAdapter()
+    plan = adapter.bind(model_name=model_name, requested_backend=backend)
+    if backend == "vulkan" and plan.backend != "vulkan":
+        raise PlatformNotSupportedError(
+            f"[ERROR: AMEVA-DIFFUSION-E003] Vulkan requested but unsupported on this hardware.\n"
+            f"Diagnosis: {plan.diagnosis_reason}"
+        )
+    return plan.to_dict()
+
 

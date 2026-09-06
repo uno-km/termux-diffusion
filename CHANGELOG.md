@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-09-07
+
+### Added
+- Integrated unified `DiffusionAdapter` directly from `ameva_runtime.adapters` SSOT.
+- Enforced strict E001/E003 Fail-Fast on explicit Vulkan requests without silent CPU fallback.
+- Standardized English diagnostic messages and error logging.
+
+---
+
 ## [1.4.5] - 2026-09-05
 
 ### Changed

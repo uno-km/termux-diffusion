@@ -183,6 +183,7 @@ def generate(
     device: str = "auto",
     steps: Optional[int] = None,
     cfg_scale: Optional[float] = None,
+    guidance: Optional[float] = None,
     width: int = 512,
     height: int = 512,
     seed: int = -1,
@@ -303,6 +304,7 @@ def generate(
         steps = preset_info.get("default_steps", 10)
     if cfg_scale is None:
         cfg_scale = preset_info.get("default_cfg", 4.0)
+    effective_guidance = guidance if guidance is not None else preset_info.get("default_guidance")
     if threads is None:
         threads = get_optimal_thread_count()
 
@@ -334,6 +336,8 @@ def generate(
         "--cfg-scale", str(cfg_scale),
         "-o", str(out_path)
     ]
+    if effective_guidance is not None:
+        cmd.extend(["--guidance", str(effective_guidance)])
     if effective_negative:
         sanitized_neg = str(effective_negative).replace("\x00", "").replace("\r\n", " ").replace("\n", " ").strip()
         cmd.extend(["-n", sanitized_neg])
@@ -341,6 +345,8 @@ def generate(
         cmd.extend(["--seed", str(seed)])
     # Append GPU offloading args from hardware detection
     cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
+    if effective_device in ("vulkan", "gpu"):
+        cmd.extend(["--backend", "clip=vulkan0,diffusion=vulkan0,vae=vulkan0"])
 
     # --- Advanced TOP 7 Parameters Integration & Defense ---
     effective_sampler = None
@@ -480,6 +486,8 @@ def generate(
 
     # 5.1 Configure Environment with companion library search paths (Termux native isolation)
     env = os.environ.copy()
+    # Bypass debug CPU shadow checks on mobile Vulkan to unlock 10x throughput
+    env.setdefault("GGML_VULKAN_SKIP_CHECKS", "999999999")
     prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
     lib_dirs = [
         str(sd_cli.parent),

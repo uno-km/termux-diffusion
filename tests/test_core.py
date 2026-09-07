@@ -520,6 +520,8 @@ def test_strict_vulkan_failure_raises(tmp_path):
 
     def fake_popen_no_devices(cmd, **kwargs):
         mock_proc = MagicMock()
+        mock_proc.__enter__.return_value = mock_proc
+        mock_proc.__exit__.return_value = None
         mock_proc.stdout = [
             "[INFO] stable-diffusion.cpp:713 - loading model\n",
             "ggml_vulkan: No devices found.\n",

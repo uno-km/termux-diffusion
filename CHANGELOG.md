@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.3] - 2026-09-07
+
+### Added
+- **Adreno GPU Compute Check Bypass**: Embedded `GGML_VULKAN_SKIP_CHECKS="999999999"` default in execution environment, eliminating host-side debug CPU overhead on Qualcomm Adreno devices.
+- **Multi-Engine Vulkan Targeting**: Enforced `--backend clip=vulkan0,diffusion=vulkan0,vae=vulkan0` for Vulkan/GPU modes ensuring rock-solid execution and preventing pipeline crashes.
+- **Distilled Guidance Parameter (`-g` / `--guidance`)**: Added CLI and programmatic support for distilled CFG guidance (e.g. 3.5 for SDXS/Turbo).
+- **Optimized Mobile Presets**: Updated `sdxs` and `turbo` presets with default 2 steps and 3.5 guidance.
+
+---
+
 ## [1.5.2] - 2026-09-07
 
 ### Added

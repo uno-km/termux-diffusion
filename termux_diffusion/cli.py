@@ -45,6 +45,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("--cpu", action="store_const", const="cpu", dest="device", help="Force CPU baseline execution mode")
     gen_parser.add_argument("-s", "--steps", type=int, default=None, help="Denoising steps (default determined by preset, e.g. 10)")
     gen_parser.add_argument("-c", "--cfg", type=float, default=None, help="CFG guidance scale")
+    gen_parser.add_argument("-g", "--guidance", type=float, default=None, help="Distilled guidance scale (e.g. 3.5 for SDXS)")
     gen_parser.add_argument("-W", "--width", type=int, default=512, help="Image width (default: 512)")
     gen_parser.add_argument("-H", "--height", type=int, default=512, help="Image height (default: 512)")
     gen_parser.add_argument("-t", "--threads", type=int, default=None, help="CPU threads")
@@ -143,6 +144,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 device=device,
                 steps=steps,
                 cfg_scale=cfg,
+                guidance=args.guidance,
                 width=width,
                 height=height,
                 threads=args.threads,

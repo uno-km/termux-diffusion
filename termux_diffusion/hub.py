@@ -45,6 +45,7 @@ DEFAULT_PRESETS = MappingProxyType({
         "size_mb": 651,
         "default_steps": 2,
         "default_cfg": 1.0,
+        "default_guidance": 3.5,
         "default_width": 512,
         "default_height": 512,
         "default_sampler": "euler_a",
@@ -74,6 +75,7 @@ DEFAULT_PRESETS = MappingProxyType({
         "size_mb": 651,
         "default_steps": 2,
         "default_cfg": 1.0,
+        "default_guidance": 3.5,
     },
     "anime": {
         "repo_id": "haven-ai-companion/dreamshaper8-lcm-gguf",

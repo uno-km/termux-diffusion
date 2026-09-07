@@ -1,9 +1,17 @@
 # Changelog
 
-All notable changes to 	ermux-diffusion will be documented in this file.
+All notable changes to termux-diffusion will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.5.1] - 2026-09-07
+
+### Changed
+- Streamlined repository architecture: purged legacy scratch folders, internal handovers, and device test logs to official AMEVA Foundation archives.
+- Standardized CI/CD release workflow with idempotent PyPI and NPM dual distribution.
 
 ---
 

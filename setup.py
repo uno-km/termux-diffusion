@@ -11,8 +11,8 @@ if os.path.exists(readme_path):
 
 setup(
     name="termux-diffusion",
-    version="1.3.1",
-    description="Production On-Device AI Image Generation Framework for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
+    version="1.4.5",
+    description="On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="uno-km (AMEVA Foundation)",
@@ -33,11 +33,13 @@ setup(
     ],
     packages=find_packages(),
     package_data={
-        "termux_diffusion": ["py.typed"],
+        "termux_diffusion": ["py.typed", "data/*.json", "data/*.pub"],
     },
     include_package_data=True,
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=[
+        "ameva-runtime>=2.0.0",
+    ],
     entry_points={
         "console_scripts": [
             "termux-diffusion = termux_diffusion.cli:main",

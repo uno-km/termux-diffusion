@@ -1,23 +1,27 @@
 """Automated C++ core engine provisioning, binary locator, build healer, and doctor diagnostics."""
 
 import logging
+import io
 import os
 import shutil
 import subprocess
 import sys
+
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+    except (AttributeError, io.UnsupportedOperation) as _out_err:
+        _ = _out_err
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+    except (AttributeError, io.UnsupportedOperation) as _err_err:
+        _ = _err_err
+
+
 
 from .exceptions import ProvisioningError
 from .platform import (
@@ -64,16 +68,30 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
         try:
             os.symlink(target_name, temporary)
             os.replace(temporary, active)
-        except Exception:
-            # Fallback for OS where symlinks are restricted
+        except (NotImplementedError, OSError):
+            # symlink 미지원 OS(일부 Windows, FAT32 등) — copy2 fallback.
+            # fallback_used=True: 호출자가 symlink를 기대했다면 알아야 한다.
+            # activate_binary는 Path를 반환하므로 메타데이터는 logger에 기록.
+            logger.warning(
+                "[installer] symlink not supported; using copy2 fallback for %s -> %s",
+                target_name, active,
+            )
             shutil.copy2(target, active)
         return active
     finally:
         if temporary.exists() or temporary.is_symlink():
             try:
                 temporary.unlink()
-            except Exception:
-                pass
+            except (PermissionError, OSError) as _tmp_err:
+                # 임시 symlink 삭제 실패 — 디렉토리에 .tmp 파일이 남을 수 있음.
+                # 기능적으로는 activate_binary가 이미 완료됨. 경고 필수.
+                logger.warning(
+                    "[installer] Failed to clean up temporary symlink %s: %s. "
+                    "Manual cleanup may be required.",
+                    temporary, _tmp_err,
+                )
+
+
 
 
 def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-first") -> Optional[Path]:
@@ -85,32 +103,52 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
     lock_file = get_default_cache_dir() / "install.lock"
 
     with InstallLock(lock_file, timeout_sec=5.0):
-        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali)
+        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali via validated profiles)
         if backend in ("auto", "vulkan"):
             vulkan_bin = bin_dir / "sd-cli-vulkan"
             print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
             try:
                 if not vulkan_bin.is_file():
-                    from .hardware import detect_hardware_profile
+                    from .hardware import detect_hardware_profile, get_profile_gating_manager, _detect_device_model
                     hw = detect_hardware_profile()
-                    is_mali = "mali" in hw.gpu_name.lower() or "exynos" in hw.soc_name.lower()
+                    gating_mgr = get_profile_gating_manager()
+                    dev_model = _detect_device_model()
+                    matched = gating_mgr.find_matching_profile(dev_model, hw.soc_name, hw.gpu_name)
                     
-                    if is_mali:
-                        # Galaxy S21 / S20 Mali Prebuilt
-                        pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz"
-                        pkg_sha256 = "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+                    if matched and matched.get("package_tarball") and matched.get("package_sha256"):
+                        pkg_tag = matched.get("package_tag", "v1.3.1-vulkan-experimental")
+                        pkg_tarball = matched.get("package_tarball")
+                        pkg_url = f"https://github.com/uno-km/termux-diffusion/releases/download/{pkg_tag}/{pkg_tarball}"
+                        pkg_sha256 = matched.get("package_sha256")
                     else:
-                        # Galaxy S25 / Snapdragon Adreno Prebuilt
-                        pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
-                        pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
+                        is_mali = "mali" in hw.gpu_name.lower() or "exynos" in hw.soc_name.lower()
+                        if is_mali:
+                            pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz"
+                            pkg_sha256 = "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
+                        else:
+                            pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
+                            pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
 
                     tar_dest = bin_dir / "vulkan-prebuilt.tar.gz"
                     try:
                         atomic_download_file(pkg_url, tar_dest, expected_sha256=pkg_sha256)
                         import tarfile
+                        extract_target = get_default_cache_dir()
                         with tarfile.open(tar_dest, "r:gz") as tar:
-                            tar.extractall(path=get_default_cache_dir())
+                            # 경로 탈출(Directory Traversal) 방지 검증
+                            for member in tar.getmembers():
+                                member_path = os.path.realpath(
+                                    os.path.join(extract_target, member.name)
+                                )
+                                if not member_path.startswith(os.path.realpath(extract_target)):
+                                    raise ProvisioningError(
+                                        f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 "
+                                        f"경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
+                                    )
+                            tar.extractall(path=extract_target)
                         tar_dest.unlink(missing_ok=True)
+                    except ProvisioningError:
+                        raise
                     except Exception as dl_err:
                         logger.debug("Vulkan prebuilt download skipped/failed: %s", dl_err)
 
@@ -302,42 +340,15 @@ def provision_engine(
         except Exception as e:
             logger.warning("ggml-vulkan patch note: %s", e)
 
-    # Bionic Healer: Patch vulkan-shaders-gen.cpp for Android Termux
+    # Bionic Path Fix: Patch vulkan-shaders-gen.cpp for Android Termux temporary directory
     vulkan_gen = repo_dir / "ggml" / "src" / "ggml-vulkan" / "vulkan-shaders" / "vulkan-shaders-gen.cpp"
     if vulkan_gen.is_file():
         try:
             gen_content = vulkan_gen.read_text(encoding="utf-8")
             if 'output_dir = "/tmp"' in gen_content:
                 gen_content = gen_content.replace('output_dir = "/tmp"', 'output_dir = "."')
-            
-            old_err_block = (
-                "        int exit_code = execute_command(cmd, stdout_str, stderr_str);\n"
-                "        if (exit_code != 0 || !stderr_str.empty()) {\n"
-                '            std::cerr << "cannot compile " << name << " (exit code " << exit_code << ")\\n\\n";\n'
-                "            for (const auto& part : cmd) {\n"
-                '                std::cerr << part << " ";\n'
-                "            }\n"
-                '            std::cerr << "\\n\\n" << stderr_str << std::endl;\n'
-                "            compile_failed = true;\n"
-                "            return;\n"
-                "        }"
-            )
-            new_err_block = (
-                "        int exit_code = execute_command(cmd, stdout_str, stderr_str);\n"
-                "        if (exit_code != 0 || !stderr_str.empty()) {\n"
-                "            uint32_t dummy_spv[] = {0x07230203, 0x00010000, 0x00080001, 1, 0};\n"
-                "            std::ofstream f(out_path, std::ios::binary);\n"
-                "            f.write(reinterpret_cast<const char*>(dummy_spv), sizeof(dummy_spv));\n"
-                "            f.close();\n"
-                "            std::lock_guard<std::mutex> guard(lock);\n"
-                "            shader_fnames.push_back(std::make_pair(name, out_path));\n"
-                "            return;\n"
-                "        }"
-            )
-            if old_err_block in gen_content:
-                gen_content = gen_content.replace(old_err_block, new_err_block)
             vulkan_gen.write_text(gen_content, encoding="utf-8")
-            logger.info("Patched vulkan-shaders-gen.cpp with Universal Mobile GPU Healer.")
+            logger.info("Configured vulkan-shaders-gen.cpp for mobile working directory.")
         except Exception as e:
             logger.warning("vulkan-shaders-gen patch note: %s", e)
 
@@ -489,12 +500,20 @@ def run_doctor() -> bool:
         print(f"   -> {m['name']} ({m['size_mb']} MB){valid_tag}")
 
     # 8. Hardware Acceleration (GPU / NPU / TPU / Vulkan / OpenCL)
+    try:
+        from ameva_runtime.vulkan.adapters import find_system_vulkan_driver_dir, DiffusionAdapter
+        discovered_vulkan = find_system_vulkan_driver_dir()
+    except ImportError:
+        discovered_vulkan = None
+
     from .hardware import detect_hardware_profile, format_hardware_report
     hw = detect_hardware_profile()
     print(f"8. Hardware Acceleration Profile:")
     print(f"   SoC: {hw.soc_name}, GPU Architecture: {hw.gpu_name}")
-    print(f"   GPU Vulkan: {'Available [OK]' if hw.vulkan_available else 'Not Found [WARN]'}")
-    if hw.vulkan_driver:
+    print(f"   GPU Vulkan: {'Available [OK]' if (hw.vulkan_available or discovered_vulkan) else 'Not Found [WARN]'}")
+    if discovered_vulkan:
+        print(f"     -> Vulkan Driver (ameva-runtime): {discovered_vulkan}")
+    elif hw.vulkan_driver:
         print(f"     -> Vulkan Driver: {hw.vulkan_driver.library_path}")
     print(f"   GPU OpenCL: {'Available [OK]' if hw.opencl_available else 'Not Found [WARN]'}")
     if hw.opencl_driver:

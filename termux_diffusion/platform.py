@@ -19,8 +19,22 @@ TERMUX_PREFIX = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
 TERMUX_HOME = os.environ.get("HOME", "/data/data/com.termux/files/home")
 
 
+# [B방안] Platform SSOT: ameva-runtime.platform 에서 공유 구현을 가져옵니다.
+try:
+    from ameva_runtime.vulkan.platform import is_termux as _ameva_is_termux
+    _AMEVA_PLATFORM_AVAILABLE = True
+except ImportError:
+    _AMEVA_PLATFORM_AVAILABLE = False
+
+
 def is_android_termux() -> bool:
-    """Check whether the current runtime environment is native Android Termux."""
+    """Check whether the current runtime environment is native Android Termux.
+
+    [B방안] ameva-runtime.platform.is_termux() 를 SSOT 로 사용하며,
+    미설치 환경에서는 인라인 구현으로 안전하게 폴백합니다.
+    """
+    if _AMEVA_PLATFORM_AVAILABLE:
+        return _ameva_is_termux()
     if os.environ.get("TERMUX_VERSION") or os.environ.get("TERMUX_APP_PID"):
         return True
     if os.path.exists("/data/data/com.termux"):
@@ -53,20 +67,25 @@ def get_galaxy_gallery_dir() -> Path:
         try:
             termux_storage.mkdir(parents=True, exist_ok=True)
             return termux_storage
-        except (PermissionError, OSError):
-            pass
+        except (PermissionError, OSError) as _perm_err:
+            # 외부 스토리지 권한 거부 — 다음 경로 시도. 성공 변환 없음.
+            logger.debug("[platform] termux_storage mkdir failed: %s", _perm_err)
 
     sdcard_pictures = Path("/sdcard/Pictures/TermuxDiffusion")
     if Path("/sdcard/Pictures").is_dir():
         try:
             sdcard_pictures.mkdir(parents=True, exist_ok=True)
             return sdcard_pictures
-        except (PermissionError, OSError):
-            pass
+        except (PermissionError, OSError) as _perm_err:
+            logger.debug("[platform] sdcard mkdir failed: %s", _perm_err)
 
     fallback = get_default_cache_dir() / "outputs"
     fallback.mkdir(parents=True, exist_ok=True)
     return fallback
+
+
+
+
 
 
 def export_to_android_gallery(image_path: Path) -> Optional[Path]:
@@ -272,8 +291,9 @@ def get_memory_info() -> Dict[str, int]:
         metrics["effective_total_mb"] = metrics["mem_total_mb"] + metrics["swap_total_mb"]
         metrics["effective_available_mb"] = metrics["mem_available_mb"] + metrics["swap_free_mb"]
         return metrics
-    except ImportError:
-        pass
+    except ImportError as _psutil_err:
+        logger.debug("Optional dependency psutil not available for memory info: %s", _psutil_err)
+
 
     return metrics
 

@@ -8,8 +8,8 @@ for mobile NPU/TPU chipsets on Android Termux:
 - Android Standard Neural Networks API (NNAPI)
 
 Architectural Note:
-In v1.1.x, inference is driven by the native Bionic sd-cli engine using Vulkan GPU
-(-ngl 99) and ARM64 NEON CPU acceleration. Direct Qualcomm QNN / Hexagon NPU subgraph
+In v1.3+, inference is driven by the native Bionic sd-cli engine using Vulkan GPU
+compute and ARM64 NEON CPU acceleration. Direct Qualcomm QNN / Hexagon NPU subgraph
 partitioning is the architectural blueprint for the upcoming v2.0 runtime.
 """
 
@@ -87,15 +87,28 @@ ANDROID_NNAPI_LIBS = [
 
 
 def _read_android_prop(key: str) -> str:
-    """Query Android system property via getprop."""
+    """Query Android system property via getprop.
+
+    반환: 값 문자열, 실패/미지원 시 "" (fail-closed).
+    """
+    import logging as _logging
+    _npu_logger = _logging.getLogger("termux_diffusion.npu")
     try:
         res = subprocess.run(["getprop", key], capture_output=True, text=True, timeout=2.0)
         val = res.stdout.strip()
         if val and val != "unknown":
             return val
-    except Exception:
-        pass
+    except FileNotFoundError:
+        # getprop 바이너리 없음 — 비-Android 환경. fail-closed.
+        _npu_logger.debug("[npu] getprop not found (non-Android environment)")
+    except subprocess.TimeoutExpired:
+        _npu_logger.debug("[npu] getprop timed out for key=%s", key)
+    except OSError as _os_err:
+        _npu_logger.warning("[npu] getprop OSError for key=%s: %s", key, _os_err)
+    # 예상 밖 예외는 재발생
     return ""
+
+
 
 
 def _probe_first_existing_lib(paths: List[str]) -> Optional[str]:
@@ -228,8 +241,8 @@ def get_optimal_heterogeneous_pipeline(device: str = "auto") -> Dict[str, str]:
     """Determine the compute processor allocation for each diffusion pipeline component.
     
     Note:
-        In v1.1, diffusion inference is executed via the native Bionic sd-cli engine using
-        Vulkan GPU compute (-ngl 99) and ARM64 NEON CPU math. Direct Qualcomm QNN / Hexagon
+        In v1.3+, diffusion inference is executed via the native Bionic sd-cli engine using
+        Vulkan GPU compute and ARM64 NEON CPU math. Direct Qualcomm QNN / Hexagon
         NPU subgraph partitioning is the architectural target for the upcoming v2.0 runtime.
     """
     req = device.lower().strip()
@@ -245,7 +258,7 @@ def get_optimal_heterogeneous_pipeline(device: str = "auto") -> Dict[str, str]:
     else:
         return {
             "text_encoder": "CPU / GPU (ARM NEON / Vulkan)",
-            "denoiser_unet": "GPU (Vulkan Compute / -ngl 99)",
+            "denoiser_unet": "GPU (Vulkan Compute Shader Pipeline)",
             "vae_decoder": "GPU (Vulkan Compute FP16)",
             "scheduler": "CPU (Single-Core Fast Math)",
             "summary": "GPU-Accelerated [Vulkan Compute Shader Pipeline]"

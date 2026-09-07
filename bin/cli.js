@@ -12,6 +12,7 @@ const {
   listCachedModels,
   clearCache,
   locateSdCli,
+  provisionEngine,
   detectHardwareProfile,
   DEFAULT_PRESETS
 } = require('../index');
@@ -119,15 +120,16 @@ async function main() {
       console.error('[FAIL] Error: Prompt text is required (e.g. npx termux-diffusion generate "prompt")');
       process.exit(1);
     }
-    let model = 'realistic';
-    let steps, cfg, output, seed = -1, threads, device = 'cpu', negative;
+    let model = 'realistic', steps, cfg, output, seed = -1, threads, device = 'auto', negative;
     let sampler, schedule, vaeTiling = false, initImg, strength;
     let loraDir, clipSkip, controlNet, controlImage, controlStrength, taesd;
 
     for (let i = 2; i < args.length; i++) {
       if (args[i] === '-m' || args[i] === '--model') model = args[++i];
       if (args[i] === '-n' || args[i] === '--negative') negative = args[++i];
-      if (args[i] === '-d' || args[i] === '--device') device = args[++i];
+      if (args[i] === '-d' || args[i] === '--device' || args[i] === '-b' || args[i] === '--backend') device = args[++i];
+      if (args[i] === '--gpu') device = 'gpu';
+      if (args[i] === '--cpu') device = 'cpu';
       if (args[i] === '-s' || args[i] === '--steps') steps = parseInt(args[++i], 10);
       if (args[i] === '-c' || args[i] === '--cfg') cfg = parseFloat(args[++i]);
       if (args[i] === '-t' || args[i] === '--threads') threads = parseInt(args[++i], 10);
@@ -143,6 +145,18 @@ async function main() {
       if (args[i] === '--control-image') controlImage = args[++i];
       if (args[i] === '--control-strength') controlStrength = parseFloat(args[++i]);
       if (args[i] === '--taesd') taesd = args[++i];
+      if (args[i] === '--preset') {
+        const pKey = String(args[++i]).replace(/_/g, '-');
+        if (DEFAULT_PRESETS[pKey]) {
+          const pCfg = DEFAULT_PRESETS[pKey];
+          model = pCfg.alias || pKey;
+          if (steps === undefined) steps = pCfg.default_steps;
+          if (cfg === undefined) cfg = pCfg.default_cfg;
+          if (sampler === undefined) sampler = pCfg.default_sampler;
+          if (device === 'cpu' && pCfg.default_device) device = pCfg.default_device;
+          if (pCfg.default_vae_tiling) vaeTiling = true;
+        }
+      }
       if (args[i] === '--seed') {
         seed = parseInt(args[++i], 10);
         if (isNaN(seed) || seed < -1 || seed > 4294967295) {

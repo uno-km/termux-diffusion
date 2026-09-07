@@ -1,2 +1,0 @@
-Filesystem       Size Used Avail Use% Mounted on
-/dev/block/dm-52 225G  22G  203G  10% /data/data/com.google.android.gms

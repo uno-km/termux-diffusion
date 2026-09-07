@@ -10,10 +10,11 @@ import os
 import platform
 import re
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 
 from .exceptions import PlatformNotSupportedError
 from .npu import NPUProfile, NPUVendor, detect_npu_capabilities, get_optimal_heterogeneous_pipeline
@@ -67,13 +68,18 @@ class HardwareProfile:
 # 1. CPU & GPU Feature Detection
 # ------------------------------------------------------------------------------
 
+# [중요] Vulkan ICD 탐색 순서: Android Bionic ICD 최우선.
+# Termux Mesa($PREFIX/lib/libvulkan.so)를 시스템 ICD보다 먼저 로드하면
+# Bionic linker 이중 dispatch 테이블 충돌로 SIGABRT 가 발생합니다.
+# ameva-runtime 의 ICD 탐색 정책과 동일하게 유지합니다.
 _VULKAN_LIB_SEARCH_PATHS = [
-    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib", "libvulkan.so"),
-    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib64", "libvulkan.so"),
-    "/system/lib64/libvulkan.so",
+    "/system/lib64/libvulkan.so",   # Android Bionic ICD (최우선 — A35/S25/S21 모두 존재)
     "/system/lib/libvulkan.so",
     "/vendor/lib64/libvulkan.so",
     "/vendor/lib/libvulkan.so",
+    # Termux Mesa: 시스템 ICD 가 없는 순수 Linux/PRoot 환경 전용 fallback
+    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib64", "libvulkan.so"),
+    os.path.join(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"), "lib", "libvulkan.so"),
 ]
 
 _OPENCL_LIB_SEARCH_PATHS = [
@@ -85,6 +91,18 @@ _OPENCL_LIB_SEARCH_PATHS = [
     "/vendor/lib64/egl/libGLES_mali.so",
     "/system/vendor/lib64/egl/libGLES_mali.so",
 ]
+
+
+def _find_vulkan_driver_path() -> Optional[str]:
+    """Find the first genuinely accessible Vulkan driver library on the filesystem."""
+    for p in _VULKAN_LIB_SEARCH_PATHS:
+        p_obj = Path(p)
+        try:
+            if p_obj.is_file() and p_obj.stat().st_size >= 1024:
+                return str(p_obj.resolve())
+        except (OSError, PermissionError):
+            continue
+    return None
 
 
 def _read_cpuinfo_features() -> List[str]:
@@ -106,8 +124,13 @@ def _read_cpuinfo_features() -> List[str]:
         return []
 
 
+from .platform import is_android_termux
+
+
 def _detect_soc_name() -> str:
     """Identify the SoC model from Android system properties."""
+    if not is_android_termux():
+        return "Unknown"
     prop_keys = [
         "ro.soc.model",
         "ro.chipname",
@@ -132,8 +155,30 @@ def _detect_soc_name() -> str:
     return "Unknown"
 
 
+def _detect_device_model() -> str:
+    """Identify Android device model for hardware profile matching."""
+    if not is_android_termux():
+        return "Unknown"
+    for prop in ["ro.product.model", "ro.product.device", "ro.build.product"]:
+        try:
+            result = subprocess.run(
+                ["getprop", prop],
+                capture_output=True,
+                text=True,
+                timeout=2.0,
+            )
+            val = result.stdout.strip()
+            if val and val != "unknown":
+                return val
+        except Exception:
+            continue
+    return "Unknown"
+
+
 def _detect_gpu_name() -> str:
     """Identify the GPU model from Android properties and hardware nodes."""
+    if not is_android_termux():
+        return "Unknown"
     # 1. Check Adreno kgsl sysfs node
     kgsl_model = Path("/sys/class/kgsl/kgsl-3d0/gpu_model")
     if kgsl_model.exists():
@@ -141,8 +186,11 @@ def _detect_gpu_name() -> str:
             val = kgsl_model.read_text(encoding="utf-8").strip()
             if val:
                 return f"Adreno ({val})"
-        except Exception:
-            pass
+        except PermissionError as _perm_err:
+            logger.warning("[hardware] kgsl gpu_model read PermissionError: %s", _perm_err)
+        except OSError as _os_err:
+            logger.warning("[hardware] kgsl gpu_model read OSError: %s", _os_err)
+        # 예상 밖 예외는 재발생
 
     # 2. Check Android system properties
     for prop in ["ro.hardware.vulkan", "ro.hardware.egl", "ro.board.platform"]:
@@ -165,34 +213,37 @@ def _detect_gpu_name() -> str:
     return "Unknown"
 
 
+
+
 def _probe_vulkan_driver() -> Optional[GPUDriverInfo]:
-    """Probe for a usable Vulkan driver by checking library paths on disk."""
-    for lib_path in _VULKAN_LIB_SEARCH_PATHS:
-        p = Path(lib_path)
-        if p.is_file():
-            try:
-                size = p.stat().st_size
-                if size < 1024:
-                    continue
-                gpu_name = _detect_gpu_name()
-                return GPUDriverInfo(
-                    name=f"Vulkan Driver ({gpu_name})",
-                    vendor=gpu_name,
-                    api="Vulkan",
-                    library_path=lib_path,
-                    version="",
-                    usable=True,
-                )
-            except PermissionError as pe:
-                logger.warning(
-                    "Vulkan driver found at '%s' but access was denied (SELinux permission): %s",
-                    lib_path,
-                    pe,
-                )
-                continue
-            except OSError as oe:
-                logger.debug("Vulkan driver stat note on '%s': %s", lib_path, oe)
-                continue
+    """Probe for a usable Vulkan driver via ameva-runtime SSOT."""
+    try:
+        from ameva_runtime import vulkan as avr
+        report = avr.Doctor().run_self_test(verbose=False)
+        if report.overall_success or report.recommended_backend in ("vulkan", "vulkan_driver_only") or getattr(report, "passed_stages", 0) >= 7:
+            return GPUDriverInfo(
+                name=f"Vulkan Driver ({report.device_name})",
+                vendor=report.device_name,
+                api=f"Vulkan {getattr(report, 'driver_version', '1.3')}",
+                library_path=getattr(report, "loader_path", "") or _find_vulkan_driver_path() or "/system/lib64/libvulkan.so",
+                version=getattr(report, "driver_version", ""),
+                usable=True,
+            )
+    except Exception as e:
+        logger.debug("[termux-diffusion] ameva-runtime probe exception: %s", e)
+
+    # 안전 폴백: 시스템 기본 Bionic 경로 검사
+    detected_path = _find_vulkan_driver_path()
+    if detected_path and Path(detected_path).is_file():
+        gpu_name = _detect_gpu_name()
+        return GPUDriverInfo(
+            name=f"Vulkan Driver ({gpu_name})",
+            vendor=gpu_name,
+            api="Vulkan",
+            library_path=detected_path,
+            version="",
+            usable=True,
+        )
     return None
 
 
@@ -337,10 +388,52 @@ def _build_cmake_flags(profile: HardwareProfile, backend: Optional[str] = None) 
 # 3. Device Selection for generate()
 # ------------------------------------------------------------------------------
 
+def _resolve_ameva_runtime() -> Optional[Any]:
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("ameva_runtime")
+        if spec is not None:
+            import ameva_runtime
+            return ameva_runtime
+    except (ImportError, AttributeError):
+        pass
+    return None
+
+
 def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
     """Resolve the user's device= argument to an actual backend and ngl count."""
-    profile = detect_hardware_profile()
     req = requested_device.lower().strip()
+    ameva_mod = _resolve_ameva_runtime()
+
+    if req in ("vulkan", "gpu"):
+        if ameva_mod is None:
+            raise PlatformNotSupportedError(
+                "[ERROR: AMEVA-DIFFUSION-E001] GPU acceleration requires 'ameva-runtime'.\n"
+                "Cause: Hardware abstraction provider 'ameva-runtime' is not installed.\n"
+                "Action Required: Install the hardware acceleration package via:\n"
+                "  pip install ameva-runtime\n"
+                "Documentation: https://uno-km.vercel.app/lib/diffusion/"
+            )
+        soc_name = _detect_soc_name()
+        gpu_name = _detect_gpu_name()
+        if "650" in gpu_name or "8250" in soc_name:
+            raise PlatformNotSupportedError(
+                "[ERROR: AMEVA-DIFFUSION-E003] Vulkan GPU acceleration failed on Adreno 650.\n"
+                "Cause: Missing required Vulkan extension storageBuffer8BitAccess for FP16/INT8 diffusion.\n"
+                "Action Required: Use CPU inference: termux-diffusion generate --device cpu ..."
+            )
+
+    if req == "auto":
+        if ameva_mod is None:
+            sys.stdout.write("[INFO] ameva-runtime is not installed. Defaulting to CPU backend.\n")
+            sys.stdout.flush()
+            return "cpu", 0
+        soc_name = _detect_soc_name()
+        gpu_name = _detect_gpu_name()
+        if "650" in gpu_name or "8250" in soc_name:
+            return "cpu", 0
+
+    profile = detect_hardware_profile()
     
     if req == "auto":
         backend = profile.recommended_backend
@@ -367,7 +460,7 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
         if profile.vulkan_available:
             return "vulkan", 99
         raise PlatformNotSupportedError(
-            "Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), "
+            "[ERROR: AMEVA-DIFFUSION-E003] Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), "
             "but no accessible Vulkan driver (.so) was found on this system. "
             "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
         )
@@ -428,3 +521,122 @@ def format_hardware_report(profile: HardwareProfile) -> str:
         lines.append(f"CMake Build Flags: {' '.join(profile.cmake_extra_flags)}")
     lines.append("=" * 40)
     return "\n".join(lines)
+
+
+# ------------------------------------------------------------------------------
+# 4. Profile Gating Manager (Runtime Model/Preset Safety)
+# ------------------------------------------------------------------------------
+
+import json
+
+@dataclass
+class ProfileGatingManager:
+    """Manages runtime matching against validated-vulkan-profiles.json for safe device/model execution."""
+    profiles: List[Dict] = field(default_factory=list)
+
+    @classmethod
+    def load_from_json(cls, json_path: Optional[Path] = None) -> "ProfileGatingManager":
+        if json_path is None:
+            json_path = Path(__file__).parent / "data" / "validated-vulkan-profiles.json"
+        if json_path.is_file():
+            try:
+                data = json.loads(json_path.read_text(encoding="utf-8"))
+                return cls(profiles=data.get("profiles", []))
+            except Exception as e:
+                logger.warning("Failed to load validated-vulkan-profiles.json: %s", e)
+        return cls(profiles=[])
+
+    def find_matching_profile(self, model_name: str, soc_name: str = "", gpu_name: str = "") -> Optional[Dict]:
+        model_clean = model_name.strip().upper()
+        soc_clean = soc_name.strip().upper()
+        gpu_clean = gpu_name.strip().upper()
+
+        for prof in self.profiles:
+            target_model = prof.get("device_model", "").strip().upper()
+            if target_model and (target_model == model_clean or target_model in model_clean or model_clean in target_model):
+                return prof
+            aliases = [a.strip().upper() for a in prof.get("device_aliases", [])]
+            if any(a == model_clean or a in model_clean for a in aliases):
+                return prof
+
+        # Fallback matching by SoC / GPU
+        for prof in self.profiles:
+            prof_soc = prof.get("soc", "").strip().upper()
+            prof_gpu = prof.get("gpu", "").strip().upper()
+            if prof_soc and soc_clean and (prof_soc in soc_clean or soc_clean in prof_soc):
+                return prof
+            if prof_gpu and gpu_clean and (prof_gpu in gpu_clean or gpu_clean in prof_gpu):
+                return prof
+        return None
+
+    def validate_execution(self, preset_or_model: str, device: str) -> Tuple[bool, Optional[str]]:
+        """Validate if the requested model/preset and device backend are safe for current hardware."""
+        device_clean = device.lower().strip()
+        if device_clean not in ("vulkan", "gpu"):
+            return True, None
+
+        dev_model = _detect_device_model()
+        soc_name = _detect_soc_name()
+        gpu_name = _detect_gpu_name()
+        matched = self.find_matching_profile(dev_model, soc_name, gpu_name)
+        if not matched:
+            return True, None
+
+        # 1. Check blocked list
+        blocked = matched.get("blocked", [])
+        preset_clean = preset_or_model.lower().strip()
+        for blk in blocked:
+            fam = blk.get("model_family", "").lower()
+            backend = blk.get("backend", "").lower()
+            if backend in (device_clean, "all") and fam in preset_clean:
+                reason = blk.get("reason", "Incompatible hardware backend configuration")
+                return False, (
+                    f"Model '{preset_or_model}' is blocked on device '{matched.get('device_model')}' "
+                    f"under backend '{device_clean}' due to: {reason}."
+                )
+
+        # 2. Check preset gating if preset exists in profile
+        presets = matched.get("presets", {})
+        if preset_clean in presets:
+            p_info = presets[preset_clean]
+            if p_info.get("status") == "pending_device_validation" and not p_info.get("auto_activation", True):
+                return False, (
+                    f"Preset '{preset_clean}' is currently pending device validation on '{matched.get('device_model')}' "
+                    f"and auto_activation is disabled."
+                )
+
+        return True, None
+
+
+_gating_manager: Optional[ProfileGatingManager] = None
+
+
+def get_profile_gating_manager() -> ProfileGatingManager:
+    """Get singleton instance of ProfileGatingManager."""
+    global _gating_manager
+    if _gating_manager is None:
+        _gating_manager = ProfileGatingManager.load_from_json()
+    return _gating_manager
+
+
+def resolve_hardware(model_name: str = "sdxs-512-dreamshaper", backend: str = "vulkan") -> Dict[str, Any]:
+    """Resolves execution plan via ameva-runtime HAL SSOT."""
+    try:
+        from ameva_runtime.adapters import DiffusionAdapter
+    except ImportError as err:
+        raise PlatformNotSupportedError(
+            "[ERROR: AMEVA-DIFFUSION-E001] ameva-runtime HAL is not installed.\n"
+            "Run: pip install ameva-runtime\n"
+            "Raw Cause: " + str(err)
+        ) from err
+
+    adapter = DiffusionAdapter()
+    plan = adapter.bind(model_name=model_name, requested_backend=backend)
+    if backend == "vulkan" and plan.backend != "vulkan":
+        raise PlatformNotSupportedError(
+            f"[ERROR: AMEVA-DIFFUSION-E003] Vulkan requested but unsupported on this hardware.\n"
+            f"Diagnosis: {plan.diagnosis_reason}"
+        )
+    return plan.to_dict()
+
+

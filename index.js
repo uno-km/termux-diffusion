@@ -463,15 +463,54 @@ function detectHardwareProfile() {
   };
 }
 
+function _resolveAmevaRuntime() {
+  try {
+    return require('@unokm/ameva-runtime');
+  } catch (_) {
+    try {
+      return require('ameva-runtime');
+    } catch (__) {
+      return null;
+    }
+  }
+}
+
+function isAdreno650OrUnsupported(profile) {
+  const soc = ((profile && profile.socName) || getAndroidProp('ro.soc.model') || getAndroidProp('ro.board.platform') || '').toLowerCase();
+  const gpu = ((profile && profile.gpuName) || getAndroidProp('ro.hardware.egl') || getAndroidProp('ro.hardware.vulkan') || '').toLowerCase();
+  const devModel = (getAndroidProp('ro.product.model') || getAndroidProp('ro.product.device') || '').toLowerCase();
+
+  if (gpu.includes('650') || gpu.includes('640') || gpu.includes('630') || gpu.includes('620') || gpu.includes('618')) {
+    return true;
+  }
+  if (soc.includes('sm8250') || soc.includes('sm8150') || soc.includes('kona')) {
+    return true;
+  }
+  if (devModel.includes('g981') || devModel.includes('g986') || devModel.includes('g988') || devModel.includes('g781') || devModel.includes('r8q') || devModel.includes('hub1')) {
+    return true;
+  }
+  return false;
+}
+
 function resolveDeviceBackend(requestedDevice) {
-  const profile = detectHardwareProfile();
-  const req = (requestedDevice || 'cpu').toLowerCase().trim();
+  const req = (requestedDevice || 'auto').toLowerCase().trim();
+  const amevaRuntime = _resolveAmevaRuntime();
 
   if (req === 'auto') {
+    if (!amevaRuntime) {
+      console.log('[INFO] ameva-runtime is not installed. Defaulting to CPU backend.');
+      return { effectiveDevice: 'cpu', nglLayers: 0 };
+    }
+    const profile = detectHardwareProfile();
+    if (isAdreno650OrUnsupported(profile)) {
+      console.log('[INFO] Qualcomm Adreno 650 lacks storageBuffer8BitAccess required for quantized Vulkan compute shaders. Defaulting to CPU backend.');
+      return { effectiveDevice: 'cpu', nglLayers: 0 };
+    }
     return { effectiveDevice: profile.recommendedBackend, nglLayers: profile.recommendedNgl };
   }
 
   if (req === 'npu' || req === 'tpu') {
+    const profile = detectHardwareProfile();
     const npuDesc = (profile.npuProfile && profile.npuProfile.available)
       ? `${profile.npuProfile.chipsetName} / ${profile.npuProfile.dspArchitecture}`
       : 'Hardware not detected';
@@ -483,11 +522,30 @@ function resolveDeviceBackend(requestedDevice) {
   }
 
   if (req === 'vulkan' || req === 'gpu') {
+    if (!amevaRuntime) {
+      throw new Error(
+        "[ERROR: AMEVA-DIFFUSION-E001] GPU acceleration requires 'ameva-runtime'.\n" +
+        "Cause: Hardware abstraction provider 'ameva-runtime' is not installed.\n" +
+        "Action Required: Install the hardware acceleration package via:\n" +
+        "  - Node.js: npm install @unokm/ameva-runtime\n" +
+        "  - Python: pip install ameva-runtime\n" +
+        "Documentation: https://github.com/uno-km/ameva-runtime"
+      );
+    }
+    const profile = detectHardwareProfile();
+    if (isAdreno650OrUnsupported(profile)) {
+      throw new Error(
+        "[ERROR: AMEVA-DIFFUSION-E003] Vulkan GPU acceleration is not supported on this Adreno GPU.\n" +
+        "Cause: Qualcomm Adreno 650 driver lacks storageBuffer8BitAccess (storageBuffer8BitAccess=0), " +
+        "which is required by ggml-vulkan compute shaders for quantized matrix multiplication.\n" +
+        "Action Required: Use CPU backend via --backend cpu or --backend auto."
+      );
+    }
     if (profile.vulkanAvailable) {
       return { effectiveDevice: 'vulkan', nglLayers: 99 };
     }
     throw new Error(
-      "[termux-diffusion] Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), " +
+      "[ERROR: AMEVA-DIFFUSION-E002] Vulkan GPU acceleration was explicitly requested (device='vulkan' / 'gpu'), " +
       "but no accessible Vulkan driver (.so) was found on this system. " +
       "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
     );
@@ -512,10 +570,11 @@ function resolveDeviceBackend(requestedDevice) {
 }
 
 function getSdCliGpuArgs(device, ngl) {
-  if ((device === 'vulkan' || device === 'opencl' || device === 'gpu' || device === 'npu' || device === 'tpu') && ngl > 0) {
-    return ['-ngl', String(ngl)];
+  const args = [];
+  if (device === 'cpu') {
+    args.push('--offload-to-cpu');
   }
-  return [];
+  return args;
 }
 
 // ------------------------------------------------------------------------------
@@ -848,9 +907,16 @@ async function resolveModelPath(modelNameOrPath, cacheDir) {
   throw new Error(`Could not resolve model '${modelNameOrPath}'`);
 }
 
-function locateSdCli() {
+function locateSdCli(backend) {
   const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
-  const candidates = ['sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+  let candidates;
+  if (backend === 'cpu') {
+    candidates = ['sd-cli-cpu', 'sd-cli-source-cpu', 'sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+  } else if (backend === 'vulkan' || backend === 'gpu') {
+    candidates = ['sd-cli-vulkan', 'sd-cli-source-vulkan', 'sd-cli', 'sd-cli.exe', 'sd', 'sd.exe'];
+  } else {
+    candidates = ['sd-cli', 'sd-cli.exe', 'sd', 'sd.exe', 'sd-cli-vulkan', 'sd-cli-cpu'];
+  }
 
   for (const name of candidates) {
     const p = path.join(binDir, name);
@@ -1013,6 +1079,23 @@ function setDefaultNegativePrompt(prompt) {
 
 function getQualityGuardNegativePrompt() {
   return DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT;
+}
+
+function resolveShimPath() {
+  if (process.env.AMEVA_VULKAN_SHIM && fs.existsSync(process.env.AMEVA_VULKAN_SHIM)) {
+    return path.resolve(process.env.AMEVA_VULKAN_SHIM);
+  }
+  const candidates = [
+    path.join(os.homedir(), '.cache', 'termux-diffusion', 'lib', 'libegl_shim.so'),
+    path.join(os.homedir(), 'libegl_shim.so'),
+    '/data/data/com.termux/files/home/libegl_shim.so',
+    '/data/data/com.termux/files/usr/lib/libegl_shim.so',
+    path.join(os.homedir(), '.local', 'lib', 'libegl_shim.so')
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return path.resolve(p);
+  }
+  return null;
 }
 
 async function generate(options) {
@@ -1179,7 +1262,7 @@ async function generate(options) {
   }
 
   // Locate or Auto-provision Native sd-cli Engine FIRST (before downloading 1.5GB model weights)
-  let sdCli = locateSdCli();
+  let sdCli = locateSdCli(effectiveDevice);
 
   if (!sdCli) {
     if (options.autoProvision) {
@@ -1216,10 +1299,10 @@ async function generate(options) {
     const sanitizedNeg = String(effectiveNegative).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
     if (sanitizedNeg) cmdArgs.push('-n', sanitizedNeg);
   }
-  if (seed >= 0) cmdArgs.push('-s', String(seed));
+  if (seed >= 0) cmdArgs.push('--seed', String(seed));
 
   if (effectiveSampler) cmdArgs.push('--sampling-method', effectiveSampler);
-  if (effectiveSchedule && effectiveSchedule !== 'default') cmdArgs.push('--scheduler', effectiveSchedule);
+  if (effectiveSchedule && effectiveSchedule !== 'default') cmdArgs.push('--schedule', effectiveSchedule);
   if (vaeTiling) cmdArgs.push('--vae-tiling');
   if (effectiveInitPath) {
     cmdArgs.push('-i', effectiveInitPath);
@@ -1298,7 +1381,18 @@ async function generate(options) {
 
   try {
     await new Promise((resolve, reject) => {
-      const spawnOpts = { stdio: ['ignore', 'pipe', 'pipe'] };
+      const env = Object.assign({}, process.env);
+      if (effectiveDevice === 'vulkan' || effectiveDevice === 'gpu') {
+        const shimPath = resolveShimPath();
+        if (shimPath) {
+          const curPreload = env.LD_PRELOAD ? env.LD_PRELOAD.trim() : '';
+          if (!curPreload.includes(shimPath)) {
+            env.LD_PRELOAD = curPreload ? `${shimPath}:${curPreload}` : shimPath;
+          }
+        }
+      }
+
+      const spawnOpts = { stdio: ['ignore', 'pipe', 'pipe'], env };
       if (process.platform !== 'win32') spawnOpts.detached = true;
       const proc = spawn(sdCli, cmdArgs, spawnOpts);
       let stderrBuffer = '';
@@ -1402,6 +1496,7 @@ async function generate(options) {
     galleryPath: galleryPath,
     prompt: prompt,
     model: model,
+    device: effectiveDevice,
     steps: steps,
     cfgScale: options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0),
     elapsedSec: elapsedSec,
@@ -1443,5 +1538,6 @@ module.exports = {
   getDefaultNegativePrompt,
   setDefaultNegativePrompt,
   getQualityGuardNegativePrompt,
+  provisionEngine,
   DEFAULT_PRESETS
 };

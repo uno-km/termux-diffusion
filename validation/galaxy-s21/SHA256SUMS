@@ -1,7 +1,0 @@
-# Galaxy S21 Mali-G78 Artifact SHA256SUMS
-c60280d65e75e8c089325979973386754f6eff0b831d3d1eae91bb488f45e110  v10-self-test
-1f10b3c91b34764cbeb79bc2a8360c8e2f1580cbd41d7160b028a0b512ced6db  sd-cli-vulkan
-65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8  termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz
-8cddc5b4f753eadb4180ad21f724876113deb8c00c82abe19d7efafdff82f21b  patches/v10-v11-mali-g78-vulkan.patch
-27c3929325e876d8aab5219d3b286368916c80df45668f303c5695eebc4b1fde  outputs/track-b-v11-sdxs-s21-mali.png
-1b23e2b00ebf191564ec91ee392b3e6eaa11673e754948850f455566a8bd7289  outputs/s21-termux-diffusion-vulkan.png

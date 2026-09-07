@@ -4,16 +4,18 @@ import argparse
 import sys
 from typing import List, Optional
 
+import logging as _logging
+
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+    except Exception as _e:
+        _logging.getLogger(__name__).debug("stdout reconfigure failed: %s", _e)
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+    except Exception as _e:
+        _logging.getLogger(__name__).debug("stderr reconfigure failed: %s", _e)
 
 from .core import generate
 from .hub import clear_cache, download_model, list_cached_models, list_presets
@@ -36,9 +38,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser = subparsers.add_parser("generate", help="Generate an AI image from a text prompt")
     gen_parser.add_argument("prompt", type=str, help="Text description of image")
     gen_parser.add_argument("-m", "--model", type=str, default="realistic", help="Model preset or .gguf path (default: realistic)")
-    gen_parser.add_argument("-n", "--negative", type=str, default=None, help="Negative prompt")
-    gen_parser.add_argument("-d", "--device", type=str, default="cpu", help="Computing device (cpu, gpu, vulkan, opencl, auto)")
-    gen_parser.add_argument("-s", "--steps", type=int, default=None, help="Denoising steps")
+    gen_parser.add_argument("-n", "--negative", type=str, default=None, help="Negative text prompt guidance")
+    gen_parser.add_argument("-d", "--device", type=str, default="auto", help="Computing device (cpu, gpu, vulkan, opencl, auto)")
+    gen_parser.add_argument("-b", "--backend", type=str, dest="device", help="Alias for --device (cpu, gpu, vulkan, opencl, auto)")
+    gen_parser.add_argument("--gpu", action="store_const", const="gpu", dest="device", help="Force GPU hardware acceleration mode")
+    gen_parser.add_argument("--cpu", action="store_const", const="cpu", dest="device", help="Force CPU baseline execution mode")
+    gen_parser.add_argument("-s", "--steps", type=int, default=None, help="Denoising steps (default determined by preset, e.g. 10)")
     gen_parser.add_argument("-c", "--cfg", type=float, default=None, help="CFG guidance scale")
     gen_parser.add_argument("-W", "--width", type=int, default=512, help="Image width (default: 512)")
     gen_parser.add_argument("-H", "--height", type=int, default=512, help="Image height (default: 512)")
@@ -78,6 +83,17 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # clear-cache command
     subparsers.add_parser("clear-cache", help="Purge cached model weights to reclaim disk space")
+
+    # ── AMEVA Component Protocol v1 ─────────────────────────────────────────
+    try:
+        from ameva_component.cli_support import build_protocol_subcommands
+        build_protocol_subcommands(subparsers)
+    except ImportError as _proto_err:
+        import logging
+        logging.getLogger("termux_diffusion.cli").debug(
+            "Optional AMEVA component CLI protocol subcommands omitted: %s", _proto_err
+        )
+    # ────────────────────────────────────────────────────────────────────────
 
     if len(argv) == 0:
         parser.print_help()
@@ -185,6 +201,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.command == "clear-cache":
         removed = clear_cache()
         print(f"[Clean] Removed {removed} cached model files.")
+        return 0
+
+    elif args.command in ("component", "model", "instance"):
+        try:
+            from ameva_component.cli_support import dispatch_protocol
+            from termux_diffusion.control import DiffusionControl
+            dispatch_protocol(args, DiffusionControl())
+        except ImportError:
+            print("[ERROR] ameva-component-sdk not installed.", file=sys.stderr)
+            return 1
         return 0
 
     parser.print_help()

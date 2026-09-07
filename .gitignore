@@ -131,3 +131,17 @@ tmp/
 temp/
 *.log
 .turbo/
+
+state.json
+*.tmp
+
+
+# ==============================================================================
+# Security & Credentials Isolation Policy
+# ==============================================================================
+.env*
+!.env.example
+id_rsa*
+.pypirc
+.npmrc
+secrets.json

@@ -127,16 +127,13 @@
     {
       "device_model": "SM-G981N",
       "device_aliases": [
-        "SM-G981",
-        "SM-G986",
-        "SM-G988",
-        "SM-G781",
-        "hub1",
-        "r8q",
-        "z3q"
+        "SM-G981B",
+        "SM-G986B",
+        "SM-G988B",
+        "hub1"
       ],
-      "soc": "Exynos 990 / Snapdragon 865",
-      "gpu": "Mali-G77 / Adreno 650",
+      "soc": "Exynos 990",
+      "gpu": "Mali-G77",
       "backend_profile": "mali-vulkan",
       "package_tag": "v1.3.1-vulkan-mali-experimental",
       "package_tarball": "termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz",
@@ -168,6 +165,44 @@
         }
       },
       "blocked": []
+    },
+    {
+      "device_model": "SM-G986N",
+      "device_aliases": [
+        "SM-G981",
+        "SM-G986",
+        "SM-G988",
+        "SM-G781",
+        "r8q",
+        "z3q",
+        "kona",
+        "SM8250"
+      ],
+      "soc": "Snapdragon 865",
+      "gpu": "Adreno (TM) 650",
+      "backend_profile": "cpu-neon",
+      "vulkan_api_version": "1.1",
+      "presets": {
+        "fast": {
+          "model_family": "sdxs",
+          "quantization": "Q8_0",
+          "width": 256,
+          "height": 256,
+          "steps": 1,
+          "sampler": "euler_a",
+          "cfg_scale": 1.0,
+          "backend": "cpu",
+          "status": "verified"
+        }
+      },
+      "blocked": [
+        {
+          "model_family": "",
+          "backend": "vulkan",
+          "reason": "adreno_650_missing_storage_buffer_8bit_access",
+          "status": "blocked_hardware_feature_missing"
+        }
+      ]
     },
     {
       "device_model": "SM-A356N",

@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/termux-diffusion.svg?style=flat-square)](https://pypi.org/project/termux-diffusion/)
 [![npm](https://img.shields.io/npm/v/termux-diffusion.svg?style=flat-square&color=b91c1c)](https://www.npmjs.com/package/termux-diffusion)
 [![npm downloads](https://img.shields.io/npm/dm/termux-diffusion.svg?style=flat-square&color=b91c1c)](https://www.npmjs.com/package/termux-diffusion)
-[![License](https://img.shields.io/badge/License-Apache_2.0-004499.svg?style=flat-square)](https://github.com/uno-km/termux-diffusion)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 > **Native On-Device Stable Diffusion Runtime for Android Termux & Samsung Galaxy via Direct Bionic libc & Vulkan Compute Acceleration.**  
 > *Zero PRoot. Zero Virtualization. 100% Native ARMv8.2-A NEON SIMD & Hardware GPU Acceleration.*
@@ -24,13 +24,14 @@
 9. [GPU Interconnect Architecture & Compatibility Matrix (Adreno vs. Mali)](#9-gpu-interconnect-architecture--compatibility-matrix)
 10. [Hardware Requirements & Operational Limits](#10-hardware-requirements--operational-limits)
 11. [24/7 Unattended Background Execution Guide (Termux -> Android -> ADB)](#11-247-unattended-background-execution-guide)
-12. [License & Ecosystem](#12-license--ecosystem)
+12. [License & Permissible Use](#12-license--permissible-use)
+13. [Keywords & Discoverability Index](#13-keywords--discoverability-index)
 
 ---
 
 ## 1. Overview & Key Capabilities
 
-`termux-diffusion` is an ultra-compact, production-grade on-device diffusion inference engine engineered specifically for Android smartphones. Unlike legacy approaches relying on slow PRoot or chroot virtual machines, `termux-diffusion` compiles directly against Android's native Bionic libc and binds directly to host GPU drivers to execute high-quality 512x512 image synthesis natively on edge devices.
+`termux-diffusion` is a production-grade, on-device diffusion inference engine engineered specifically for Android smartphones. Unlike legacy approaches relying on slow PRoot or chroot virtual machines, `termux-diffusion` compiles directly against Android's native Bionic libc and binds directly to host GPU drivers to execute high-quality 512x512 image synthesis natively on edge devices.
 
 * **Native Bionic libc ABI Direct Binding**: Runs directly inside Termux with zero virtual memory indirection, achieving bare-metal compute efficiency.
 * **Dual Compute Acceleration**: Integrates ARMv8.2-A DotProd/FP16 vector instructions with Qualcomm Adreno and ARM Mali Vulkan compute pipelines.
@@ -407,8 +408,48 @@ adb shell "echo -1000 > /proc/$(adb shell pidof com.termux)/oom_score_adj"
 
 ---
 
-## 12. License & Ecosystem
+## 12. License & Permissible Use
 
-* **License**: Apache-2.0 License. Copyright (c) 2026 Eunho Kim ([@uno-km](https://github.com/uno-km)).
-* **Foundation Portal**: [AMEVA Open-Source Foundation](https://uno-km.vercel.app/foundation/index.html)
-* **Architecture Docs**: [Termux-Diffusion Specification](https://uno-km.vercel.app/lib/diffusion/)
+`termux-diffusion` is released under the **MIT License**.
+
+```text
+MIT License
+
+Copyright (c) 2026 Eunho Kim (uno-km / AMEVA Foundation)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Summary of Rights:
+* **Commercial Use**: Permitted freely in proprietary and commercial services.
+* **Modification & Distribution**: Permitted with copyright notice retention.
+* **Private Use & Sublicensing**: Permitted without royalty or attribution fees.
+
+---
+
+## 13. Keywords & Discoverability Index
+
+`stable-diffusion`, `diffusion`, `termux`, `android`, `samsung-galaxy`, `edge-ai`, `on-device-ai`, `image-generation`, `text-to-image`, `txt2img`, `img2img`, `gguf`, `arm64`, `aarch64`, `vulkan`, `vulkan-compute`, `spirv`, `adreno`, `mali`, `snapdragon`, `exynos`, `bionic-libc`, `taesd`, `vae-tiling`, `lora`, `controlnet`, `sdxs`, `sd-turbo`, `dreamshaper`, `offline-ai`, `mobile-inference`, `camera-roll`, `galaxy-s25`, `galaxy-s20`
+
+---
+
+## 📖 Official Ecosystem Links
+* **AMEVA Foundation Portal**: [https://uno-km.vercel.app/foundation/index.html](https://uno-km.vercel.app/foundation/index.html)
+* **Interactive Web Documentation**: [https://uno-km.vercel.app/lib/diffusion/](https://uno-km.vercel.app/lib/diffusion/)
+* **Issue Tracker**: [https://github.com/uno-km/termux-diffusion/issues](https://github.com/uno-km/termux-diffusion/issues)

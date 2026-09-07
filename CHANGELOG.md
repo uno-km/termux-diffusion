@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.2] - 2026-09-07
+
+### Added
+- **13-Section Production Documentation Overhaul**: Completely overhauled `README.md` and `README.pypi.md` with exhaustive English technical specifications, GPU activation commands, parameter matrix, real-world sample galleries, and physical device benchmarks.
+- **Physical Device Telemetry & Benchmarks**: Added verified execution benchmarks across Galaxy S25 (Snapdragon 8 Elite), S21 (Exynos 2100), S20 5G (Snapdragon 865), and A35 (Exynos 1380).
+- **24/7 Unattended Background Guide**: Documented complete 3-tier hardening procedure (Termux WakeLock -> Android OS Unrestricted Battery -> ADB Phantom Process Killer & LMK -1000 priority lock).
+- **Comprehensive Discoverability Index**: Expanded SEO and technical taxonomy keywords across `pyproject.toml`, `package.json`, and official documentation manifests.
+
 ## [1.5.1] - 2026-09-07
 
 ### Changed

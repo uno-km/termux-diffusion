@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "termux-diffusion"
-version = "1.5.1"
+version = "1.5.2"
 description = "On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -21,23 +21,32 @@ keywords = [
     "edge-ai",
     "on-device-ai",
     "image-generation",
-    "gguf",
-    "arm64",
-    "bionic-libc",
-    "snapdragon",
-    "exynos",
     "text-to-image",
     "txt2img",
-    "mobile-ai",
-    "quantization",
-    "generative-ai",
+    "img2img",
+    "gguf",
+    "arm64",
+    "aarch64",
     "vulkan",
-    "opencl",
-    "offline-ai",
-    "private-ai",
-    "ai-art",
-    "comfyui-alternative",
-    "webui-alternative"
+    "vulkan-compute",
+    "spirv",
+    "adreno",
+    "mali",
+    "snapdragon",
+    "exynos",
+    "bionic-libc",
+    "taesd",
+    "vae-tiling",
+    "lora",
+    "controlnet",
+    "sdxs",
+    "sd-turbo",
+    "dreamshaper",
+    "mobile-inference",
+    "camera-roll",
+    "galaxy-s25",
+    "galaxy-s20",
+    "private-ai"
 ]
 dynamic = ["classifiers"]
 dependencies = [

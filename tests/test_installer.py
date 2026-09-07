@@ -76,3 +76,25 @@ def test_mutually_exclusive_install_options_fail():
     with pytest.raises(SystemExit) as exc:
         run_install_cli(["--prebuilt-only", "--build-from-source"])
     assert exc.value.code == ExitCode.CLI_ERROR
+
+
+def test_prebuilt_dynamic_urls_and_env_override():
+    from termux_diffusion.installer import get_prebuilt_base_url, get_candidate_prebuilt_urls
+    from termux_diffusion._version import __version__
+
+    with patch.dict(os.environ, {}, clear=True):
+        os.environ.pop("TERMUX_DIFFUSION_RELEASE_BASE", None)
+        os.environ.pop("AMEVA_RELEASE_BASE", None)
+        base = get_prebuilt_base_url()
+        assert f"v{__version__}" in base
+        assert "v1.3.1" not in base
+
+        urls = get_candidate_prebuilt_urls("sd-cli-vulkan-android-arm64.tar.gz")
+        assert any(f"v{__version__}" in u for u in urls)
+        assert any("releases/latest/download" in u for u in urls)
+        assert not any("v1.3.1" in u for u in urls)
+
+    with patch.dict(os.environ, {"TERMUX_DIFFUSION_RELEASE_TAG": "v2.5.0"}):
+        base_override = get_prebuilt_base_url()
+        assert "v2.5.0" in base_override
+

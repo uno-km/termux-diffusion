@@ -20,13 +20,14 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const pkg = require('../package.json');
 
 const args = process.argv.slice(2);
 const command = args[0];
 
 function printHelp() {
   console.log(`
-[Render] termux-diffusion CLI (v1.0.0) - On-Device AI Image Generation for Samsung Galaxy & Termux
+[Render] termux-diffusion CLI (v${pkg.version}) - On-Device AI Image Generation for Samsung Galaxy & Termux
 
 Usage:
   npx termux-diffusion <command> [options]

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.3] - 2026-09-07
+
+### Added
+- **Fast-Track Prebuilt Stream Extractor**: Node.js `provisionEngine()` in `index.js` now automatically streams and extracts precompiled ARM64 Bionic binaries (`sd-cli-vulkan`) and system shims (`libegl_shim.so`, `libomp.so`) in ~3 seconds from GitHub Releases, bypassing 20-minute on-device C++ compilation and preventing compilation OOMs.
+- **Dynamic SSOT Release Endpoints**: Eliminated legacy hardcoded `v1.3.1-vulkan-experimental` URLs from `installer.py`. Implemented dynamic candidate resolution via `TERMUX_DIFFUSION_RELEASE_TAG`, `v{__version__}`, and `/releases/latest/download`.
+- **Dynamic CLI Version SSOT**: CLI help output and banner now dynamically query `package.json` version.
+- **Companion Shims Deployment**: Companion libraries (`libegl_shim.so`, `libomp.so`) are automatically deployed into `~/.cache/termux-diffusion/lib` and `~/.local/lib` upon engine installation.
+
+---
+
 ## [1.5.3] - 2026-09-07
 
 ### Added

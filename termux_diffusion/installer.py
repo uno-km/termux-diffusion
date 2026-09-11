@@ -39,7 +39,6 @@ logger = logging.getLogger("termux_diffusion.installer")
 
 SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
 
-AMEVA_RUNTIME_RELEASE_LATEST = "https://github.com/uno-km/ameva-runtime/releases/latest/download"
 TERMUX_DIFFUSION_RELEASE_LATEST = "https://github.com/uno-km/termux-diffusion/releases/latest/download"
 
 
@@ -64,10 +63,8 @@ def get_candidate_prebuilt_urls(filename: str = "sd-cli-vulkan-android-arm64.tar
     if custom_tag := os.environ.get("TERMUX_DIFFUSION_RELEASE_TAG") or os.environ.get("AMEVA_RELEASE_TAG"):
         tag = custom_tag if custom_tag.startswith("v") else f"v{custom_tag}"
         urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/{tag}/{filename}")
-        urls.append(f"https://github.com/uno-km/ameva-runtime/releases/download/{tag}/{filename}")
     urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/v{__version__}/{filename}")
     urls.append(f"{TERMUX_DIFFUSION_RELEASE_LATEST}/{filename}")
-    urls.append(f"{AMEVA_RUNTIME_RELEASE_LATEST}/{filename}")
     return urls
 
 

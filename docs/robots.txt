@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Allow all AI Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: AntigravityBot
+Allow: /
+
+Sitemap: sitemap.xml

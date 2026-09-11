@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "keys": {
+    "release-key-2026-01": {
+      "algorithm": "ed25519",
+      "public_key_hex": "ea58ee6d830ca51164a3968c38e4abbad7fe39ebb761164821cba00524c15721",
+      "status": "active"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "termux-diffusion"
+version = "1.6.0"
+description = "On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+    { name = "uno-km (AMEVA Foundation)", email = "hosequelbo@gmail.com" }
+]
+keywords = [
+    "stable-diffusion",
+    "diffusion",
+    "termux",
+    "android",
+    "samsung-galaxy",
+    "edge-ai",
+    "on-device-ai",
+    "image-generation",
+    "text-to-image",
+    "txt2img",
+    "img2img",
+    "gguf",
+    "arm64",
+    "aarch64",
+    "vulkan",
+    "vulkan-compute",
+    "spirv",
+    "adreno",
+    "mali",
+    "snapdragon",
+    "exynos",
+    "bionic-libc",
+    "taesd",
+    "vae-tiling",
+    "lora",
+    "controlnet",
+    "sdxs",
+    "sd-turbo",
+    "dreamshaper",
+    "mobile-inference",
+    "camera-roll",
+    "galaxy-s25",
+    "galaxy-s20",
+    "private-ai"
+]
+dynamic = ["classifiers"]
+dependencies = [
+    "ameva-runtime>=2.0.0",
+    "ameva-component-sdk>=0.1.0,<2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/uno-km/termux-diffusion"
+Documentation = "https://uno-km.github.io/termux-diffusion/"
+"npm Package" = "https://www.npmjs.com/package/termux-diffusion"
+"Bug Tracker" = "https://github.com/uno-km/termux-diffusion/issues"
+"Source" = "https://github.com/uno-km/termux-diffusion"
+
+[project.scripts]
+termux-diffusion = "termux_diffusion.cli:main"
+termux-diffusion-install = "termux_diffusion.cli:run_install_cli"
+termux-diffusion-doctor = "termux_diffusion.cli:run_doctor_cli"
+
+[project.entry-points."ameva.components"]
+termux-diffusion = "termux_diffusion.adapter:create_adapter"
+
+
+[tool.setuptools.package-data]
+termux_diffusion = [
+    "data/*.json",
+    "data/*.pub"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

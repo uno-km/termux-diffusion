@@ -1,0 +1,147 @@
+# Internal Roadmap Backlog
+/BACKLOG.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+/build/
+/build-*/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/parts/
+/sdist/
+/var/
+/wheels/
+/share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Models and local cache
+/models/*.gguf
+*.gguf
+.cache/
+
+# IDE and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tmp
+*.bak
+
+# Native build artifacts
+*.o
+*.obj
+*.exe
+*.so
+*.spv
+*.d
+*.rsp
+*.s
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+core
+core.*
+
+# Generated build directories
+/spv_out/
+/v10_objs/
+/build*/
+/tmp_build/
+
+# Vulkan release assets
+# Keep manifests, checksums, metadata, reports, and patches in Git.
+# Publish tarballs and native executables as GitHub Release assets.
+/dist_vulkan/*.tar.gz
+/dist_vulkan/pkg_adreno/
+/dist_vulkan/pkg_mali/
+/dist_vulkan/pkg_*/
+
+# Galaxy S25 large native executables
+/validation/galaxy-s25/v10-self-test
+/validation/galaxy-s25/v11/sd-cli
+
+# Local Vulkan package staging
+/validation/galaxy-s25/staging/
+/validation/galaxy-s25/package-extract/
+
+# Local temporary outputs
+*.log.tmp
+*.partial
+*.download
+
+.env
+.env.*
+*.env
+*.env.*
+.env.local
+.env.prd
+.env.dev
+.env.docker
+secrets/
+*.pem
+*.key
+
+# ── AMEVA Master Enterprise Security & Environment Isolation Rules ──
+.env.development
+.env.test
+.env.production
+.env.staging
+*.secret
+*.secrets
+*credentials*
+*.token
+*.pfx
+*.pkcs12
+*.crt
+*.cert
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+*.dump
+venv/
+.venv/
+scratch/
+tmp/
+temp/
+*.log
+.turbo/
+
+state.json
+*.tmp
+
+
+# ==============================================================================
+# Security & Credentials Isolation Policy
+# ==============================================================================
+.env*
+!.env.example
+id_rsa*
+.pypirc
+.npmrc
+secrets.json

@@ -1,0 +1,31 @@
+# Termux-Diffusion Full Technical Specification (v1.1.1)
+Official Documentation & Deep Architecture Reference for Autonomous AI Agents.
+
+## 1. System Overview
+Native On-Device Stable Diffusion Runtime for Android Termux & ARM64
+Executes quantized Stable Diffusion models directly on Android Bionic libc with NEON SIMD vector acceleration and direct Samsung Gallery indexing.
+
+## 2. Package & Installation
+- PyPI: termux-diffusion
+- Command: pip install termux-diffusion
+# or: npm install termux-diffusion
+- Repository: https://github.com/uno-km/termux-diffusion
+
+## 3. Core Capabilities
+- **Zero-PRoot Native ARM64 Bionic**: Executes directly without root permissions, virtual machines, or PRoot Linux overhead.
+- **Dual Python & Node.js Engine**: Provides comprehensive CLI and programmatic APIs across both Python and JavaScript.
+- **Samsung Gallery Auto-Indexing**: Automatically broadcasts Android MEDIA_SCANNER intents to register generated art in Gallery.
+
+## 4. Canonical Implementation
+```python
+import termux_diffusion as td
+
+# 1. Generate image on Android hardware
+image_path = td.generate(
+    prompt="Cyberpunk Seoul city at night, neon lights, 8k",
+    model="sd-turbo",
+    steps=4
+)
+print(f"Generated and saved to Gallery: {image_path}")
+
+```

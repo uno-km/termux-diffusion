@@ -1,0 +1,66 @@
+# docs/doc.config.yaml
+name: "Termux-Diffusion"
+package_name_pypi: "termux-diffusion"
+package_name_npm: "termux-diffusion"
+version: "v1.4.3"
+release_name: "Dual-Engine Production Release"
+license: "Apache-2.0"
+platform: "Android ARM64 / Samsung Galaxy A35 & S21"
+github_repo_url: "https://github.com/uno-km/termux-diffusion"
+
+tagline_en: "Native On-Device Stable Diffusion Runtime Utilizing Device Resources for Android Termux"
+tagline_ko: "디바이스 리소스를 활용한 Android Termux 네이티브 온디바이스 Stable Diffusion 런타임"
+
+quick_install_cmd: "pip install termux-diffusion\n# or: npm install termux-diffusion"
+
+why_challenge_en: "Generating AI images on mobile devices typically requires cloud API dependencies or heavy virtualized container layers (PRoot) that quickly exceed RAM limits."
+why_challenge_ko: "모바일 환경에서 AI 이미지 생성은 클라우드 API 의존성을 요구하거나 무거운 가상화(PRoot) 계층으로 인해 RAM 한계를 초과하여 강제 종료됩니다."
+
+description_en: "Executes quantized Stable Diffusion models utilizing device resources with ARMv8.2-A DotProd/FP16 SIMD vector execution (Cortex-A78 x4 61s) and direct Samsung Gallery indexing."
+description_ko: "안드로이드 순정 Bionic libc 상에서 디바이스 리소스를 활용하여 ARMv8.2-A DotProd/FP16 SIMD 벡터 연산(Cortex-A78 x4: 61초)을 통해 이미지를 생성하고 삼성 갤러리에 자동 반영합니다."
+
+features:
+  - title_en: "Zero-PRoot Native ARM64 Bionic"
+    title_ko: "비루트 순정 Bionic 네이티브 실행"
+    desc_en: "Executes directly without root permissions, virtual machines, or PRoot Linux overhead."
+    desc_ko: "루팅 권한이나 가상 머신 없이 안드로이드 네이티브 Bionic libc에서 직접 실행됩니다."
+  - title_en: "Adaptive Device Resource Routing"
+    title_ko: "디바이스 리소스 적응형 연산"
+    desc_en: "Adapts to SoC capabilities with ARM NEON 4-Thread FP16 CPU execution and Adreno paths."
+    desc_ko: "기기 SoC에 맞추어 ARM NEON 4-스레드 FP16 CPU 연산 및 Adreno 경로로 최적 분기합니다."
+  - title_en: "Samsung Gallery Auto-Indexing"
+    title_ko: "삼성 갤러리 미디어 자동 인덱싱"
+    desc_en: "Automatically broadcasts Android MEDIA_SCANNER intents to register generated art in Gallery."
+    desc_ko: "이미지 생성 즉시 안드로이드 미디어 스캐너 인텐트를 전송하여 갤러리 앱에 실시간 반영합니다."
+
+matrix_table:
+  - category: "Diffusion Engine"
+    operations: "SD 1.5, SD Turbo, LCM, Tiny-SD, GGML Quantized Weights"
+    status: "Production"
+  - category: "Device Resource Compute"
+    operations: "ARM64 ARMv8.2-A DotProd/FP16 SIMD, Cortex-A78 x4 61s Benchmark"
+    status: "Production"
+  - category: "Media Integration"
+    operations: "PNG/WebP Export, Android MediaStore Intent Broadcast"
+    status: "Production"
+
+code_example_py: |
+  import termux_diffusion as td
+
+  # 1. Generate image on Android hardware
+  image_path = td.generate(
+      prompt="Cyberpunk Seoul city at night, neon lights, 8k",
+      model="sd-turbo",
+      steps=4
+  )
+  print(f"Generated and saved to Gallery: {image_path}")
+
+code_example_js: |
+  import { generate } from "termux-diffusion";
+
+  const result = await generate({
+    prompt: "Cyberpunk Seoul city at night, neon lights, 8k",
+    model: "sd-turbo",
+    steps: 4
+  });
+  console.log("Image created:", result.outputPath);

@@ -1,0 +1,132 @@
+import logging
+import os
+import sys
+import time
+from pathlib import Path
+from typing import Optional
+
+from .exceptions import InstallLockError
+
+logger = logging.getLogger("termux_diffusion.locking")
+
+
+class InstallLock:
+    """File lock manager controlling full installer state machine execution with stale PID auto-recovery."""
+    def __init__(self, lock_file: Path, timeout_sec: float = 5.0):
+        self.lock_file = lock_file
+        self.timeout_sec = timeout_sec
+        self._acquired = False
+
+    def _is_pid_alive(self, pid: int) -> bool | None:
+        """Check if PID is alive.
+
+        반환:
+            True  → 프로세스 확인됨
+            False → 프로세스 종료됨
+            None  → 측정 불가 (PermissionError 등)
+                   → 호출자는 None을 alive=True로 변환하지 말 것
+        """
+        if pid <= 0:
+            return False
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+                h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+                if h:
+                    ctypes.windll.kernel32.CloseHandle(h)
+                    return True
+                # OpenProcess가 NULL 반환 — 프로세스 없음 또는 접근 거부
+                # GetLastError()로 구분 가능하나 여기서는 False(종료)로 처리
+                return False
+            except PermissionError:
+                # 측정 불가 — 스테일 판정을 False로 하지 않음
+                logger.warning("[locking] _is_pid_alive PermissionError for pid=%d (unmeasurable)", pid)
+                return None
+            except (AttributeError, OSError) as _win_err:
+                # ctypes.windll 미지원 또는 Win32 API 오류
+                logger.warning("[locking] _is_pid_alive Win32 error for pid=%d: %s (unmeasurable)", pid, _win_err)
+                return None
+            # 예상 밖 예외는 재발생
+        else:
+            try:
+                os.kill(pid, 0)
+                return True
+            except ProcessLookupError:
+                return False  # Allowed: process gone -> correctly identified as not alive.
+            except PermissionError:
+                # 권한 없음 — 측정 불가
+                logger.warning("[locking] _is_pid_alive PermissionError for pid=%d (unmeasurable)", pid)
+                return None
+            except OSError as _os_err:
+                logger.warning("[locking] _is_pid_alive OSError for pid=%d: %s", pid, _os_err)
+                return None
+
+
+
+    def _check_and_clear_stale_lock(self) -> bool:
+        """Check if existing lock file belongs to a deceased process, removing it if stale."""
+        if not self.lock_file.exists():
+            return True
+        try:
+            content = self.lock_file.read_text(encoding="utf-8")
+            for line in content.splitlines():
+                if line.startswith("pid="):
+                    pid_str = line.split("=", 1)[1].strip()
+                    if pid_str.isdigit():
+                        pid = int(pid_str)
+                        alive = self._is_pid_alive(pid)
+                        if alive is None:
+                            # 측정 불가 — 스테일 판정 금지. 잠금을 보존 (fail-closed).
+                            logger.warning(
+                                "[locking] Cannot determine if PID %d is alive (unmeasurable). "
+                                "Preserving lock to avoid data corruption.",
+                                pid,
+                            )
+                            return False
+                        if not alive:
+                            logger.warning(
+                                "[termux-diffusion] Stale installation lock detected (PID: %d is dead). Auto-reclaiming lock.",
+                                pid,
+                            )
+                            self.lock_file.unlink(missing_ok=True)
+                            return True
+
+        except Exception as e:
+            logger.debug("Stale lock inspection note: %s", e)
+        return False
+
+    def acquire(self):
+        self.lock_file.parent.mkdir(parents=True, exist_ok=True)
+        self._check_and_clear_stale_lock()
+        start = time.time()
+        while time.time() - start < self.timeout_sec:
+            try:
+                fd = os.open(str(self.lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.write(fd, f"pid={os.getpid()}\nstarted_at={time.time()}\n".encode("utf-8"))
+                os.close(fd)
+                self._acquired = True
+                return
+            except FileExistsError:
+                if self._check_and_clear_stale_lock():
+                    continue
+                time.sleep(0.2)
+        raise InstallLockError(
+            f"E_INSTALL_LOCKED: Installation process locked by another running process ({self.lock_file})."
+        )
+
+    def release(self):
+        if self._acquired and self.lock_file.exists():
+            try:
+                self.lock_file.unlink(missing_ok=True)
+            except Exception as e:
+                logger.warning("Failed removing install.lock: %s", e)
+            self._acquired = False
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release()
+

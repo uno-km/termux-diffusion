@@ -1,0 +1,45 @@
+# Termux-Diffusion Full Technical Specification & Architecture Manual
+
+Official Repository: https://github.com/uno-km/termux-diffusion
+PyPI: https://pypi.org/project/termux-diffusion/
+npm: https://www.npmjs.com/package/termux-diffusion
+
+## Full Public API Specification
+
+### Python (termux_diffusion)
+- `generate(prompt, negative_prompt=None, model='realistic', device='cpu', output=None, width=512, height=512, steps=10, cfg_scale=4.0, seed=-1, threads=None, wake_lock=True, export_gallery=True, timeout=1800, low_ram_guard=True)`
+- `get_default_negative_prompt() -> Optional[str]`
+- `set_default_negative_prompt(prompt: Optional[str]) -> None`
+- `get_quality_guard_negative_prompt() -> str`
+- `download_model(model_name_or_url, cache_dir=None, force=False, progress_callback=None)`
+- `register_model(name, repo_id=None, filename=None, url=None, description=None)`
+- `list_cached_models(cache_dir=None)`
+- `clear_cache(cache_dir=None, model_name=None)`
+- `set_cache_dir(path)` / `get_cache_dir()`
+- `get_memory_info()`
+- `check_memory_safety(required_mb=1000)`
+- `get_optimal_thread_count()`
+- `detect_hardware_profile()`
+- `detect_npu_capabilities()`
+- `resolve_device_backend(device)`
+- `run_doctor()`
+- `export_to_android_gallery(image_path, destination_name=None)`
+- `TermuxWakeLock(enabled=True)`
+
+### Node.js (termux-diffusion)
+- `generate(options)`
+- `getDefaultNegativePrompt()`
+- `setDefaultNegativePrompt(prompt)`
+- `getQualityGuardNegativePrompt()`
+- `downloadModel(modelNameOrUrl, options)`
+- `registerModel(name, modelConfig)`
+- `listCachedModels(cacheDir)`
+- `clearCache(cacheDir, modelName)`
+- `setCacheDir(dirPath)` / `getCacheDir()`
+- `detectHardwareProfile()`
+- `detectNpuCapabilities()`
+- `resolveDeviceBackend(device)`
+- `getMemoryInfo()`
+- `checkMemorySafety(requiredMb)`
+- `getOptimalThreadCount()`
+- `exportToAndroidGallery(imagePath, destinationName)`

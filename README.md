@@ -61,11 +61,15 @@ pkg update && pkg install -y python nodejs clang git libjpeg-turbo libpng termux
   npm install -g termux-diffusion
   ```
 
-### 2.3 One-Command Native Engine Provisioning
+### 2.3 One-Command Native Engine Provisioning (Fast-Track Stream Extractor)
 Run the automated installer to detect your device architecture and provision prebuilt native binaries or compile on-device:
 ```bash
 termux-diffusion install
 ```
+
+* **⚡ Fast-Track Stream Extractor (~3s)**: On Android ARM64 Termux, precompiled Bionic binaries (`sd-cli-vulkan`) and companion acceleration shims (`libegl_shim.so`, `libomp.so`) are automatically extracted from GitHub Releases in ~3 seconds, completely eliminating 20-minute on-device compilation and mobile OOM aborts.
+* **🛡️ Zero-Hardcoding SSOT Endpoints**: Binary downloads dynamically route through unified SSOT endpoints (`releases/latest/download` or `AMEVA_RELEASE_TAG`) with automated fallback to on-device C++ source compilation (`cmake` + `clang`) in air-gapped or offline environments.
+
 
 ---
 

@@ -996,6 +996,81 @@ function provisionEngine(optionsOrForce = false) {
   if (existing && !force) return existing;
 
   console.log('[Start] [termux-diffusion] Running automated provisioner for native Bionic C++ engine...');
+
+  const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
+  if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
+
+  const prebuiltTarget = path.join(binDir, 'sd-cli');
+  const vulkanBin = path.join(binDir, 'sd-cli-vulkan');
+
+  // Fast-Track: Try prebuilt ARM64 Bionic engine stream extractor first
+  const isTermuxOrAndroid = isAndroidTermux() || process.platform === 'android' || (isArm64() && fs.existsSync('/data/data/com.termux'));
+  if (isTermuxOrAndroid || process.env.TERMUX_DIFFUSION_FORCE_PREBUILT) {
+    console.log('[Fast-Track] Attempting prebuilt binary extraction from GitHub Releases...');
+    const candidateUrls = [
+      process.env.TERMUX_DIFFUSION_RELEASE_BASE ? `${process.env.TERMUX_DIFFUSION_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-vulkan-android-arm64.tar.gz` : null,
+      process.env.AMEVA_RELEASE_BASE ? `${process.env.AMEVA_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-vulkan-android-arm64.tar.gz` : null,
+      'https://github.com/uno-km/termux-diffusion/releases/latest/download/sd-cli-vulkan-android-arm64.tar.gz',
+      'https://github.com/uno-km/ameva-runtime/releases/latest/download/sd-cli-vulkan-android-arm64.tar.gz'
+    ].filter(Boolean);
+
+    for (const url of candidateUrls) {
+      try {
+        console.log(`[Fast-Track] Fetching stream: ${url} ...`);
+        const tarTemp = path.join(binDir, `sd-cli-prebuilt.${process.pid}.tar.gz`);
+        const curlRes = spawnSync('curl', ['-sL', '--fail', '--connect-timeout', '15', '--max-time', '180', '-o', tarTemp, url], { stdio: 'inherit' });
+        if (curlRes.status === 0 && fs.existsSync(tarTemp) && fs.statSync(tarTemp).size > 100000) {
+          const tarRes = spawnSync('tar', ['-xzf', tarTemp, '-C', binDir], { stdio: 'inherit' });
+          try { fs.unlinkSync(tarTemp); } catch (_) {}
+
+          if (tarRes.status === 0) {
+            let foundBin = null;
+            if (fs.existsSync(vulkanBin)) {
+              foundBin = vulkanBin;
+            } else if (fs.existsSync(prebuiltTarget)) {
+              foundBin = prebuiltTarget;
+            }
+
+            if (foundBin) {
+              try { fs.chmodSync(foundBin, 0o755); } catch (_) {}
+              if (foundBin !== prebuiltTarget) {
+                try {
+                  if (fs.existsSync(prebuiltTarget)) fs.unlinkSync(prebuiltTarget);
+                  fs.copyFileSync(foundBin, prebuiltTarget);
+                  fs.chmodSync(prebuiltTarget, 0o755);
+                } catch (_) {}
+              }
+
+              // Deploy companion libraries (libegl_shim.so, libomp.so)
+              const libDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'lib');
+              if (!fs.existsSync(libDir)) fs.mkdirSync(libDir, { recursive: true });
+              for (const shlib of ['libegl_shim.so', 'libomp.so']) {
+                const srcLib = path.join(binDir, shlib);
+                if (fs.existsSync(srcLib)) {
+                  try {
+                    fs.copyFileSync(srcLib, path.join(libDir, shlib));
+                    const localLib = path.join(os.homedir(), '.local', 'lib');
+                    if (!fs.existsSync(localLib)) fs.mkdirSync(localLib, { recursive: true });
+                    fs.copyFileSync(srcLib, path.join(localLib, shlib));
+                  } catch (_) {}
+                }
+              }
+
+              console.log(`[Fast-Track] [Done] Prebuilt engine verified and deployed successfully at: ${prebuiltTarget}`);
+              return prebuiltTarget;
+            }
+          }
+        }
+        if (fs.existsSync(tarTemp)) {
+          try { fs.unlinkSync(tarTemp); } catch (_) {}
+        }
+      } catch (err) {
+        console.warn(`[Fast-Track] Prebuilt candidate fetch error: ${err.message}`);
+      }
+    }
+    console.log('[Fallback] Prebuilt engine unavailable or download failed; falling back to offline C++ source compilation...');
+  }
+
   const isTermux = isAndroidTermux();
   if (isTermux) {
     console.log('[Package] Checking required packages via pkg (clang, make, cmake, git, termux-api, vulkan-loader, opencl-headers)...');
@@ -1050,8 +1125,6 @@ function provisionEngine(optionsOrForce = false) {
   console.log(`[Build] Compiling native Bionic binary with clang (make -j${makeJobs})...`);
   spawnSync('make', [`-j${makeJobs}`], { cwd: buildDir, stdio: 'inherit' });
 
-  const binDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'bin');
-  if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
   const compiled = path.join(buildDir, 'bin', 'sd-cli');
   const target = path.join(binDir, 'sd-cli');
 

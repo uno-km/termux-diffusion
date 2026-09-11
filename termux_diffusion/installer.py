@@ -33,10 +33,42 @@ from .platform import (
     is_arm64,
 )
 
+from ._version import __version__
+
 logger = logging.getLogger("termux_diffusion.installer")
 
 SD_CPP_REPO = "https://github.com/leejet/stable-diffusion.cpp"
-PREBUILT_BASE_URL = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental"
+
+AMEVA_RUNTIME_RELEASE_LATEST = "https://github.com/uno-km/ameva-runtime/releases/latest/download"
+TERMUX_DIFFUSION_RELEASE_LATEST = "https://github.com/uno-km/termux-diffusion/releases/latest/download"
+
+
+def get_prebuilt_base_url() -> str:
+    """Resolve dynamic base URL for prebuilt binary assets."""
+    if custom := os.environ.get("TERMUX_DIFFUSION_RELEASE_BASE") or os.environ.get("AMEVA_RELEASE_BASE"):
+        return custom.rstrip("/")
+    if custom_tag := os.environ.get("TERMUX_DIFFUSION_RELEASE_TAG") or os.environ.get("AMEVA_RELEASE_TAG"):
+        tag = custom_tag if custom_tag.startswith("v") else f"v{custom_tag}"
+        return f"https://github.com/uno-km/termux-diffusion/releases/download/{tag}"
+    return f"https://github.com/uno-km/termux-diffusion/releases/download/v{__version__}"
+
+
+PREBUILT_BASE_URL = get_prebuilt_base_url()
+
+
+def get_candidate_prebuilt_urls(filename: str = "sd-cli-vulkan-android-arm64.tar.gz") -> List[str]:
+    """Resolve prioritized candidate URLs for downloading prebuilt engine packages."""
+    urls: List[str] = []
+    if custom_base := os.environ.get("TERMUX_DIFFUSION_RELEASE_BASE") or os.environ.get("AMEVA_RELEASE_BASE"):
+        urls.append(f"{custom_base.rstrip('/')}/{filename}")
+    if custom_tag := os.environ.get("TERMUX_DIFFUSION_RELEASE_TAG") or os.environ.get("AMEVA_RELEASE_TAG"):
+        tag = custom_tag if custom_tag.startswith("v") else f"v{custom_tag}"
+        urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/{tag}/{filename}")
+        urls.append(f"https://github.com/uno-km/ameva-runtime/releases/download/{tag}/{filename}")
+    urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/v{__version__}/{filename}")
+    urls.append(f"{TERMUX_DIFFUSION_RELEASE_LATEST}/{filename}")
+    urls.append(f"{AMEVA_RUNTIME_RELEASE_LATEST}/{filename}")
+    return urls
 
 
 import uuid
@@ -103,37 +135,55 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
     lock_file = get_default_cache_dir() / "install.lock"
 
     with InstallLock(lock_file, timeout_sec=5.0):
-        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali via validated profiles)
+        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali via validated profiles and SSOT endpoints)
         if backend in ("auto", "vulkan"):
             vulkan_bin = bin_dir / "sd-cli-vulkan"
             print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
             try:
+                # First: Check if ameva-runtime NativeAssetManager is available and can provision
+                try:
+                    from ameva_runtime.installer import provision_native_assets
+                    results = provision_native_assets(modalities=["diffusion"], force=False)
+                    if results.get("diffusion") and (bin_dir / "sd-cli-vulkan").is_file():
+                        active = activate_binary(bin_dir, "sd-cli-vulkan")
+                        return active
+                except Exception as ameva_err:
+                    logger.debug("NativeAssetManager delegation skipped: %s", ameva_err)
+
                 if not vulkan_bin.is_file():
                     from .hardware import detect_hardware_profile, get_profile_gating_manager, _detect_device_model
                     hw = detect_hardware_profile()
                     gating_mgr = get_profile_gating_manager()
                     dev_model = _detect_device_model()
                     matched = gating_mgr.find_matching_profile(dev_model, hw.soc_name, hw.gpu_name)
-                    
+
+                    candidate_urls: List[str] = []
+                    expected_sha256 = None
                     if matched and matched.get("package_tarball") and matched.get("package_sha256"):
-                        pkg_tag = matched.get("package_tag", "v1.3.1-vulkan-experimental")
+                        pkg_tag = matched.get("package_tag")
                         pkg_tarball = matched.get("package_tarball")
-                        pkg_url = f"https://github.com/uno-km/termux-diffusion/releases/download/{pkg_tag}/{pkg_tarball}"
-                        pkg_sha256 = matched.get("package_sha256")
-                    else:
-                        is_mali = "mali" in hw.gpu_name.lower() or "exynos" in hw.soc_name.lower()
-                        if is_mali:
-                            pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-mali-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-mali-compat-v2.tar.gz"
-                            pkg_sha256 = "65e4e305241b22385313e386afbcd12722061041280d00a44dfdc3ff23aa17b8"
-                        else:
-                            pkg_url = "https://github.com/uno-km/termux-diffusion/releases/download/v1.3.1-vulkan-experimental/termux-diffusion-vulkan-prebuilt-v1.3.1-android-arm64-adreno.tar.gz"
-                            pkg_sha256 = "d1f0a2656a33d0929cfd3335e01feeabf9c3a1e34a0ae0eacc04ddb3701ece92"
+                        if pkg_tag:
+                            candidate_urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/{pkg_tag}/{pkg_tarball}")
+                        expected_sha256 = matched.get("package_sha256")
+
+                    # Extend with dynamic SSOT endpoints for universal prebuilt bundle
+                    candidate_urls.extend(get_candidate_prebuilt_urls("sd-cli-vulkan-android-arm64.tar.gz"))
 
                     tar_dest = bin_dir / "vulkan-prebuilt.tar.gz"
-                    try:
-                        atomic_download_file(pkg_url, tar_dest, expected_sha256=pkg_sha256)
+                    downloaded = False
+                    for pkg_url in candidate_urls:
+                        try:
+                            print(f"[termux-diffusion] Downloading prebuilt binary from: {pkg_url} ...")
+                            sha_check = expected_sha256 if (expected_sha256 and pkg_url == candidate_urls[0]) else None
+                            atomic_download_file(pkg_url, tar_dest, expected_sha256=sha_check)
+                            downloaded = True
+                            break
+                        except Exception as dl_err:
+                            logger.debug("Vulkan prebuilt download candidate failed from %s: %s", pkg_url, dl_err)
+
+                    if downloaded and tar_dest.is_file():
                         import tarfile
-                        extract_target = get_default_cache_dir()
+                        extract_target = bin_dir
                         with tarfile.open(tar_dest, "r:gz") as tar:
                             # 경로 탈출(Directory Traversal) 방지 검증
                             for member in tar.getmembers():
@@ -147,15 +197,32 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
                                     )
                             tar.extractall(path=extract_target)
                         tar_dest.unlink(missing_ok=True)
-                    except ProvisioningError:
-                        raise
-                    except Exception as dl_err:
-                        logger.debug("Vulkan prebuilt download skipped/failed: %s", dl_err)
+
+                        # Check extracted binary and set mode
+                        if vulkan_bin.is_file():
+                            vulkan_bin.chmod(0o755)
+                        elif (bin_dir / "sd-cli").is_file():
+                            (bin_dir / "sd-cli").chmod(0o755)
+                            shutil.copy2(bin_dir / "sd-cli", vulkan_bin)
+                            vulkan_bin.chmod(0o755)
+
+                        # Deploy companion libraries if extracted
+                        lib_dir = get_default_cache_dir() / "lib"
+                        lib_dir.mkdir(parents=True, exist_ok=True)
+                        for shlib in ("libegl_shim.so", "libomp.so"):
+                            shlib_src = bin_dir / shlib
+                            if shlib_src.is_file():
+                                shutil.copy2(shlib_src, lib_dir / shlib)
+                                local_lib = Path(os.path.expanduser("~/.local/lib"))
+                                local_lib.mkdir(parents=True, exist_ok=True)
+                                shutil.copy2(shlib_src, local_lib / shlib)
 
                 if vulkan_bin.is_file() and run_binary_self_test(vulkan_bin, expected_backend="vulkan").stage1_load_passed:
                     active = activate_binary(bin_dir, "sd-cli-vulkan")
                     print("[termux-diffusion] Fast-Track: Prebuilt Vulkan binary validated and activated.")
                     return active
+            except ProvisioningError:
+                raise
             except Exception as exc:
                 logger.debug("Vulkan prebuilt attempt failed: %s", exc)
 

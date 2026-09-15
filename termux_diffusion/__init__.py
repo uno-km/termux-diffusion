@@ -91,3 +91,20 @@ __all__ = [
     "OOMRiskError",
     "InferenceTimeoutError",
 ]
+
+
+class DiffusionEngine:
+    """Standardized Engine wrapper for termux-diffusion."""
+    def __init__(self, model: str = "default", device: str = "auto", **kwargs):
+        self.model = model
+        self.device = device
+        self.kwargs = kwargs
+
+    def generate(self, prompt: str, **kwargs):
+        merged = {**self.kwargs, **kwargs}
+        return generate(prompt, model=self.model, device=self.device, **merged)
+
+
+def load(model: str = "default", device: str = "auto", **kwargs) -> DiffusionEngine:
+    """Standard Unified Engine Factory for termux-diffusion."""
+    return DiffusionEngine(model=model, device=device, **kwargs)

@@ -1,4 +1,24 @@
-"""Exceptions and centralized ErrorCodes for the termux-diffusion framework."""
+"""
+AMEVA Unified Exception Hierarchy for Termux AI Engines.
+Component: [DIFFUSION]
+"""
+from typing import Optional, Any
+
+
+class AmevaTermuxError(Exception):
+    """Root exception for all Termux On-Device AI Engines."""
+    COMPONENT_TAG = "[DIFFUSION]"
+    DEFAULT_CODE = "E_UNKNOWN"
+
+    def __init__(self, message: str, code: Optional[Any] = None, details: Optional[Any] = None):
+        self.code = code or self.DEFAULT_CODE
+        self.details = details
+        self.raw_message = message
+        super().__init__(message if message.startswith("[DIFFUSION]") else f"{self.COMPONENT_TAG} [{self.code}] {message}")
+
+
+TermuxDiffusionError = AmevaTermuxError
+
 
 class ErrorCode:
     CLI_EXCLUSIVE = "E_CLI_EXCLUSIVE_MUTEX"
@@ -38,52 +58,53 @@ class ExitCode:
     ROLLBACK_ERROR = 60
 
 
-class TermuxDiffusionError(Exception):
-    """Base exception for all termux-diffusion errors."""
-    def __init__(self, message: str, code: str = "E_UNKNOWN"):
-        super().__init__(message)
-        self.code = code
-
-
 class PlatformNotSupportedError(TermuxDiffusionError):
-    """Raised when running on an unsupported platform or non-ARM64 architecture."""
     def __init__(self, message: str):
         super().__init__(message, code=ErrorCode.PLATFORM_UNSUPPORTED)
 
 
 class ModelNotFoundError(TermuxDiffusionError):
-    """Raised when the specified model preset or file path cannot be located."""
     pass
 
 
 class ModelDownloadError(TermuxDiffusionError):
-    """Raised when an error occurs during model downloading or checksum verification."""
     pass
 
 
 class DownloadError(TermuxDiffusionError):
-    """Raised when file download, size, or SHA-256 verification fails."""
     def __init__(self, message: str, code: str = ErrorCode.ARTIFACT_DOWNLOAD):
         super().__init__(message, code=code)
 
 
 class ProvisioningError(TermuxDiffusionError):
-    """Raised when the native C++ engine (sd-cli) fails to build or provision."""
     def __init__(self, message: str, code: str = ErrorCode.SOURCE_BUILD):
         super().__init__(message, code=code)
 
 
 class InstallLockError(TermuxDiffusionError):
-    """Raised when installation lock is held by another process."""
     def __init__(self, message: str):
         super().__init__(message, code=ErrorCode.INSTALL_LOCKED)
 
 
 class OOMRiskError(TermuxDiffusionError):
-    """Raised when available system memory (RAM + zRAM) is insufficient for safe inference."""
     pass
 
 
 class InferenceTimeoutError(TermuxDiffusionError):
-    """Raised when diffusion inference exceeds the configured execution timeout."""
+    pass
+
+
+class HardwareCompatibilityError(TermuxDiffusionError):
+    pass
+
+
+class RuntimeNotFoundError(TermuxDiffusionError):
+    pass
+
+
+class InferenceExecutionError(TermuxDiffusionError):
+    pass
+
+
+class ModelCorruptedError(TermuxDiffusionError):
     pass

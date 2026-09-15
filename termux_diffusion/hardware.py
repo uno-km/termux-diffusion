@@ -640,3 +640,31 @@ def resolve_hardware(model_name: str = "sdxs-512-dreamshaper", backend: str = "v
     return plan.to_dict()
 
 
+
+
+# Standard Unified Interface Bridges
+def is_termux() -> bool:
+    try:
+        from .platform import is_android_termux
+        return is_android_termux()
+    except Exception:
+        import os
+        return bool(os.environ.get("TERMUX_VERSION") or os.environ.get("TERMUX_APP_PID"))
+
+
+def is_android() -> bool:
+    return is_termux()
+
+
+def detect_hardware() -> HardwareProfile:
+    return detect_hardware_profile()
+
+
+resolve_device = resolve_device_backend
+
+
+def bind_hardware(engine: Any, requested_device: str = "auto", **kwargs) -> Optional[Any]:
+    device, ngl = resolve_device_backend(requested_device)
+    if hasattr(engine, "device"):
+        setattr(engine, "device", device)
+    return engine

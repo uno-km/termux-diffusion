@@ -55,7 +55,7 @@ def get_prebuilt_base_url() -> str:
 PREBUILT_BASE_URL = get_prebuilt_base_url()
 
 
-def get_candidate_prebuilt_urls(filename: str = "sd-cli-vulkan-android-arm64.tar.gz") -> List[str]:
+def get_candidate_prebuilt_urls(filename: str = "sd-cli-cpu-android-arm64.tar.gz") -> List[str]:
     """Resolve prioritized candidate URLs for downloading prebuilt engine packages."""
     urls: List[str] = []
     if custom_base := os.environ.get("TERMUX_DIFFUSION_RELEASE_BASE") or os.environ.get("AMEVA_RELEASE_BASE"):
@@ -228,10 +228,46 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
             cpu_bin = bin_dir / "sd-cli-cpu"
             print("[termux-diffusion] Attempting Prebuilt CPU Baseline Engine installation...")
             try:
+                if not cpu_bin.is_file():
+                    candidate_urls = get_candidate_prebuilt_urls("sd-cli-cpu-android-arm64.tar.gz")
+                    tar_dest = bin_dir / "cpu-prebuilt.tar.gz"
+                    downloaded = False
+                    for pkg_url in candidate_urls:
+                        try:
+                            print(f"[termux-diffusion] Downloading CPU baseline binary from: {pkg_url} ...")
+                            atomic_download_file(pkg_url, tar_dest)
+                            downloaded = True
+                            break
+                        except Exception as dl_err:
+                            logger.debug("CPU prebuilt download candidate failed from %s: %s", pkg_url, dl_err)
+
+                    if downloaded and tar_dest.is_file():
+                        import tarfile
+                        extract_target = bin_dir
+                        with tarfile.open(tar_dest, "r:gz") as tar:
+                            for member in tar.getmembers():
+                                member_path = os.path.realpath(os.path.join(extract_target, member.name))
+                                if not member_path.startswith(os.path.realpath(extract_target)):
+                                    raise ProvisioningError(
+                                        f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
+                                    )
+                            tar.extractall(path=extract_target)
+                        tar_dest.unlink(missing_ok=True)
+
+                        if (bin_dir / "bin" / "sd-cli-cpu").is_file():
+                            shutil.copy2(bin_dir / "bin" / "sd-cli-cpu", cpu_bin)
+                        elif (bin_dir / "sd-cli").is_file():
+                            shutil.copy2(bin_dir / "sd-cli", cpu_bin)
+
+                        if cpu_bin.is_file():
+                            cpu_bin.chmod(0o755)
+
                 if cpu_bin.is_file() and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
                     active = activate_binary(bin_dir, "sd-cli-cpu")
                     print("[termux-diffusion] Fast-Track: Prebuilt CPU Baseline binary validated and activated.")
                     return active
+            except ProvisioningError:
+                raise
             except Exception as exc:
                 logger.debug("CPU prebuilt attempt failed: %s", exc)
 

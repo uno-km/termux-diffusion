@@ -63,6 +63,22 @@ class HardwareProfile:
     recommended_ngl: int = 0
     cmake_extra_flags: List[str] = field(default_factory=list)
 
+    @property
+    def soc_model(self) -> str:
+        return self.soc_name
+
+    @property
+    def cpu_count(self) -> int:
+        return self.cpu_cores
+
+    @property
+    def recommended_threads(self) -> int:
+        return max(1, self.cpu_cores // 2) if self.cpu_cores > 2 else self.cpu_cores
+
+    @property
+    def threads(self) -> int:
+        return self.recommended_threads
+
 
 # ------------------------------------------------------------------------------
 # 1. CPU & GPU Feature Detection

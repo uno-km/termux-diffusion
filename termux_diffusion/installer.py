@@ -166,7 +166,9 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
                     # Extend with dynamic SSOT endpoints for universal prebuilt bundle
                     candidate_urls.extend(get_candidate_prebuilt_urls("sd-cli-vulkan-android-arm64.tar.gz"))
 
-                    tar_dest = bin_dir / "vulkan-prebuilt.tar.gz"
+                    staging_dir = get_default_cache_dir() / ".staging-diffusion"
+                    staging_dir.mkdir(parents=True, exist_ok=True)
+                    tar_dest = staging_dir / "vulkan-prebuilt.tar.gz"
                     downloaded = False
                     for pkg_url in candidate_urls:
                         try:
@@ -180,39 +182,44 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
 
                     if downloaded and tar_dest.is_file():
                         import tarfile
-                        extract_target = bin_dir
                         with tarfile.open(tar_dest, "r:gz") as tar:
-                            # 경로 탈출(Directory Traversal) 방지 검증
                             for member in tar.getmembers():
                                 member_path = os.path.realpath(
-                                    os.path.join(extract_target, member.name)
+                                    os.path.join(staging_dir, member.name)
                                 )
-                                if not member_path.startswith(os.path.realpath(extract_target)):
+                                if not member_path.startswith(os.path.realpath(staging_dir)):
                                     raise ProvisioningError(
                                         f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 "
                                         f"경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
                                     )
-                            tar.extractall(path=extract_target)
+                            tar.extractall(path=staging_dir)
                         tar_dest.unlink(missing_ok=True)
 
-                        # Check extracted binary and set mode
-                        if vulkan_bin.is_file():
+                        # Locate extracted binary
+                        found_bin = None
+                        for cand in staging_dir.rglob("sd-cli*"):
+                            if cand.is_file():
+                                found_bin = cand
+                                break
+
+                        if found_bin:
+                            shutil.copy2(found_bin, vulkan_bin)
                             vulkan_bin.chmod(0o755)
                         elif (bin_dir / "sd-cli").is_file():
                             (bin_dir / "sd-cli").chmod(0o755)
-                            shutil.copy2(bin_dir / "sd-cli", vulkan_bin)
-                            vulkan_bin.chmod(0o755)
 
-                        # Deploy companion libraries if extracted
-                        lib_dir = get_default_cache_dir() / "lib"
-                        lib_dir.mkdir(parents=True, exist_ok=True)
-                        for shlib in ("libegl_shim.so", "libomp.so"):
-                            shlib_src = bin_dir / shlib
+                        # Deploy companion libraries directly to $PREFIX/lib SSOT
+                        lib_dir = get_engine_lib_dir()
+                        for shlib_src in staging_dir.rglob("*.so*"):
                             if shlib_src.is_file():
-                                shutil.copy2(shlib_src, lib_dir / shlib)
-                                local_lib = Path(os.path.expanduser("~/.local/lib"))
-                                local_lib.mkdir(parents=True, exist_ok=True)
-                                shutil.copy2(shlib_src, local_lib / shlib)
+                                target_so = lib_dir / shlib_src.name
+                                shutil.copy2(shlib_src, target_so)
+                                try:
+                                    target_so.chmod(0o755)
+                                except OSError:
+                                    pass
+
+                        shutil.rmtree(staging_dir, ignore_errors=True)
 
                 if vulkan_bin.is_file() and run_binary_self_test(vulkan_bin, expected_backend="vulkan").stage1_load_passed:
                     active = activate_binary(bin_dir, "sd-cli-vulkan")
@@ -230,7 +237,9 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
             try:
                 if not cpu_bin.is_file():
                     candidate_urls = get_candidate_prebuilt_urls("sd-cli-cpu-android-arm64.tar.gz")
-                    tar_dest = bin_dir / "cpu-prebuilt.tar.gz"
+                    staging_dir = get_default_cache_dir() / ".staging-diffusion-cpu"
+                    staging_dir.mkdir(parents=True, exist_ok=True)
+                    tar_dest = staging_dir / "cpu-prebuilt.tar.gz"
                     downloaded = False
                     for pkg_url in candidate_urls:
                         try:
@@ -243,24 +252,23 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
 
                     if downloaded and tar_dest.is_file():
                         import tarfile
-                        extract_target = bin_dir
                         with tarfile.open(tar_dest, "r:gz") as tar:
                             for member in tar.getmembers():
-                                member_path = os.path.realpath(os.path.join(extract_target, member.name))
-                                if not member_path.startswith(os.path.realpath(extract_target)):
+                                member_path = os.path.realpath(os.path.join(staging_dir, member.name))
+                                if not member_path.startswith(os.path.realpath(staging_dir)):
                                     raise ProvisioningError(
                                         f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
                                     )
-                            tar.extractall(path=extract_target)
+                            tar.extractall(path=staging_dir)
                         tar_dest.unlink(missing_ok=True)
 
-                        if (bin_dir / "bin" / "sd-cli-cpu").is_file():
-                            shutil.copy2(bin_dir / "bin" / "sd-cli-cpu", cpu_bin)
-                        elif (bin_dir / "sd-cli").is_file():
-                            shutil.copy2(bin_dir / "sd-cli", cpu_bin)
+                        for cand in staging_dir.rglob("sd-cli*"):
+                            if cand.is_file():
+                                shutil.copy2(cand, cpu_bin)
+                                cpu_bin.chmod(0o755)
+                                break
 
-                        if cpu_bin.is_file():
-                            cpu_bin.chmod(0o755)
+                        shutil.rmtree(staging_dir, ignore_errors=True)
 
                 if cpu_bin.is_file() and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
                     active = activate_binary(bin_dir, "sd-cli-cpu")
@@ -275,10 +283,25 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
 
 
 def get_engine_bin_dir() -> Path:
-    """Return directory where compiled termux-diffusion binaries reside."""
-    bin_dir = get_default_cache_dir() / "bin"
+    """Return directory where compiled termux-diffusion binaries reside ($PREFIX/bin SSOT)."""
+    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+    if is_android_termux() or os.path.exists(prefix):
+        bin_dir = Path(prefix) / "bin"
+    else:
+        bin_dir = get_default_cache_dir() / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     return bin_dir
+
+
+def get_engine_lib_dir() -> Path:
+    """Return directory where native shared libraries reside ($PREFIX/lib SSOT)."""
+    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+    if is_android_termux() or os.path.exists(prefix):
+        lib_dir = Path(prefix) / "lib"
+    else:
+        lib_dir = get_default_cache_dir() / "lib"
+    lib_dir.mkdir(parents=True, exist_ok=True)
+    return lib_dir
 
 
 def locate_sd_cli(backend: Optional[str] = None) -> Optional[Path]:

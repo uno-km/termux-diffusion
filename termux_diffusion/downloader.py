@@ -76,3 +76,34 @@ def atomic_download_file(
         if bak_path.exists() and not dest_path.exists():
             bak_path.rename(dest_path)
         raise DownloadError(f"E_ATOMIC_RENAME_FAIL: Failed installing verified artifact {dest_path.name}: {e}") from e
+
+
+from typing import List, Dict, Any, Union
+
+
+def list_models() -> List[Dict[str, Any]]:
+    """List standard verified diffusion models from hub presets."""
+    from .hub import list_presets
+    presets = list_presets()
+    return [{"id": k, **v} for k, v in presets.items()]
+
+
+def download_model(
+    model_name_or_url: str = "sdxs",
+    cache_dir: Optional[Union[str, Path]] = None,
+    force: bool = False,
+    **kwargs: Any,
+) -> Path:
+    """Download diffusion model weights using termux_diffusion.hub."""
+    from .hub import download_model as _hub_download
+    return _hub_download(model_name_or_url=model_name_or_url, cache_dir=cache_dir, force=force, **kwargs)
+
+
+def resolve_model_path(
+    model_name_or_path: str = "sdxs",
+    cache_dir: Optional[Union[str, Path]] = None,
+) -> Path:
+    """Resolve diffusion model path to local Path."""
+    from .hub import resolve_model_path as _hub_resolve
+    return _hub_resolve(model_name_or_path=model_name_or_path, cache_dir=cache_dir)
+

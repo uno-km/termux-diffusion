@@ -673,14 +673,22 @@ def is_android() -> bool:
 
 
 def detect_hardware() -> HardwareProfile:
+    """Standard Unified Hardware Detection for termux-diffusion."""
     return detect_hardware_profile()
 
 
 resolve_device = resolve_device_backend
 
 
+def get_optimal_threads() -> int:
+    """Standard Unified Optimal Threads Calculator for termux-diffusion."""
+    return detect_hardware().recommended_threads
+
+
 def bind_hardware(engine: Any, requested_device: str = "auto", **kwargs) -> Optional[Any]:
+    """Standard Unified Hardware Binding Interface for termux-diffusion."""
     device, ngl = resolve_device_backend(requested_device)
     if hasattr(engine, "device"):
         setattr(engine, "device", device)
     return engine
+

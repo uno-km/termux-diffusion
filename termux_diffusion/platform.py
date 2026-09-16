@@ -195,6 +195,9 @@ def get_optimal_thread_count() -> int:
         # Desktop x86_64: Use physical cores heuristic (half of hyperthreaded cores or up to 8)
         return max(1, min(8, total_cores // 2 if total_cores > 4 else total_cores))
 
+# Standard Unified Interface Alias
+get_optimal_threads = get_optimal_thread_count
+
 
 def _get_windows_memory_info() -> Optional[Dict[str, int]]:
     """Retrieve accurate Windows physical RAM and commit limit via GlobalMemoryStatusEx."""
@@ -317,39 +320,52 @@ def check_memory_safety(required_mb: int = 1500) -> Tuple[bool, str]:
 
 
 class TermuxWakeLock:
-    """Context manager to hold Android CPU WakeLock during long-running AI inference."""
+    """Context manager and controller to hold Android CPU WakeLock during long-running tasks."""
     
-    def __init__(self, enabled: bool = True):
+    def __init__(self, enabled: bool = True, fail_silently: bool = True):
         self.enabled = enabled
+        self.fail_silently = fail_silently
         self._acquired = False
 
-    def __enter__(self):
+    def acquire(self) -> bool:
+        """Acquire CPU WakeLock via Termux API."""
         if not self.enabled or not is_android_termux():
-            return self
-
+            return False
         wake_lock_bin = shutil.which("termux-wake-lock")
         if wake_lock_bin:
             try:
-                res = subprocess.run([wake_lock_bin], capture_output=True, timeout=2.0, check=False)
-                if res.returncode == 0:
-                    self._acquired = True
+                res = subprocess.run([wake_lock_bin], capture_output=True, timeout=3.0, check=False)
+                self._acquired = (res.returncode == 0)
+                if self._acquired:
                     logger.debug("Acquired Termux CPU WakeLock.")
-                else:
-                    logger.warning("Failed to acquire Termux WakeLock (exit %d): %s", res.returncode, res.stderr)
+                return self._acquired
             except Exception as e:
-                logger.warning("Exception while acquiring WakeLock: %s", e)
-        return self
+                if not self.fail_silently:
+                    raise
+                logger.debug("Exception while acquiring WakeLock: %s", e)
+        return False
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def release(self) -> bool:
+        """Release CPU WakeLock."""
         if self._acquired:
             wake_unlock_bin = shutil.which("termux-wake-unlock")
             if wake_unlock_bin:
                 try:
-                    res = subprocess.run([wake_unlock_bin], capture_output=True, timeout=2.0, check=False)
+                    res = subprocess.run([wake_unlock_bin], capture_output=True, timeout=3.0, check=False)
+                    self._acquired = False
                     if res.returncode == 0:
                         logger.debug("Released Termux CPU WakeLock.")
-                    else:
-                        logger.warning("Failed releasing Termux WakeLock (exit %d): %s", res.returncode, res.stderr)
+                    return (res.returncode == 0)
                 except Exception as e:
-                    logger.warning("Exception while releasing WakeLock: %s", e)
+                    if not self.fail_silently:
+                        raise
+                    logger.debug("Exception while releasing WakeLock: %s", e)
             self._acquired = False
+        return False
+
+    def __enter__(self) -> "TermuxWakeLock":
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.release()

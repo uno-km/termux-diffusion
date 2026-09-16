@@ -105,25 +105,28 @@ class DiffusionControl(ComponentControl):
                            "updated_at": state_data.get("updated_at") if state_data else None},
         }
 
+    # DEFAULT_PID_FILE: COMPONENT_ID 기반 표준 경로
+    DEFAULT_PID_FILE: Path = Path.home() / ".local" / "run" / "termux-diffusion.pid"
+
     def _check_pid(self) -> dict[str, Any]:
         """BLOCKER 1: PID 파일에서 sd-cli 프로세스 생존 여부 확인.
         PermissionError/OSError 발생 시 alive=None, verified=False, inspection_error 반환."""
-        from ameva_component import log_stderr
+        import logging
+        _log = logging.getLogger(__name__)
 
-        pid_file = Path.home() / ".local" / "run" / "termux-diffusion.pid"
-        if pid_file.exists():
+        if self.DEFAULT_PID_FILE.exists():
             try:
-                raw = pid_file.read_text().strip()
+                raw = self.DEFAULT_PID_FILE.read_text().strip()
                 pid = int(raw)
-            except (ValueError, OSError) as _parse_err:
-                log_stderr(f"[diffusion] PID file parse error: {_parse_err}")
+            except (ValueError, OSError) as parse_err:
+                _log.warning("[diffusion] PID file parse/read error: %s", parse_err)
                 return {
                     "pid": None,
                     "alive": None,
                     "verified": False,
                     "inspection_error": {
                         "code": "PID_PARSE_ERROR",
-                        "message": str(_parse_err),
+                        "message": str(parse_err),
                     },
                 }
 
@@ -138,7 +141,7 @@ class DiffusionControl(ComponentControl):
                     "reason": "process_lookup_failed",
                 }
             except PermissionError as perm_err:
-                log_stderr(f"[diffusion] PID {pid} alive check: PermissionError")
+                _log.warning("[diffusion] PID %s alive check PermissionError: %s", pid, perm_err)
                 return {
                     "pid": pid,
                     "alive": None,
@@ -148,15 +151,15 @@ class DiffusionControl(ComponentControl):
                         "message": str(perm_err),
                     },
                 }
-            except OSError as _os_err:
-                log_stderr(f"[diffusion] PID {pid} alive check OSError: {_os_err}")
+            except OSError as os_err:
+                _log.warning("[diffusion] PID %s alive check OSError: %s", pid, os_err)
                 return {
                     "pid": pid,
                     "alive": None,
                     "verified": False,
                     "inspection_error": {
                         "code": "PROCESS_INSPECTION_OS_ERROR",
-                        "message": str(_os_err),
+                        "message": str(os_err),
                     },
                 }
         return {

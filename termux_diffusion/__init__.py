@@ -9,6 +9,7 @@ from .core import (
     set_default_negative_prompt,
 )
 from .exceptions import (
+    AmevaTermuxError,
     InferenceTimeoutError,
     ModelDownloadError,
     ModelNotFoundError,
@@ -17,6 +18,7 @@ from .exceptions import (
     ProvisioningError,
     TermuxDiffusionError,
 )
+
 from .hub import (
     DEFAULT_PRESETS,
     clear_cache,
@@ -44,9 +46,13 @@ from .hardware import (
     ComputeBackend,
     HardwareProfile,
     detect_hardware_profile,
+    detect_hardware,
     format_hardware_report,
     resolve_device_backend,
+    resolve_device,
 )
+from .downloader import list_models
+
 from .npu import (
     NPUProfile,
     NPUVendor,
@@ -83,6 +89,11 @@ __all__ = [
     "get_galaxy_gallery_dir",
     "export_to_android_gallery",
     "TermuxWakeLock",
+    "HardwareProfile",
+    "detect_hardware",
+    "resolve_device",
+    "list_models",
+    "AmevaTermuxError",
     "TermuxDiffusionError",
     "PlatformNotSupportedError",
     "ModelNotFoundError",
@@ -91,6 +102,7 @@ __all__ = [
     "OOMRiskError",
     "InferenceTimeoutError",
 ]
+
 
 
 class DiffusionEngine:

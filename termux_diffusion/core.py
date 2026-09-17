@@ -490,17 +490,17 @@ def generate(
     env.setdefault("GGML_VULKAN_SKIP_CHECKS", "999999999")
     prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
     lib_dirs = [
-        str(sd_cli.parent),
-        str(sd_cli.parent.parent / "lib"),
-        str(sd_cli.parent / "lib"),
-        f"{prefix}/lib",
         str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
         str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
     ]
     cur_ld = env.get("LD_LIBRARY_PATH", "")
-    valid_dirs = [d for d in lib_dirs if Path(d).is_dir()]
+    valid_dirs = [d for d in lib_dirs if Path(d).is_dir() and "/usr/lib" not in d]
     if valid_dirs:
         env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
+    elif "LD_LIBRARY_PATH" in env:
+        # Sanitize against $PREFIX/lib to prevent Bionic symbol collision with /system/lib64/libunwindstack.so
+        cleaned_ld = ":".join(p for p in cur_ld.split(":") if p and "/usr/lib" not in p)
+        env["LD_LIBRARY_PATH"] = cleaned_ld
 
     # 5.2 ameva-runtime DiffusionAdapter Binding (Vulkan / GPU mode)
     if effective_device in ("vulkan", "gpu") or device_mode in ("vulkan", "gpu"):

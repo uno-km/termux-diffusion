@@ -70,19 +70,19 @@ def run_binary_self_test(
         result.error_message = f"Binary {binary_path} does not exist or is not executable."
         return result
 
-    # Build environment with companion library paths
+    # Build environment with companion library paths (excluding $PREFIX/lib to prevent Bionic symbol collision)
     env = os.environ.copy()
     lib_dirs = [
-        str(binary_path.parent),
-        str(binary_path.parent.parent / "lib"),
-        str(binary_path.parent / "lib"),
         str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
         str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
     ]
     cur_ld = env.get("LD_LIBRARY_PATH", "")
-    valid_dirs = [d for d in lib_dirs if Path(d).is_dir()]
+    valid_dirs = [d for d in lib_dirs if Path(d).is_dir() and "/usr/lib" not in d]
     if valid_dirs:
         env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
+    elif "LD_LIBRARY_PATH" in env:
+        cleaned_ld = ":".join(p for p in cur_ld.split(":") if p and "/usr/lib" not in p)
+        env["LD_LIBRARY_PATH"] = cleaned_ld
 
     # --------------------------------------------------------------------------
     # Stage 1: Load Test (sd-cli --help)

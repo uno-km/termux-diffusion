@@ -39,8 +39,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("prompt", type=str, help="Text description of image")
     gen_parser.add_argument("-m", "--model", type=str, default="realistic", help="Model preset or .gguf path (default: realistic)")
     gen_parser.add_argument("-n", "--negative", type=str, default=None, help="Negative text prompt guidance")
-    gen_parser.add_argument("-d", "--device", type=str, default="auto", help="Computing device (cpu, gpu, vulkan, opencl, auto)")
-    gen_parser.add_argument("-b", "--backend", type=str, dest="device", help="Alias for --device (cpu, gpu, vulkan, opencl, auto)")
+    gen_parser.add_argument("-d", "--device", type=str, default="cpu", help="Computing device (cpu, gpu, vulkan, opencl. default: cpu)")
+    gen_parser.add_argument("-b", "--backend", type=str, dest="device", help="Alias for --device (cpu, gpu, vulkan, opencl. default: cpu)")
     gen_parser.add_argument("--gpu", action="store_const", const="gpu", dest="device", help="Force GPU hardware acceleration mode")
     gen_parser.add_argument("--cpu", action="store_const", const="cpu", dest="device", help="Force CPU baseline execution mode")
     gen_parser.add_argument("-s", "--steps", type=int, default=None, help="Denoising steps (default determined by preset, e.g. 10)")
@@ -68,9 +68,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("--cfg-scale", type=float, dest="cfg", help=argparse.SUPPRESS)
 
     # install command
-    inst_parser = subparsers.add_parser("install", help="Provision and compile native Bionic C++ engine")
-    inst_parser.add_argument("-b", "--backend", type=str, default="auto", choices=["auto", "cpu", "vulkan", "opencl"], help="Target compute backend (default: auto)")
-    inst_parser.add_argument("-f", "--force", action="store_true", default=True, help="Force recompilation")
+    inst_parser = subparsers.add_parser("install", help="Provision native Bionic CPU engine (sd-cli-cpu & libomp.so)")
+    inst_parser.add_argument("-b", "--backend", type=str, default="cpu", choices=["cpu", "vulkan", "opencl", "auto"], help="Target compute backend (default: cpu)")
+    inst_parser.add_argument("-f", "--force", action="store_true", default=False, help="Force re-installation")
 
     # doctor command
     subparsers.add_parser("doctor", help="Run 7-tier pre-flight diagnostic checks")
@@ -231,7 +231,7 @@ def run_install_cli(argv: Optional[List[str]] = None):
     parser.add_argument("--prebuilt", action="store_true", help="Install pre-compiled binary (prebuilt-only mode)")
     parser.add_argument("--prebuilt-only", action="store_true", help="Install pre-compiled binary (do not fall back to source build on failure)")
     parser.add_argument("--build-from-source", action="store_true", help="Skip prebuilt binary and compile from source")
-    parser.add_argument("-b", "--backend", type=str, default="auto", choices=["auto", "cpu", "vulkan", "opencl"], help="Target compute backend")
+    parser.add_argument("-b", "--backend", type=str, default="cpu", choices=["cpu", "vulkan", "opencl", "auto"], help="Target compute backend (default: cpu)")
     parser.add_argument("-f", "--force", "--force-reinstall", dest="force", action="store_true", help="Force re-installation")
     parser.add_argument("--print-diagnostics", action="store_true", help="Print system, ABI, CPU, and Vulkan diagnostic information and continue")
     parser.add_argument("--diagnostics-only", action="store_true", help="Print system, ABI, CPU, and Vulkan diagnostic information and exit immediately")

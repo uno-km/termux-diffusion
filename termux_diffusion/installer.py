@@ -123,7 +123,7 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
 
 
 
-def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-first") -> Optional[Path]:
+def fetch_prebuilt_binary(backend: str = "cpu", install_mode: str = "prebuilt-first") -> Optional[Path]:
     """Try acquiring prebuilt Bionic ARM64 binary with integrity verification, self-test, and fallback."""
     if not (is_android_termux() and is_arm64()):
         return None
@@ -366,7 +366,7 @@ def provision_engine(
     force: bool = False,
     jobs: Optional[int] = None,
     make_jobs: Optional[int] = None,
-    backend: str = "auto",
+    backend: str = "cpu",
     install_mode: str = "prebuilt-first"
 ) -> Path:
     """Download, verify, or compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""

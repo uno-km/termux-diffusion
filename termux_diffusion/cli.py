@@ -69,7 +69,6 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # install command
     inst_parser = subparsers.add_parser("install", help="Provision native Bionic CPU engine (sd-cli-cpu & libomp.so)")
-    inst_parser.add_argument("-b", "--backend", type=str, default="cpu", choices=["cpu", "vulkan", "opencl", "auto"], help="Target compute backend (default: cpu)")
     inst_parser.add_argument("-f", "--force", action="store_true", default=False, help="Force re-installation")
 
     # doctor command
@@ -176,7 +175,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             return ExitCode.BUILD_ERROR
 
     elif args.command == "install":
-        provision_engine(force=args.force, backend=args.backend)
+        provision_engine(force=args.force)
         return 0
 
     elif args.command == "doctor":

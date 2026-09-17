@@ -52,24 +52,39 @@ def test_prebuilt_only_missing_artifact_exits_20_and_never_calls_source_builder(
             mock_sub.assert_not_called()
 
 
-def test_prebuilt_first_calls_source_builder_after_prebuilts_fail():
+def test_fail_fast_when_source_build_not_allowed():
+    """Verify that when prebuilt is unavailable and TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD is not set,
+    engine fails fast with E_PREBUILT_UNAVAILABLE and never attempts compilation."""
     with patch("termux_diffusion.installer.fetch_prebuilt_binary", return_value=None):
-        with patch("termux_diffusion.installer.is_android_termux", return_value=False):
-            with patch("shutil.which", return_value=None):
-                with patch("subprocess.run") as mock_sub:
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("subprocess.run") as mock_sub:
+                with pytest.raises(ProvisioningError) as exc:
+                    provision_engine(install_mode="prebuilt-first")
+                assert exc.value.code == "E_PREBUILT_UNAVAILABLE"
+                assert "export TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD=1" in str(exc.value)
+                mock_sub.assert_not_called()
+
+
+def test_source_builder_only_invoked_when_explicitly_allowed():
+    """Verify that source compilation is only entered when TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD=1."""
+    with patch("termux_diffusion.installer.fetch_prebuilt_binary", return_value=None):
+        with patch.dict(os.environ, {"TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD": "1"}):
+            with patch("termux_diffusion.installer.is_android_termux", return_value=False):
+                with patch("shutil.which", return_value=None):
                     with pytest.raises(ProvisioningError) as exc:
                         provision_engine(install_mode="prebuilt-first")
-                    assert exc.value.code == ErrorCode.SOURCE_CLONE or "E_SOURCE" in exc.value.code or "git" in str(exc.value)
+                    assert exc.value.code == ErrorCode.SOURCE_CLONE or "tools" in str(exc.value).lower()
 
 
 def test_source_only_never_downloads_prebuilt():
     with patch("termux_diffusion.installer.fetch_prebuilt_binary") as mock_fetch:
-        with patch("termux_diffusion.installer.is_android_termux", return_value=False):
-            with patch("termux_diffusion.installer.shutil.which", return_value=None):
-                with pytest.raises(ProvisioningError) as exc:
-                    provision_engine(install_mode="source-only", force=True)
-                assert exc.value.code == ErrorCode.SOURCE_CLONE or "git" in str(exc.value).lower()
-                mock_fetch.assert_not_called()
+        with patch.dict(os.environ, {"TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD": "1"}):
+            with patch("termux_diffusion.installer.is_android_termux", return_value=False):
+                with patch("termux_diffusion.installer.shutil.which", return_value=None):
+                    with pytest.raises(ProvisioningError) as exc:
+                        provision_engine(install_mode="source-only", force=True)
+                    assert exc.value.code == ErrorCode.SOURCE_CLONE or "tools" in str(exc.value).lower()
+                    mock_fetch.assert_not_called()
 
 
 def test_mutually_exclusive_install_options_fail():

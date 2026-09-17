@@ -55,6 +55,21 @@ def get_clean_execution_env(base_env: Optional[Dict[str, str]] = None) -> Dict[s
     if merged:
         env["LD_LIBRARY_PATH"] = ":".join(merged)
 
+    # Detect libegl_shim.so for Android Mali/Samsung GOS Vulkan HAL compatibility
+    shim_candidates = [
+        Path(prefix) / "lib" / "libegl_shim.so",
+        Path.home() / ".cache" / "termux-diffusion" / "lib" / "libegl_shim.so",
+        Path.home() / ".local" / "lib" / "libegl_shim.so",
+        Path("/data/data/com.termux/files/usr/lib/libegl_shim.so"),
+    ]
+    cur_preload = env.get("LD_PRELOAD", "")
+    for shim in shim_candidates:
+        if shim.is_file():
+            shim_str = str(shim.resolve())
+            if shim_str not in cur_preload:
+                env["LD_PRELOAD"] = f"{shim_str}:{cur_preload}" if cur_preload else shim_str
+            break
+
     return env
 
 

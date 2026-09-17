@@ -77,11 +77,9 @@ from .selftest import run_binary_self_test
 def activate_binary(bin_dir: Path, target_name: str) -> Path:
     """Atomically activate target_name symlink to sd-cli using os.replace in same directory."""
     allowed = {
-        "sd-cli-vulkan",
         "sd-cli-cpu",
-        "sd-cli-source-vulkan",
         "sd-cli-source-cpu",
-        "sd-cli-source"
+        "sd-cli"
     }
     if target_name not in allowed:
         raise ValueError(f"Unauthorized activation target: {target_name}")
@@ -99,8 +97,6 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
             os.replace(temporary, active)
         except (NotImplementedError, OSError):
             # symlink 미지원 OS(일부 Windows, FAT32 등) — copy2 fallback.
-            # fallback_used=True: 호출자가 symlink를 기대했다면 알아야 한다.
-            # activate_binary는 Path를 반환하므로 메타데이터는 logger에 기록.
             logger.warning(
                 "[installer] symlink not supported; using copy2 fallback for %s -> %s",
                 target_name, active,
@@ -112,8 +108,6 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
             try:
                 temporary.unlink()
             except (PermissionError, OSError) as _tmp_err:
-                # 임시 symlink 삭제 실패 — 디렉토리에 .tmp 파일이 남을 수 있음.
-                # 기능적으로는 activate_binary가 이미 완료됨. 경고 필수.
                 logger.warning(
                     "[installer] Failed to clean up temporary symlink %s: %s. "
                     "Manual cleanup may be required.",
@@ -123,8 +117,8 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
 
 
 
-def fetch_prebuilt_binary(backend: str = "cpu", install_mode: str = "prebuilt-first") -> Optional[Path]:
-    """Try acquiring prebuilt Bionic ARM64 binary with integrity verification, self-test, and fallback."""
+def fetch_prebuilt_binary(install_mode: str = "prebuilt-first") -> Optional[Path]:
+    """Try acquiring prebuilt Bionic ARM64 CPU baseline binary with integrity verification and self-test."""
     if not (is_android_termux() and is_arm64()):
         return None
 
@@ -132,174 +126,77 @@ def fetch_prebuilt_binary(backend: str = "cpu", install_mode: str = "prebuilt-fi
     lock_file = get_default_cache_dir() / "install.lock"
 
     with InstallLock(lock_file, timeout_sec=5.0):
-        # 1. Try Vulkan Prebuilt (Multi-SoC Aware: Adreno vs Mali via validated profiles and SSOT endpoints)
-        if backend in ("auto", "vulkan"):
-            vulkan_bin = bin_dir / "sd-cli-vulkan"
-            print("[termux-diffusion] Attempting Prebuilt Vulkan Engine installation...")
-            try:
-                # First: Check if ameva-runtime NativeAssetManager is available and can provision
-                try:
-                    from ameva_runtime.installer import provision_native_assets
-                    results = provision_native_assets(modalities=["diffusion"], force=False)
-                    if results.get("diffusion") and (bin_dir / "sd-cli-vulkan").is_file():
-                        active = activate_binary(bin_dir, "sd-cli-vulkan")
-                        return active
-                except Exception as ameva_err:
-                    logger.debug("NativeAssetManager delegation skipped: %s", ameva_err)
+        if install_mode == "source-only":
+            return None
 
-                if not vulkan_bin.is_file():
-                    from .hardware import detect_hardware_profile, get_profile_gating_manager, _detect_device_model
-                    hw = detect_hardware_profile()
-                    gating_mgr = get_profile_gating_manager()
-                    dev_model = _detect_device_model()
-                    matched = gating_mgr.find_matching_profile(dev_model, hw.soc_name, hw.gpu_name)
+        cpu_bin = bin_dir / "sd-cli-cpu"
+        lib_dir = get_engine_lib_dir()
+        omp_so = lib_dir / "libomp.so"
 
-                    candidate_urls: List[str] = []
-                    expected_sha256 = None
-                    if matched and matched.get("package_tarball") and matched.get("package_sha256"):
-                        pkg_tag = matched.get("package_tag")
-                        pkg_tarball = matched.get("package_tarball")
-                        if pkg_tag:
-                            candidate_urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/{pkg_tag}/{pkg_tarball}")
-                        expected_sha256 = matched.get("package_sha256")
-
-                    # Extend with dynamic SSOT endpoints for universal prebuilt bundle
-                    candidate_urls.extend(get_candidate_prebuilt_urls("sd-cli-vulkan-android-arm64.tar.gz"))
-
-                    staging_dir = get_default_cache_dir() / ".staging-diffusion"
-                    staging_dir.mkdir(parents=True, exist_ok=True)
-                    tar_dest = staging_dir / "vulkan-prebuilt.tar.gz"
-                    downloaded = False
-                    for pkg_url in candidate_urls:
-                        try:
-                            print(f"[termux-diffusion] Downloading prebuilt binary from: {pkg_url} ...")
-                            sha_check = expected_sha256 if (expected_sha256 and pkg_url == candidate_urls[0]) else None
-                            atomic_download_file(pkg_url, tar_dest, expected_sha256=sha_check)
-                            downloaded = True
-                            break
-                        except Exception as dl_err:
-                            logger.debug("Vulkan prebuilt download candidate failed from %s: %s", pkg_url, dl_err)
-
-                    if downloaded and tar_dest.is_file():
-                        import tarfile
-                        with tarfile.open(tar_dest, "r:gz") as tar:
-                            for member in tar.getmembers():
-                                member_path = os.path.realpath(
-                                    os.path.join(staging_dir, member.name)
-                                )
-                                if not member_path.startswith(os.path.realpath(staging_dir)):
-                                    raise ProvisioningError(
-                                        f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 "
-                                        f"경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
-                                    )
-                            tar.extractall(path=staging_dir)
-                        tar_dest.unlink(missing_ok=True)
-
-                        # Locate extracted binary
-                        found_bin = None
-                        for cand in staging_dir.rglob("sd-cli*"):
-                            if cand.is_file():
-                                found_bin = cand
-                                break
-
-                        if found_bin:
-                            shutil.copy2(found_bin, vulkan_bin)
-                            vulkan_bin.chmod(0o755)
-                        elif (bin_dir / "sd-cli").is_file():
-                            (bin_dir / "sd-cli").chmod(0o755)
-
-                        # Deploy companion libraries directly to $PREFIX/lib SSOT
-                        lib_dir = get_engine_lib_dir()
-                        for shlib_src in staging_dir.rglob("*.so*"):
-                            if shlib_src.is_file():
-                                target_so = lib_dir / shlib_src.name
-                                shutil.copy2(shlib_src, target_so)
-                                try:
-                                    target_so.chmod(0o755)
-                                except OSError:
-                                    pass
-
-                        shutil.rmtree(staging_dir, ignore_errors=True)
-
-                if vulkan_bin.is_file() and run_binary_self_test(vulkan_bin, expected_backend="vulkan").stage1_load_passed:
-                    active = activate_binary(bin_dir, "sd-cli-vulkan")
-                    print("[termux-diffusion] Fast-Track: Prebuilt Vulkan binary validated and activated.")
-                    return active
-            except ProvisioningError:
-                raise
-            except Exception as exc:
-                logger.debug("Vulkan prebuilt attempt failed: %s", exc)
-
-        # 2. Try CPU Prebuilt
-        if backend in ("auto", "cpu") and install_mode != "source-only":
-            cpu_bin = bin_dir / "sd-cli-cpu"
-            lib_dir = get_engine_lib_dir()
-            omp_so = lib_dir / "libomp.so"
-
-            print("[termux-diffusion] Attempting Prebuilt CPU Baseline Engine installation...")
-            try:
-                # 2-A. Ensure OpenMP companion library (libomp.so)
-                if not omp_so.is_file() or omp_so.stat().st_size < 100000:
-                    omp_urls = get_candidate_prebuilt_urls("libomp-android-arm64.so")
-                    print("[termux-diffusion] Provisioning OpenMP parallel runtime (libomp.so)...")
-                    for o_url in omp_urls:
-                        try:
-                            atomic_download_file(o_url, omp_so)
-                            if omp_so.is_file() and omp_so.stat().st_size > 100000:
-                                break
-                        except Exception as o_err:
-                            logger.debug("OpenMP download candidate failed from %s: %s", o_url, o_err)
-
-                if omp_so.is_file():
+        print("[termux-diffusion] Attempting Prebuilt CPU Baseline Engine installation...")
+        try:
+            # 1. Ensure OpenMP companion library (libomp.so)
+            if not omp_so.is_file() or omp_so.stat().st_size < 100000:
+                omp_urls = get_candidate_prebuilt_urls("libomp-android-arm64.so")
+                print("[termux-diffusion] Provisioning OpenMP parallel runtime (libomp.so)...")
+                for o_url in omp_urls:
                     try:
-                        omp_so.chmod(0o755)
-                    except OSError:
-                        pass
-
-                # 2-B. Ensure sd-cli-cpu binary
-                if not cpu_bin.is_file():
-                    candidate_urls = get_candidate_prebuilt_urls("sd-cli-cpu-android-arm64.tar.gz")
-                    staging_dir = get_default_cache_dir() / ".staging-diffusion-cpu"
-                    staging_dir.mkdir(parents=True, exist_ok=True)
-                    tar_dest = staging_dir / "cpu-prebuilt.tar.gz"
-                    downloaded = False
-                    for pkg_url in candidate_urls:
-                        try:
-                            print(f"[termux-diffusion] Downloading CPU baseline binary from: {pkg_url} ...")
-                            atomic_download_file(pkg_url, tar_dest)
-                            downloaded = True
+                        atomic_download_file(o_url, omp_so)
+                        if omp_so.is_file() and omp_so.stat().st_size > 100000:
                             break
-                        except Exception as dl_err:
-                            logger.debug("CPU prebuilt download candidate failed from %s: %s", pkg_url, dl_err)
+                    except Exception as o_err:
+                        logger.debug("OpenMP download candidate failed from %s: %s", o_url, o_err)
 
-                    if downloaded and tar_dest.is_file():
-                        import tarfile
-                        with tarfile.open(tar_dest, "r:gz") as tar:
-                            for member in tar.getmembers():
-                                member_path = os.path.realpath(os.path.join(staging_dir, member.name))
-                                if not member_path.startswith(os.path.realpath(staging_dir)):
-                                    raise ProvisioningError(
-                                        f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
-                                    )
-                            tar.extractall(path=staging_dir)
-                        tar_dest.unlink(missing_ok=True)
+            if omp_so.is_file():
+                try:
+                    omp_so.chmod(0o755)
+                except OSError:
+                    pass
 
-                        for cand in staging_dir.rglob("sd-cli*"):
-                            if cand.is_file():
-                                shutil.copy2(cand, cpu_bin)
-                                cpu_bin.chmod(0o755)
-                                break
+            # 2. Ensure sd-cli-cpu binary
+            if not cpu_bin.is_file():
+                candidate_urls = get_candidate_prebuilt_urls("sd-cli-cpu-android-arm64.tar.gz")
+                staging_dir = get_default_cache_dir() / ".staging-diffusion-cpu"
+                staging_dir.mkdir(parents=True, exist_ok=True)
+                tar_dest = staging_dir / "cpu-prebuilt.tar.gz"
+                downloaded = False
+                for pkg_url in candidate_urls:
+                    try:
+                        print(f"[termux-diffusion] Downloading CPU baseline binary from: {pkg_url} ...")
+                        atomic_download_file(pkg_url, tar_dest)
+                        downloaded = True
+                        break
+                    except Exception as dl_err:
+                        logger.debug("CPU prebuilt download candidate failed from %s: %s", pkg_url, dl_err)
 
-                        shutil.rmtree(staging_dir, ignore_errors=True)
+                if downloaded and tar_dest.is_file():
+                    import tarfile
+                    with tarfile.open(tar_dest, "r:gz") as tar:
+                        for member in tar.getmembers():
+                            member_path = os.path.realpath(os.path.join(staging_dir, member.name))
+                            if not member_path.startswith(os.path.realpath(staging_dir)):
+                                raise ProvisioningError(
+                                    f"[termux-diffusion] E_TAR_PATH_ESCAPE: tarball 내 경로 탈출 시도가 감지되어 추출을 중단했습니다: {member.name}"
+                                )
+                        tar.extractall(path=staging_dir)
+                    tar_dest.unlink(missing_ok=True)
 
-                if cpu_bin.is_file() and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
-                    active = activate_binary(bin_dir, "sd-cli-cpu")
-                    print("[termux-diffusion] Fast-Track: Prebuilt CPU Baseline binary validated and activated.")
-                    return active
-            except ProvisioningError:
-                raise
-            except Exception as exc:
-                logger.debug("CPU prebuilt attempt failed: %s", exc)
+                    for cand in staging_dir.rglob("sd-cli*"):
+                        if cand.is_file():
+                            shutil.copy2(cand, cpu_bin)
+                            cpu_bin.chmod(0o755)
+                            break
+
+                    shutil.rmtree(staging_dir, ignore_errors=True)
+
+            if cpu_bin.is_file() and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
+                active = activate_binary(bin_dir, "sd-cli-cpu")
+                print("[termux-diffusion] Fast-Track: Prebuilt CPU Baseline binary validated and activated.")
+                return active
+        except ProvisioningError:
+            raise
+        except Exception as exc:
+            logger.debug("CPU prebuilt attempt failed: %s", exc)
 
     return None
 
@@ -329,12 +226,7 @@ def get_engine_lib_dir() -> Path:
 def locate_sd_cli(backend: Optional[str] = None) -> Optional[Path]:
     """Locate the compiled sd-cli executable binary across standard locations."""
     bin_dir = get_engine_bin_dir()
-    if backend == "cpu":
-        candidates = ("sd-cli-cpu", "sd-cli-source-cpu", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
-    elif backend in ("vulkan", "gpu"):
-        candidates = ("sd-cli-vulkan", "sd-cli-source-vulkan", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
-    else:
-        candidates = ("sd-cli", "sd-cli.exe", "sd", "sd.exe", "sd-cli-vulkan", "sd-cli-cpu")
+    candidates = ("sd-cli-cpu", "sd-cli-source-cpu", "sd-cli", "sd-cli.exe", "sd", "sd.exe")
 
     for fname in candidates:
         cached_bin = bin_dir / fname
@@ -364,39 +256,48 @@ def locate_sd_cli(backend: Optional[str] = None) -> Optional[Path]:
 
 def provision_engine(
     force: bool = False,
+    install_mode: str = "prebuilt-first",
     jobs: Optional[int] = None,
     make_jobs: Optional[int] = None,
-    backend: str = "cpu",
-    install_mode: str = "prebuilt-first"
+    backend: str = "cpu"
 ) -> Path:
     """Download, verify, or compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
     bin_dir = get_engine_bin_dir()
 
-    # Prebuilt-First Pipeline
+    # Prebuilt-First Pipeline (Pure CPU Baseline Engine)
     if not force or install_mode in ("prebuilt-first", "prebuilt-only"):
-        prebuilt = fetch_prebuilt_binary(backend=backend, install_mode=install_mode)
+        prebuilt = fetch_prebuilt_binary(install_mode=install_mode)
         if prebuilt:
             return prebuilt
-        if install_mode == "prebuilt-only" or (is_android_termux() and os.environ.get("TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD") != "1"):
-            raise ProvisioningError(
-                "E_PREBUILT_UNAVAILABLE: Prebuilt binary verification or acquisition failed on Termux.\n"
-                "To prevent device thermal throttling, on-device compilation is disabled by default.\n"
-                "Please verify network access to GitHub Releases or specify TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD=1 to force compilation.",
-                code="E_PREBUILT_UNAVAILABLE"
-            )
 
-    print("[termux-diffusion] Initializing native ARM64 Bionic engine provisioning...")
+    # COMPILATION GATE: Never compile automatically without explicit user opt-in (Zero Silent Fallback)
+    allow_source = os.environ.get("TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD") == "1"
+    if not allow_source or install_mode == "prebuilt-only":
+        raise ProvisioningError(
+            "E_PREBUILT_UNAVAILABLE: Precompiled native CPU engine (sd-cli-cpu) is not installed.\n"
+            "No precompiled binary was found locally and automated acquisition from GitHub Releases failed.\n"
+            "On-device compilation is disabled by default to prevent thermal throttling, excessive battery drain, and memory exhaustion.\n\n"
+            "--> ACTION REQUIRED:\n"
+            "1. Ensure internet access to GitHub and run: 'termux-diffusion install'\n"
+            "2. Or manually download 'sd-cli-cpu-android-arm64.tar.gz' and 'libomp-android-arm64.so' from:\n"
+            "     https://github.com/uno-km/termux-diffusion/releases/latest\n"
+            "3. If you explicitly want to compile from C++ source on this device, you MUST specify:\n"
+            "     export TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD=1\n"
+            "   and optionally set compilation cores:\n"
+            "     export TERMUX_DIFFUSION_JOBS=<cores>\n",
+            code="E_PREBUILT_UNAVAILABLE"
+        )
+
+    print("[termux-diffusion] Initializing native ARM64 Bionic CPU engine source compilation...")
 
     # Step 1: Ensure required system packages
     if is_android_termux() and shutil.which("pkg"):
-        print("[termux-diffusion] Checking build toolchains & GPU acceleration packages...")
+        print("[termux-diffusion] Checking build toolchains...")
         try:
             subprocess.run(
                 [
                     "pkg", "install", "-y",
-                    "git", "cmake", "clang", "make", "termux-api", "wget",
-                    "vulkan-loader", "vulkan-headers", "vulkan-tools",
-                    "opencl-headers", "shaderc", "glslang", "spirv-headers"
+                    "git", "cmake", "clang", "make", "termux-api", "wget"
                 ],
                 capture_output=False,
                 check=False,
@@ -472,32 +373,7 @@ def provision_engine(
         except Exception as e:
             logger.warning("libwebp patch note: %s", e)
 
-    # Bionic Healer: Disable NV cooperative_matrix2 on Adreno to prevent shaderc 5447 capability error
-    vulkan_cmake = repo_dir / "ggml" / "src" / "ggml-vulkan" / "CMakeLists.txt"
-    if vulkan_cmake.is_file():
-        try:
-            vulkan_content = vulkan_cmake.read_text(encoding="utf-8")
-            if "GL_NV_cooperative_matrix2" in vulkan_content or "GL_EXT_bfloat16" in vulkan_content:
-                vulkan_content = vulkan_content.replace("GL_NV_cooperative_matrix2", "DISABLED_NV_cooperative_matrix2")
-                vulkan_content = vulkan_content.replace("GL_NV_cooperative_matrix_decode_vector", "DISABLED_NV_cooperative_matrix_decode_vector")
-                vulkan_content = vulkan_content.replace("GL_EXT_bfloat16", "DISABLED_bfloat16")
-                vulkan_content = vulkan_content.replace("GL_EXT_shader_explicit_arithmetic_types_bfloat16", "DISABLED_bfloat16")
-                vulkan_cmake.write_text(vulkan_content, encoding="utf-8")
-                logger.info("Patched ggml-vulkan CMakeLists.txt for Adreno Vulkan compatibility.")
-        except Exception as e:
-            logger.warning("ggml-vulkan patch note: %s", e)
 
-    # Bionic Path Fix: Patch vulkan-shaders-gen.cpp for Android Termux temporary directory
-    vulkan_gen = repo_dir / "ggml" / "src" / "ggml-vulkan" / "vulkan-shaders" / "vulkan-shaders-gen.cpp"
-    if vulkan_gen.is_file():
-        try:
-            gen_content = vulkan_gen.read_text(encoding="utf-8")
-            if 'output_dir = "/tmp"' in gen_content:
-                gen_content = gen_content.replace('output_dir = "/tmp"', 'output_dir = "."')
-            vulkan_gen.write_text(gen_content, encoding="utf-8")
-            logger.info("Configured vulkan-shaders-gen.cpp for mobile working directory.")
-        except Exception as e:
-            logger.warning("vulkan-shaders-gen patch note: %s", e)
 
     # Step 4: CMake & Compilation - Use hardware-detected optimal flags
     build_dir = repo_dir / "build"
@@ -512,7 +388,7 @@ def provision_engine(
           f"OpenCL: {'Available' if hw_profile.opencl_available else 'Not Found'}")
     print(f"[termux-diffusion] CPU Extensions: DotProd={'Y' if hw_profile.has_dotprod else 'N'} "
           f"FP16={'Y' if hw_profile.has_fp16 else 'N'} I8MM={'Y' if hw_profile.has_i8mm else 'N'}")
-    print(f"[termux-diffusion] Target build backend: {backend}")
+    print("[termux-diffusion] Target build backend: cpu")
 
     print("[termux-diffusion] Configuring CMake build with device-optimized flags...")
     use_ninja = bool(shutil.which("ninja"))
@@ -528,8 +404,8 @@ def provision_engine(
     if use_ninja:
         cmake_cmd.extend(["-G", "Ninja"])
         
-    # Append hardware-specific flags (Vulkan, DotProd, FP16, etc.)
-    flags = _build_cmake_flags(hw_profile, backend=backend)
+    # Append hardware-specific flags (DotProd, FP16, etc. with pure CPU backend)
+    flags = _build_cmake_flags(hw_profile, backend="cpu")
     cmake_cmd.extend(flags)
     cmake_res = subprocess.run(
         cmake_cmd,

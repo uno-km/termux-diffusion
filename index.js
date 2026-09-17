@@ -1001,17 +1001,18 @@ function provisionEngine(optionsOrForce = false) {
   if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
 
   const prebuiltTarget = path.join(binDir, 'sd-cli');
+  const cpuBin = path.join(binDir, 'sd-cli-cpu');
   const vulkanBin = path.join(binDir, 'sd-cli-vulkan');
 
   // Fast-Track: Try prebuilt ARM64 Bionic engine stream extractor first
   const isTermuxOrAndroid = isAndroidTermux() || process.platform === 'android' || (isArm64() && fs.existsSync('/data/data/com.termux'));
   if (isTermuxOrAndroid || process.env.TERMUX_DIFFUSION_FORCE_PREBUILT) {
-    console.log('[Fast-Track] Attempting prebuilt binary extraction from GitHub Releases...');
+    console.log('[Fast-Track] Attempting prebuilt CPU baseline binary extraction from GitHub Releases...');
     const candidateUrls = [
-      process.env.TERMUX_DIFFUSION_RELEASE_BASE ? `${process.env.TERMUX_DIFFUSION_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-vulkan-android-arm64.tar.gz` : null,
-      process.env.AMEVA_RELEASE_BASE ? `${process.env.AMEVA_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-vulkan-android-arm64.tar.gz` : null,
-      'https://github.com/uno-km/termux-diffusion/releases/latest/download/sd-cli-vulkan-android-arm64.tar.gz',
-      'https://github.com/uno-km/ameva-runtime/releases/latest/download/sd-cli-vulkan-android-arm64.tar.gz'
+      process.env.TERMUX_DIFFUSION_RELEASE_BASE ? `${process.env.TERMUX_DIFFUSION_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-cpu-android-arm64.tar.gz` : null,
+      'https://github.com/uno-km/termux-diffusion/releases/latest/download/sd-cli-cpu-android-arm64.tar.gz',
+      'https://github.com/uno-km/termux-diffusion/releases/download/v1.6.5/sd-cli-cpu-android-arm64.tar.gz',
+      process.env.AMEVA_RELEASE_BASE ? `${process.env.AMEVA_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-cpu-android-arm64.tar.gz` : null
     ].filter(Boolean);
 
     for (const url of candidateUrls) {
@@ -1025,7 +1026,9 @@ function provisionEngine(optionsOrForce = false) {
 
           if (tarRes.status === 0) {
             let foundBin = null;
-            if (fs.existsSync(vulkanBin)) {
+            if (fs.existsSync(cpuBin)) {
+              foundBin = cpuBin;
+            } else if (fs.existsSync(vulkanBin)) {
               foundBin = vulkanBin;
             } else if (fs.existsSync(prebuiltTarget)) {
               foundBin = prebuiltTarget;
@@ -1041,10 +1044,26 @@ function provisionEngine(optionsOrForce = false) {
                 } catch (_) {}
               }
 
-              // Deploy companion libraries (libegl_shim.so, libomp.so)
+              // Deploy companion libraries (libomp.so, libegl_shim.so)
               const libDir = path.join(os.homedir(), '.cache', 'termux-diffusion', 'lib');
               if (!fs.existsSync(libDir)) fs.mkdirSync(libDir, { recursive: true });
-              for (const shlib of ['libegl_shim.so', 'libomp.so']) {
+              const ompDest = path.join(libDir, 'libomp.so');
+              if (!fs.existsSync(ompDest) || fs.statSync(ompDest).size < 100000) {
+                const ompUrls = [
+                  'https://github.com/uno-km/termux-diffusion/releases/latest/download/libomp-android-arm64.so',
+                  'https://github.com/uno-km/termux-diffusion/releases/download/v1.6.5/libomp-android-arm64.so'
+                ];
+                for (const oUrl of ompUrls) {
+                  try {
+                    const cRes = spawnSync('curl', ['-sL', '--fail', '--connect-timeout', '10', '-o', ompDest, oUrl], { stdio: 'inherit' });
+                    if (cRes.status === 0 && fs.existsSync(ompDest) && fs.statSync(ompDest).size > 100000) {
+                      fs.chmodSync(ompDest, 0o755);
+                      break;
+                    }
+                  } catch (_) {}
+                }
+              }
+              for (const shlib of ['libomp.so', 'libegl_shim.so']) {
                 const srcLib = path.join(binDir, shlib);
                 if (fs.existsSync(srcLib)) {
                   try {
@@ -1068,14 +1087,32 @@ function provisionEngine(optionsOrForce = false) {
         console.warn(`[Fast-Track] Prebuilt candidate fetch error: ${err.message}`);
       }
     }
-    console.log('[Fallback] Prebuilt engine unavailable or download failed; falling back to offline C++ source compilation...');
+    console.log('[Fast-Track] Prebuilt engine unavailable or download failed.');
   }
 
+  // COMPILATION GATE: Never compile automatically without explicit user opt-in (Zero Silent Fallback)
+  if (process.env.TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD !== '1') {
+    throw new Error(
+      "E_PREBUILT_UNAVAILABLE: Precompiled native CPU engine (sd-cli-cpu) is not installed.\n" +
+      "No precompiled binary was found locally and automated acquisition from GitHub Releases failed.\n" +
+      "On-device compilation is disabled by default to prevent thermal throttling, excessive battery drain, and memory exhaustion.\n\n" +
+      "--> ACTION REQUIRED:\n" +
+      "1. Ensure internet access to GitHub and run: 'npx termux-diffusion install'\n" +
+      "2. Or manually download 'sd-cli-cpu-android-arm64.tar.gz' and 'libomp-android-arm64.so' from:\n" +
+      "     https://github.com/uno-km/termux-diffusion/releases/latest\n" +
+      "3. If you explicitly want to compile from C++ source on this device, you MUST specify:\n" +
+      "     export TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD=1\n" +
+      "   and optionally set compilation cores:\n" +
+      "     export TERMUX_DIFFUSION_JOBS=<cores>"
+    );
+  }
+
+  console.log('[Source-Build] Initializing native ARM64 Bionic CPU engine source compilation...');
   const isTermux = isAndroidTermux();
   if (isTermux) {
-    console.log('[Package] Checking required packages via pkg (clang, make, cmake, git, termux-api, vulkan-loader, opencl-headers)...');
+    console.log('[Package] Checking required build packages via pkg (clang, make, cmake, git, termux-api, wget)...');
     try {
-      spawnSync('pkg', ['install', '-y', 'clang', 'make', 'cmake', 'git', 'termux-api', 'wget', 'vulkan-loader', 'vulkan-headers', 'vulkan-tools', 'opencl-headers'], { stdio: 'inherit' });
+      spawnSync('pkg', ['install', '-y', 'clang', 'make', 'cmake', 'git', 'termux-api', 'wget'], { stdio: 'inherit' });
     } catch (e) {
       console.warn('[termux-diffusion] pkg install warning:', e.message);
     }

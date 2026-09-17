@@ -233,8 +233,30 @@ def fetch_prebuilt_binary(backend: str = "auto", install_mode: str = "prebuilt-f
         # 2. Try CPU Prebuilt
         if backend in ("auto", "cpu") and install_mode != "source-only":
             cpu_bin = bin_dir / "sd-cli-cpu"
+            lib_dir = get_engine_lib_dir()
+            omp_so = lib_dir / "libomp.so"
+
             print("[termux-diffusion] Attempting Prebuilt CPU Baseline Engine installation...")
             try:
+                # 2-A. Ensure OpenMP companion library (libomp.so)
+                if not omp_so.is_file() or omp_so.stat().st_size < 100000:
+                    omp_urls = get_candidate_prebuilt_urls("libomp-android-arm64.so")
+                    print("[termux-diffusion] Provisioning OpenMP parallel runtime (libomp.so)...")
+                    for o_url in omp_urls:
+                        try:
+                            atomic_download_file(o_url, omp_so)
+                            if omp_so.is_file() and omp_so.stat().st_size > 100000:
+                                break
+                        except Exception as o_err:
+                            logger.debug("OpenMP download candidate failed from %s: %s", o_url, o_err)
+
+                if omp_so.is_file():
+                    try:
+                        omp_so.chmod(0o755)
+                    except OSError:
+                        pass
+
+                # 2-B. Ensure sd-cli-cpu binary
                 if not cpu_bin.is_file():
                     candidate_urls = get_candidate_prebuilt_urls("sd-cli-cpu-android-arm64.tar.gz")
                     staging_dir = get_default_cache_dir() / ".staging-diffusion-cpu"

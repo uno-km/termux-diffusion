@@ -485,22 +485,10 @@ def generate(
         cmd.extend(["--taesd", str(effective_taesd_path)])
 
     # 5.1 Configure Environment with companion library search paths (Termux native isolation)
-    env = os.environ.copy()
+    from .platform import get_clean_execution_env
+    env = get_clean_execution_env()
     # Bypass debug CPU shadow checks on mobile Vulkan to unlock 10x throughput
     env.setdefault("GGML_VULKAN_SKIP_CHECKS", "999999999")
-    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
-    lib_dirs = [
-        str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
-        str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
-    ]
-    cur_ld = env.get("LD_LIBRARY_PATH", "")
-    valid_dirs = [d for d in lib_dirs if Path(d).is_dir() and "/usr/lib" not in d]
-    if valid_dirs:
-        env["LD_LIBRARY_PATH"] = ":".join(valid_dirs + ([cur_ld] if cur_ld else []))
-    elif "LD_LIBRARY_PATH" in env:
-        # Sanitize against $PREFIX/lib to prevent Bionic symbol collision with /system/lib64/libunwindstack.so
-        cleaned_ld = ":".join(p for p in cur_ld.split(":") if p and "/usr/lib" not in p)
-        env["LD_LIBRARY_PATH"] = cleaned_ld
 
     # 5.2 ameva-runtime DiffusionAdapter Binding (Vulkan / GPU mode)
     if effective_device in ("vulkan", "gpu") or device_mode in ("vulkan", "gpu"):

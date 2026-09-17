@@ -306,7 +306,7 @@ def fetch_prebuilt_binary(backend: str = "cpu", install_mode: str = "prebuilt-fi
 
 def get_engine_bin_dir() -> Path:
     """Return directory where compiled termux-diffusion binaries reside ($PREFIX/bin SSOT)."""
-    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+    prefix = os.environ.get("PREFIX") or "/data/data/com.termux/files/usr"
     if is_android_termux() or os.path.exists(prefix):
         bin_dir = Path(prefix) / "bin"
     else:
@@ -317,7 +317,7 @@ def get_engine_bin_dir() -> Path:
 
 def get_engine_lib_dir() -> Path:
     """Return directory where native shared libraries reside ($PREFIX/lib SSOT)."""
-    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+    prefix = os.environ.get("PREFIX") or "/data/data/com.termux/files/usr"
     if is_android_termux() or os.path.exists(prefix):
         lib_dir = Path(prefix) / "lib"
     else:
@@ -377,9 +377,11 @@ def provision_engine(
         prebuilt = fetch_prebuilt_binary(backend=backend, install_mode=install_mode)
         if prebuilt:
             return prebuilt
-        if install_mode == "prebuilt-only":
+        if install_mode == "prebuilt-only" or (is_android_termux() and os.environ.get("TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD") != "1"):
             raise ProvisioningError(
-                "E_PREBUILT_UNAVAILABLE: Prebuilt binary unavailable/failed, and --prebuilt-only mode prevented source build fallback.",
+                "E_PREBUILT_UNAVAILABLE: Prebuilt binary verification or acquisition failed on Termux.\n"
+                "To prevent device thermal throttling, on-device compilation is disabled by default.\n"
+                "Please verify network access to GitHub Releases or specify TERMUX_DIFFUSION_ALLOW_SOURCE_BUILD=1 to force compilation.",
                 code="E_PREBUILT_UNAVAILABLE"
             )
 

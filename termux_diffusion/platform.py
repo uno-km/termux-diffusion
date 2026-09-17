@@ -15,8 +15,47 @@ from typing import Dict, List, Optional, Tuple
 logger = logging.getLogger("termux_diffusion.platform")
 
 # Android Termux standard paths
-TERMUX_PREFIX = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
-TERMUX_HOME = os.environ.get("HOME", "/data/data/com.termux/files/home")
+TERMUX_PREFIX = os.environ.get("PREFIX") or "/data/data/com.termux/files/usr"
+TERMUX_HOME = os.environ.get("HOME") or "/data/data/com.termux/files/home"
+
+
+def get_clean_execution_env(base_env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    """Construct clean execution environment for Termux binaries with proper library search paths.
+
+    Guarantees $PREFIX, $PREFIX/lib, and companion directories are correctly populated
+    while preventing Android system library collision (/system/, /vendor/, etc.).
+    """
+    env = (base_env or os.environ).copy()
+    prefix = os.environ.get("PREFIX") or "/data/data/com.termux/files/usr"
+
+    if "PREFIX" not in env or not env["PREFIX"]:
+        env["PREFIX"] = prefix
+
+    bin_dir = str(Path(prefix) / "bin")
+    cur_path = env.get("PATH", "")
+    if bin_dir not in cur_path.split(":"):
+        env["PATH"] = f"{bin_dir}:{cur_path}" if cur_path else bin_dir
+
+    forbidden_prefixes = ("/system/", "/vendor/", "/apex/", "/system_ext/", "/odm/", "/product/")
+    cur_ld = env.get("LD_LIBRARY_PATH", "")
+    existing_parts = [p for p in cur_ld.split(":") if p and not any(p.startswith(fp) for fp in forbidden_prefixes)]
+
+    lib_candidates = [
+        str(Path(prefix) / "lib"),
+        str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
+        str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
+        str(Path.home() / ".local" / "lib"),
+    ]
+
+    merged: List[str] = []
+    for d in lib_candidates + existing_parts:
+        if d not in merged and Path(d).is_dir() and not any(d.startswith(fp) for fp in forbidden_prefixes):
+            merged.append(d)
+
+    if merged:
+        env["LD_LIBRARY_PATH"] = ":".join(merged)
+
+    return env
 
 
 # [B방안] Platform SSOT: ameva-runtime.platform 에서 공유 구현을 가져옵니다.

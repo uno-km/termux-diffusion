@@ -1,0 +1,68 @@
+# docs/doc.config.yaml
+name: "Termux-Diffusion"
+package_name_pypi: "termux-diffusion"
+package_name_npm: "termux-diffusion"
+version: "v1.6.6"
+release_name: "Pure CPU Native Engine Release"
+license: "Apache-2.0"
+platform: "Android ARM64 (Bionic libc / NEON)"
+github_repo_url: "https://github.com/uno-km/termux-diffusion"
+
+tagline_en: "Pure CPU Native On-Device Stable Diffusion Runtime for Android Termux"
+tagline_ko: "Android Termux 순수 CPU 네이티브 온디바이스 Stable Diffusion 런타임"
+
+quick_install_cmd: "pip install termux-diffusion && termux-diffusion install\n# or:\nnpm install termux-diffusion && npx termux-diffusion install"
+
+why_challenge_en: "Generating AI images on mobile devices typically requires cloud API dependencies or heavy virtualized container layers (PRoot) that quickly exceed RAM limits."
+why_challenge_ko: "모바일 환경에서 AI 이미지 생성은 클라우드 API 의존성을 요구하거나 무거운 가상화(PRoot) 계층으로 인해 RAM 한계를 초과하여 강제 종료됩니다."
+
+description_en: "Executes quantized Stable Diffusion models with ARMv8.2-A DotProd/FP16 NEON SIMD vector instructions, VAE tiling, and direct Android MediaStore synchronization."
+description_ko: "안드로이드 순정 Bionic libc 상에서 ARMv8.2-A DotProd/FP16 NEON SIMD 벡터 연산과 VAE Tiling을 통해 안정적으로 이미지를 생성하고 안드로이드 갤러리에 자동 반영합니다."
+
+features:
+  - title_en: "Zero-PRoot Native ARM64 Bionic"
+    title_ko: "비루트 순정 Bionic 네이티브 실행"
+    desc_en: "Executes directly without root permissions, virtual machines, or PRoot Linux overhead."
+    desc_ko: "루팅 권한이나 가상 머신 없이 안드로이드 네이티브 Bionic libc에서 직접 실행됩니다."
+  - title_en: "One-Touch Pure CPU Native Engine"
+    title_ko: "원터치 순수 CPU 네이티브 엔진"
+    desc_en: "Provisions precompiled ARM64 CPU native binary and OpenMP runtime in seconds without thermal compilation overhead."
+    desc_ko: "복잡한 컴파일 과정 없이 사전 빌드된 순수 CPU 네이티브 바이너리와 OpenMP 런타임을 즉각 구성합니다."
+  - title_en: "Android MediaStore Auto-Indexing"
+    title_ko: "안드로이드 미디어스토어 자동 인덱싱"
+    desc_en: "Automatically synchronizes generated images into Pictures/TermuxDiffusion and registers with Android MediaStore."
+    desc_ko: "이미지 생성 즉시 안드로이드 미디어스토어에 자동 등록하여 갤러리 앱에 실시간 반영합니다."
+
+matrix_table:
+  - category: "Diffusion Engine"
+    operations: "SD 1.5, SD Turbo, LCM, DreamShaper 8, Tiny-SD, GGML Quantized Weights"
+    status: "Production"
+  - category: "Compute Acceleration"
+    operations: "ARM64 ARMv8.2-A DotProd/FP16 NEON SIMD, Multi-Threaded OpenMP"
+    status: "Production"
+  - category: "Media Integration"
+    operations: "PNG/WebP Export, Android MediaStore Intent Broadcast"
+    status: "Production"
+
+code_example_py: |
+  import termux_diffusion as td
+
+  # 1. Generate image using pure CPU on Android hardware
+  image_path = td.generate(
+      prompt="cute dolphin, high quality illustration",
+      model="anime",
+      steps=6,
+      device="cpu"
+  )
+  print(f"Generated and saved to Gallery: {image_path}")
+
+code_example_js: |
+  import { generate } from "termux-diffusion";
+
+  const result = await generate({
+    prompt: "cute polar bear, high quality illustration",
+    model: "anime",
+    steps: 6,
+    device: "cpu"
+  });
+  console.log("Image created:", result.outputPath);

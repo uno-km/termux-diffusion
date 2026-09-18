@@ -1,7 +1,7 @@
 {
-  "name": "@uno-km/termux-diffusion",
-  "version": "1.6.5",
-  "description": "On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
+  "name": "termux-diffusion",
+  "version": "1.6.6",
+  "description": "Pure CPU On-Device Stable Diffusion Runtime for Android Termux (ARM64 Bionic NEON SIMD)",
   "main": "index.js",
   "types": "index.d.ts",
   "bin": {
@@ -32,39 +32,24 @@
     "on-device-ai",
     "image-generation",
     "text-to-image",
-    "txt2img",
-    "img2img",
     "gguf",
     "arm64",
     "aarch64",
-    "vulkan",
-    "vulkan-compute",
-    "spirv",
-    "adreno",
-    "mali",
-    "snapdragon",
-    "exynos",
+    "neon",
+    "simd",
     "bionic-libc",
-    "taesd",
     "vae-tiling",
-    "lora",
-    "controlnet",
-    "sdxs",
-    "sd-turbo",
-    "dreamshaper",
-    "offline-ai",
-    "mobile-inference",
-    "camera-roll",
     "galaxy-s25",
-    "galaxy-s20"
+    "galaxy-s21"
   ],
   "author": "uno-km (AMEVA Foundation) <hosequelbo@gmail.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/uno-km/termux-diffusion/issues"
   },
   "homepage": "https://uno-km.github.io/termux-diffusion/",
-  "dependencies": {
+  "dependencies": {},
+  "optionalDependencies": {
     "@ameva/runtime": "^2.0.0"
   },
   "engines": {

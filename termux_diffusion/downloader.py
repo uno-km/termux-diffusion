@@ -18,9 +18,9 @@ logger = logging.getLogger("termux_diffusion.downloader")
 def atomic_download_file(
     url: str,
     dest_path: Path,
-    expected_sha256: str,
+    expected_sha256: Optional[str] = None,
     expected_size: Optional[int] = None,
-    timeout_sec: float = 30.0,
+    timeout_sec: float = 120.0,
     user_agent: str = "termux-diffusion-downloader/1.2.0"
 ) -> Path:
     """Download url to dest_path atomically using .part -> SHA256 check -> atomic rename -> rollback."""

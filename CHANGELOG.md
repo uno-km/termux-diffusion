@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.9] - 2026-09-18
+
+### Changed & Hardened
+- **Zero-Hardcoding Dynamic Latest-First Provisioning Architecture**:
+  - Completely purged hardcoded fallback version strings (`v1.6.8`) from `index.js`.
+  - Implemented dynamic `package.json` version introspection (`pkgVer`) with prioritized `releases/latest/download/` canonical endpoints for both CPU binary (`sd-cli-cpu-android-arm64.tar.gz`) and companion library (`libomp-android-arm64.so`).
+  - Prioritized Tier 2 latest download endpoint in Python `installer.py` candidate generator.
+  - Synchronized versions across `package.json`, `pyproject.toml`, `setup.py`, and `_version.py` to `1.6.9`.
+
 ## [1.6.3] - 2026-09-07
 
 ### Added

@@ -60,11 +60,11 @@ def get_candidate_prebuilt_urls(filename: str = "sd-cli-cpu-android-arm64.tar.gz
     urls: List[str] = []
     if custom_base := os.environ.get("TERMUX_DIFFUSION_RELEASE_BASE") or os.environ.get("AMEVA_RELEASE_BASE"):
         urls.append(f"{custom_base.rstrip('/')}/{filename}")
-    if custom_tag := os.environ.get("TERMUX_DIFFUSION_RELEASE_TAG") or os.environ.get("AMEVA_RELEASE_TAG"):
-        tag = custom_tag if custom_tag.startswith("v") else f"v{custom_tag}"
-        urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/{tag}/{filename}")
-    urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/v{__version__}/{filename}")
+    # Tier 2: GitHub Releases latest canonical endpoint (Zero-Hardcoding SSOT)
     urls.append(f"{TERMUX_DIFFUSION_RELEASE_LATEST}/{filename}")
+
+    # Tier 3: Installed package dynamic version matching
+    urls.append(f"https://github.com/uno-km/termux-diffusion/releases/download/v{__version__}/{filename}")
     return urls
 
 

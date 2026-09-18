@@ -1008,10 +1008,16 @@ function provisionEngine(optionsOrForce = false) {
   const isTermuxOrAndroid = isAndroidTermux() || process.platform === 'android' || (isArm64() && fs.existsSync('/data/data/com.termux'));
   if (isTermuxOrAndroid || process.env.TERMUX_DIFFUSION_FORCE_PREBUILT) {
     console.log('[Fast-Track] Attempting prebuilt CPU baseline binary extraction from GitHub Releases...');
+    let pkgVer = '';
+    try {
+      pkgVer = require('./package.json').version;
+    } catch (_) {}
+
     const candidateUrls = [
       process.env.TERMUX_DIFFUSION_RELEASE_BASE ? `${process.env.TERMUX_DIFFUSION_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-cpu-android-arm64.tar.gz` : null,
+      process.env.TERMUX_DIFFUSION_RELEASE_TAG ? `https://github.com/uno-km/termux-diffusion/releases/download/${process.env.TERMUX_DIFFUSION_RELEASE_TAG.replace(/^v?/, 'v')}/sd-cli-cpu-android-arm64.tar.gz` : null,
       'https://github.com/uno-km/termux-diffusion/releases/latest/download/sd-cli-cpu-android-arm64.tar.gz',
-      'https://github.com/uno-km/termux-diffusion/releases/download/v1.6.8/sd-cli-cpu-android-arm64.tar.gz',
+      pkgVer ? `https://github.com/uno-km/termux-diffusion/releases/download/v${pkgVer}/sd-cli-cpu-android-arm64.tar.gz` : null,
       process.env.AMEVA_RELEASE_BASE ? `${process.env.AMEVA_RELEASE_BASE.replace(/\/+$/, '')}/sd-cli-cpu-android-arm64.tar.gz` : null
     ].filter(Boolean);
 
@@ -1050,9 +1056,11 @@ function provisionEngine(optionsOrForce = false) {
               const ompDest = path.join(libDir, 'libomp.so');
               if (!fs.existsSync(ompDest) || fs.statSync(ompDest).size < 100000) {
                 const ompUrls = [
+                  process.env.TERMUX_DIFFUSION_RELEASE_BASE ? `${process.env.TERMUX_DIFFUSION_RELEASE_BASE.replace(/\/+$/, '')}/libomp-android-arm64.so` : null,
+                  process.env.TERMUX_DIFFUSION_RELEASE_TAG ? `https://github.com/uno-km/termux-diffusion/releases/download/${process.env.TERMUX_DIFFUSION_RELEASE_TAG.replace(/^v?/, 'v')}/libomp-android-arm64.so` : null,
                   'https://github.com/uno-km/termux-diffusion/releases/latest/download/libomp-android-arm64.so',
-                  'https://github.com/uno-km/termux-diffusion/releases/download/v1.6.8/libomp-android-arm64.so'
-                ];
+                  pkgVer ? `https://github.com/uno-km/termux-diffusion/releases/download/v${pkgVer}/libomp-android-arm64.so` : null
+                ].filter(Boolean);
                 for (const oUrl of ompUrls) {
                   try {
                     const cRes = spawnSync('curl', ['-sL', '--fail', '--connect-timeout', '10', '-o', ompDest, oUrl], { stdio: 'inherit' });

@@ -1,6 +1,6 @@
 {
   "name": "termux-diffusion",
-  "version": "1.6.7",
+  "version": "1.6.8",
   "description": "Pure CPU On-Device Stable Diffusion Runtime for Android Termux (ARM64 Bionic NEON SIMD)",
   "main": "index.js",
   "types": "index.d.ts",

@@ -2,7 +2,7 @@
 name: "Termux-Diffusion"
 package_name_pypi: "termux-diffusion"
 package_name_npm: "termux-diffusion"
-version: "v1.6.6"
+version: "v1.6.7"
 release_name: "Pure CPU Native Engine Release"
 license: "Apache-2.0"
 platform: "Android ARM64 (Bionic libc / NEON)"

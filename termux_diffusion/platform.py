@@ -19,11 +19,19 @@ TERMUX_PREFIX = os.environ.get("PREFIX") or "/data/data/com.termux/files/usr"
 TERMUX_HOME = os.environ.get("HOME") or "/data/data/com.termux/files/home"
 
 
-def get_clean_execution_env(base_env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+def get_clean_execution_env(
+    base_env: Optional[Dict[str, str]] = None,
+    backend: str = "cpu",
+) -> Dict[str, str]:
     """Construct clean execution environment for Termux binaries with proper library search paths.
 
     Guarantees $PREFIX, $PREFIX/lib, and companion directories are correctly populated
     while preventing Android system library collision (/system/, /vendor/, etc.).
+
+    Zero-Collision Rule:
+    For native Bionic Vulkan binaries (backend in ('vulkan', 'gpu')), Termux $PREFIX/lib is
+    strictly excluded from LD_LIBRARY_PATH to eliminate symbol collisions with Android Bionic
+    system libraries (/system/lib64/libunwindstack.so, etc.).
     """
     env = (base_env or os.environ).copy()
     prefix = os.environ.get("PREFIX") or "/data/data/com.termux/files/usr"
@@ -36,16 +44,28 @@ def get_clean_execution_env(base_env: Optional[Dict[str, str]] = None) -> Dict[s
     if bin_dir not in cur_path.split(":"):
         env["PATH"] = f"{bin_dir}:{cur_path}" if cur_path else bin_dir
 
+    req_backend = str(backend or "cpu").strip().lower()
+    is_vulkan_route = req_backend in ("vulkan", "gpu")
+
     forbidden_prefixes = ("/system/", "/vendor/", "/apex/", "/system_ext/", "/odm/", "/product/")
     cur_ld = env.get("LD_LIBRARY_PATH", "")
     existing_parts = [p for p in cur_ld.split(":") if p and not any(p.startswith(fp) for fp in forbidden_prefixes)]
 
-    lib_candidates = [
-        str(Path(prefix) / "lib"),
-        str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
-        str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
-        str(Path.home() / ".local" / "lib"),
-    ]
+    if is_vulkan_route:
+        # Strictly isolate Vulkan binaries from Termux /usr/lib to prevent libc++ ABI crash
+        lib_candidates = [
+            str(Path.home() / ".local" / "share" / "ameva" / "current" / "diffusion"),
+            str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
+        ]
+        # Filter out prefix/lib from existing parts for Vulkan
+        existing_parts = [p for p in existing_parts if not p.startswith(str(Path(prefix) / "lib"))]
+    else:
+        lib_candidates = [
+            str(Path(prefix) / "lib"),
+            str(Path.home() / ".cache" / "termux-diffusion" / "lib"),
+            str(Path.home() / ".cache" / "termux-diffusion" / "staging" / "lib"),
+            str(Path.home() / ".local" / "lib"),
+        ]
 
     merged: List[str] = []
     for d in lib_candidates + existing_parts:
@@ -54,6 +74,8 @@ def get_clean_execution_env(base_env: Optional[Dict[str, str]] = None) -> Dict[s
 
     if merged:
         env["LD_LIBRARY_PATH"] = ":".join(merged)
+    elif is_vulkan_route and "LD_LIBRARY_PATH" in env:
+        env.pop("LD_LIBRARY_PATH", None)
 
     # Detect libegl_shim.so for Android Mali/Samsung GOS Vulkan HAL compatibility
     shim_candidates = [

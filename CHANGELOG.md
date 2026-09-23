@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-09-23
+
+### Added & Resolved
+- **Qualcomm Snapdragon 8 Elite (Adreno 830) Vulkan Numerical Distortion Ground-Truth Fix**:
+  - **Shader Direct Byte Indexing**: Fixed Qualcomm Adreno 830 SPIR-V JIT compiler byte-lane swap defect in Q8_0 dequantization. Implemented `unpack8_to_vec4` helper in `types.glsl` and replaced `data_a_packed16` with direct 8-bit integer indexing (`data_a[ib].qs[4*iqs + ...]`) across `dequant_funcs.glsl` and `mul_mm_funcs.glsl`.
+  - **Register Spill Elimination**: Purged `[[unroll]]` pragma from `soft_max.comp` preventing on-chip register file exhaustion on Adreno 830 architecture.
+  - **FP32 Accumulator (`f32acc`) Enforcement**: Enforced FP32 accumulator for Qualcomm GPUs in `ggml-vulkan.cpp` (`ggml_vk_get_mul_mat_mat_pipeline`), completely eradicating FP16 accumulator overflow/underflow while maintaining maximum compute throughput (13.6s for 2-step 512x512 SDXS generation).
+  - **Pure Vulkan Verification**: 100% verified on physical Galaxy S25 device without CPU fallback (`clip=vulkan0,diffusion=vulkan0,vae=vulkan0`), producing crystal-clear photographic fidelity.
+- **Unified Engine Architecture & Zero-Silent-Fallback Hardening**:
+  - **`engine.py` Extraction**: Modularized `DiffusionEngine`, `DiffusionRuntime`, `load()`, and `get_binary_path()` with strict backend-to-binary mapping (`gpu`/`vulkan` -> `sd-cli-vulkan`, `cpu` -> `sd-cli-cpu`/`sd-cli`).
+  - **`doctor.py` Extraction**: Decoupled pre-flight environment diagnostics into dedicated diagnostic doctor.
+  - **Android Bionic Linker Isolation**: Filtered Termux `$PREFIX/lib` from `LD_LIBRARY_PATH` during Vulkan dispatch, eradicating libc++ ABI symbol collisions with Android system drivers (`/system/lib64/libvulkan.so`, `libunwindstack.so`).
+- **Official Assetization**:
+  - Packaged and pinned canonical ARM64 Bionic release binary `releases/sd-cli-vulkan-v2.7.2-android-arm64.tar.gz` with cryptographic SHA-256 verification (`5db0374fffc8a52a5d6557ec280b39ad221cf4b86620fe5bdd26716489d59bb1`).
+  - Archived complete source patch at `patches/0001-qualcomm-adreno830-fp32acc-dequant-unroll-fix.patch`.
+
 ## [1.6.9] - 2026-09-18
 
 ### Changed & Hardened

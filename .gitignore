@@ -11,7 +11,12 @@ __pycache__/
 /build-*/
 /develop-eggs/
 /dist/
-/releases/
+/releases/*.tar.gz
+/releases/*.so
+/releases/sd-cli*
+!/releases/*.sha256
+sd-cli-new
+sd-cli-vulkan-aarch64
 /downloads/
 /eggs/
 /.eggs/

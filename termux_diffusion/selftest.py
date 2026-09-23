@@ -72,7 +72,7 @@ def run_binary_self_test(
 
     # Build environment with clean Termux companion library search paths
     from .platform import get_clean_execution_env
-    env = get_clean_execution_env()
+    env = get_clean_execution_env(backend=expected_backend)
 
     # --------------------------------------------------------------------------
     # Stage 1: Load Test (sd-cli --help)

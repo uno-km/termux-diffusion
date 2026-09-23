@@ -20,7 +20,9 @@ if hasattr(sys.stderr, "reconfigure"):
 from .core import generate
 from .hub import clear_cache, download_model, list_cached_models, list_presets
 from .exceptions import TermuxDiffusionError, ErrorCode, ExitCode
-from .installer import provision_engine, run_doctor
+from .engine import DiffusionEngine, get_binary_path
+from .doctor import run_doctor
+from .installer import provision_engine
 
 
 def main(argv: Optional[List[str]] = None) -> int:

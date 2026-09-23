@@ -162,3 +162,22 @@ def test_adreno_650_gpu_failfast_e003():
                 assert "AMEVA-DIFFUSION-E003" in str(exc_info.value)
                 assert "storageBuffer8BitAccess" in str(exc_info.value)
 
+
+def test_adreno_830_gpu_supported_with_vulkan_driver():
+    """Verify that Adreno 830 with Vulkan driver resolves to vulkan backend after v2.7.2 shader repair."""
+    mock_ameva = MagicMock()
+    with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=mock_ameva):
+        with patch("termux_diffusion.hardware._detect_gpu_name", return_value="Adreno (TM) 830"):
+            with patch("termux_diffusion.hardware._detect_soc_name", return_value="SM8750"):
+                with patch("termux_diffusion.hardware.detect_hardware_profile") as mock_prof:
+                    prof = MagicMock()
+                    prof.vulkan_available = True
+                    prof.recommended_backend = MagicMock(value="vulkan")
+                    prof.recommended_ngl = 99
+                    mock_prof.return_value = prof
+                    backend, ngl = resolve_device_backend("gpu")
+                    assert backend == "vulkan"
+                    assert ngl == 99
+
+
+

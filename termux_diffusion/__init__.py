@@ -31,7 +31,15 @@ from .hub import (
     resolve_model_path,
     set_cache_dir,
 )
-from .installer import locate_sd_cli, provision_engine, run_doctor
+from .engine import (
+    DiffusionEngine,
+    DiffusionRuntime,
+    get_binary_path,
+    locate_sd_cli,
+    load,
+)
+from .doctor import run_doctor
+from .installer import provision_engine
 from .platform import (
     TermuxWakeLock,
     check_memory_safety,
@@ -78,6 +86,10 @@ __all__ = [
     "clear_cache",
     "list_presets",
     "DEFAULT_PRESETS",
+    "DiffusionEngine",
+    "DiffusionRuntime",
+    "load",
+    "get_binary_path",
     "locate_sd_cli",
     "provision_engine",
     "run_doctor",
@@ -103,20 +115,3 @@ __all__ = [
     "InferenceTimeoutError",
 ]
 
-
-
-class DiffusionEngine:
-    """Standardized Engine wrapper for termux-diffusion."""
-    def __init__(self, model: str = "default", device: str = "auto", **kwargs):
-        self.model = model
-        self.device = device
-        self.kwargs = kwargs
-
-    def generate(self, prompt: str, **kwargs):
-        merged = {**self.kwargs, **kwargs}
-        return generate(prompt, model=self.model, device=self.device, **merged)
-
-
-def load(model: str = "default", device: str = "auto", **kwargs) -> DiffusionEngine:
-    """Standard Unified Engine Factory for termux-diffusion."""
-    return DiffusionEngine(model=model, device=device, **kwargs)

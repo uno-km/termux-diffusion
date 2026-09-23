@@ -14,7 +14,8 @@ from typing import Optional, Union
 
 from .exceptions import InferenceTimeoutError, OOMRiskError, ProvisioningError, TermuxDiffusionError
 from .hub import DEFAULT_PRESETS, list_presets, resolve_model_path
-from .installer import locate_sd_cli, provision_engine
+from .engine import get_binary_path, locate_sd_cli
+from .installer import provision_engine
 from .platform import (
     TermuxWakeLock,
     check_memory_safety,
@@ -486,7 +487,7 @@ def generate(
 
     # 5.1 Configure Environment with companion library search paths (Termux native isolation)
     from .platform import get_clean_execution_env
-    env = get_clean_execution_env()
+    env = get_clean_execution_env(backend=effective_device)
     # Bypass debug CPU shadow checks on mobile Vulkan to unlock 10x throughput
     env.setdefault("GGML_VULKAN_SKIP_CHECKS", "999999999")
 
@@ -513,6 +514,14 @@ def generate(
 
             # Auto-inject mobile Vulkan HAL shim (Samsung GOS & BDA sanitizer) into process environment
             env = DiffusionAdapter.get_execution_env(env)
+            # Re-sanitize LD_LIBRARY_PATH to eliminate Termux /usr/lib symbol collisions on Android Bionic
+            cur_ld = env.get("LD_LIBRARY_PATH", "")
+            prefix_str = str(Path(os.environ.get("PREFIX", "/data/data/com.termux/files/usr")) / "lib")
+            parts = [p for p in cur_ld.split(":") if p and not p.startswith(prefix_str)]
+            if parts:
+                env["LD_LIBRARY_PATH"] = ":".join(parts)
+            else:
+                env.pop("LD_LIBRARY_PATH", None)
 
             logger.info(
                 "[termux-diffusion] DiffusionAdapter bound: backend=%s, status=%s, LD_PRELOAD=%s",

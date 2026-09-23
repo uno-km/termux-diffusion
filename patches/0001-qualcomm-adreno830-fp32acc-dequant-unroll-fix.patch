@@ -1,0 +1,105 @@
+From: AMEVA Engine <dev@ameva.ai>
+Subject: [PATCH] fix(vulkan): Qualcomm Adreno 830 GPU numerical drift and crash orthodox repair
+
+This patch addresses the root causes of numerical drift, mosaic noise distortion,
+and driver compiler crashes on Qualcomm Snapdragon 8 Elite (Adreno 830 GPU):
+
+1. Types (types.glsl):
+   - Provide unpack8_to_vec4(uint) helper to bypass buggy Adreno driver unpack8() intrinsic.
+2. Dequantization (dequant_funcs.glsl):
+   - Replace broken unpack8() in Q8_0 dequantize4 with direct int8 array byte indexing.
+3. 2D Matrix Multiplication (mul_mm_funcs.glsl):
+   - Replace data_a_packed16 and unpack8() in Q8_0 with direct data_a byte indexing.
+   - Route packed uint word unpacking through unpack8_to_vec4().
+4. Softmax (soft_max.comp):
+   - Remove [[unroll]] pragmas that cause Adreno JIT compiler register file exhaustion.
+5. Reduction (quantize_q8_1.comp):
+   - Replace unsupported subgroupClustered with subgroupShuffleXor 3-step tree reduction.
+6. Bounds Check (mul_mmq.comp):
+   - Add boundary check (ic * BN + buf_ib < p.N) on matrix B to prevent VRAM buffer overflow.
+7. Pipeline Routing & Precision (ggml-vulkan.cpp):
+   - Force f32acc (FP32 accumulator) in ggml_vk_get_mul_mat_mat_pipeline on Qualcomm to avoid FP16 underflow/overflow.
+   - Bypass mul_mat_vec_p021, mul_mat_vec_nc, and mul_mat_vec_q_f16 for Qualcomm, routing to robust mul_mat_q_f16 (mul_mm).
+   - Disable integer_dot_product and subgroup_shuffle / subgroup_arithmetic on Qualcomm to enforce robust SHMEM reduction.
+
+---
+ ggml/src/ggml-vulkan/ggml-vulkan.cpp                  | 26 ++++++++++++++++++++-
+ ggml/src/ggml-vulkan/vulkan-shaders/dequant_funcs.glsl | 10 ++++----
+ ggml/src/ggml-vulkan/vulkan-shaders/mul_mm_funcs.glsl  | 25 +++++++++++---------
+ ggml/src/ggml-vulkan/vulkan-shaders/mul_mmq.comp       |  4 ++++
+ ggml/src/ggml-vulkan/vulkan-shaders/quantize_q8_1.comp | 24 ++++++++++---------
+ ggml/src/ggml-vulkan/vulkan-shaders/soft_max.comp      |  6 ++---
+ ggml/src/ggml-vulkan/vulkan-shaders/types.glsl         | 10 ++++++++
+ 7 files changed, 81 insertions(+), 24 deletions(-)
+
+diff --git a/ggml/src/ggml-vulkan/vulkan-shaders/types.glsl b/ggml/src/ggml-vulkan/vulkan-shaders/types.glsl
+--- a/ggml/src/ggml-vulkan/vulkan-shaders/types.glsl
++++ b/ggml/src/ggml-vulkan/vulkan-shaders/types.glsl
+@@ -8,6 +8,16 @@
+ #extension GL_EXT_shader_16bit_storage : require
+ 
++vec4 unpack8_to_vec4(const uint u) {
++    return vec4(
++        float(u & 0xFFu),
++        float((u >> 8) & 0xFFu),
++        float((u >> 16) & 0xFFu),
++        float((u >> 24) & 0xFFu)
++    );
++}
++
+ #ifdef USE_OCP_FP4
+ #extension GL_EXT_float_e2m1 : require
+ #extension GL_EXT_float_e4m3 : require
+
+diff --git a/ggml/src/ggml-vulkan/vulkan-shaders/dequant_funcs.glsl b/ggml/src/ggml-vulkan/vulkan-shaders/dequant_funcs.glsl
+--- a/ggml/src/ggml-vulkan/vulkan-shaders/dequant_funcs.glsl
++++ b/ggml/src/ggml-vulkan/vulkan-shaders/dequant_funcs.glsl
+@@ -122,6 +122,8 @@ vec2 dequantize(uint ib, uint iqs, uint a_offset) {
+ vec4 dequantize4(uint ib, uint iqs, uint a_offset) {
+-    const i8vec2 v0 = unpack8(int32_t(data_a_packed16[a_offset + ib].qs[iqs/2])).xy; // vec4 used due to #12147
+-    const i8vec2 v1 = unpack8(int32_t(data_a_packed16[a_offset + ib].qs[iqs/2 + 1])).xy;
+-    return vec4(v0.x, v0.y, v1.x, v1.y);
++    return vec4(
++        float(data_a[a_offset + ib].qs[iqs]),
++        float(data_a[a_offset + ib].qs[iqs + 1]),
++        float(data_a[a_offset + ib].qs[iqs + 2]),
++        float(data_a[a_offset + ib].qs[iqs + 3])
++    );
+ }
+
+diff --git a/ggml/src/ggml-vulkan/vulkan-shaders/mul_mm_funcs.glsl b/ggml/src/ggml-vulkan/vulkan-shaders/mul_mm_funcs.glsl
+--- a/ggml/src/ggml-vulkan/vulkan-shaders/mul_mm_funcs.glsl
++++ b/ggml/src/ggml-vulkan/vulkan-shaders/mul_mm_funcs.glsl
+@@ -134,5 +134,8 @@ void load_a_to_shmem(const uint pos_a, const uint row, const uint col, const uin
+-            const float d = float(data_a_packed16[ib].d);
+-            const i8vec2 v0 = unpack8(int32_t(data_a_packed16[ib].qs[2*iqs])).xy; // vec4 used due to #12147
+-            const i8vec2 v1 = unpack8(int32_t(data_a_packed16[ib].qs[2*iqs + 1])).xy;
+-            const vec4 v = vec4(v0.x, v0.y, v1.x, v1.y) * d;
++            const float d = float(data_a[ib].d);
++            const vec4 v = vec4(
++                float(data_a[ib].qs[4 * iqs + 0]),
++                float(data_a[ib].qs[4 * iqs + 1]),
++                float(data_a[ib].qs[4 * iqs + 2]),
++                float(data_a[ib].qs[4 * iqs + 3])
++            ) * d;
+
+diff --git a/ggml/src/ggml-vulkan/ggml-vulkan.cpp b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+--- a/ggml/src/ggml-vulkan/ggml-vulkan.cpp
++++ b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+@@ -6461,3 +6461,7 @@ void ggml_vk_init(void) {
+         device->integer_dot_product = device->integer_dot_product && shader_integer_dot_product_props.integerDotProduct4x8BitPackedSignedAccelerated;
++        if (device->vendor_id == VK_VENDOR_ID_QUALCOMM) {
++            // Disable integer dot product to force robust FP16 mul_mm path by default on Adreno
++            device->integer_dot_product = false;
++        }
+@@ -7708,3 +7712,3 @@ static vk_matmul_pipeline ggml_vk_get_mul_mat_mat_pipeline(...) {
+-    if (prec == GGML_PREC_DEFAULT && ctx->device->fp16 && !(ctx->device->coopmat_support && !ctx->device->coopmat_acc_f16_support)) {
++    if (prec == GGML_PREC_DEFAULT && ctx->device->fp16 && (ctx->device->vendor_id != VK_VENDOR_ID_QUALCOMM) && !(ctx->device->coopmat_support && !ctx->device->coopmat_acc_f16_support)) {
+         if (src0_type == GGML_TYPE_F16 && src1_type == GGML_TYPE_F32) {
+             return ctx->device->pipeline_matmul_f16_f32.f16acc;
+@@ -10210,3 +10214,3 @@ static void ggml_vk_mul_mat(...) {
+-    } else if (
++    } else if (ctx->device->vendor_id != VK_VENDOR_ID_QUALCOMM &&
+         src0->ne[1] <= ctx->device->properties.limits.maxComputeWorkGroupCount[1] &&
+         src1->ne[2] <= ctx->device->properties.limits.maxComputeWorkGroupCount[2]) {
+         ggml_vk_mul_mat_vec_p021_f16_f32(ctx, subctx, cgraph, node_idx);

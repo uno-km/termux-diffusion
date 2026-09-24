@@ -139,28 +139,21 @@ def test_auto_without_ameva_runtime_defaults_to_cpu():
         assert ngl == 0
 
 
-def test_adreno_650_auto_defaults_to_cpu():
-    """Auto mode on Adreno 650 must default to CPU due to missing 8-bit storage buffer."""
+def test_adreno_650_gpu_supported_with_vulkan_driver():
+    """Verify that Adreno 650 with Vulkan driver resolves to vulkan backend."""
     mock_ameva = MagicMock()
     with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=mock_ameva):
         with patch("termux_diffusion.hardware._detect_gpu_name", return_value="Adreno (TM) 650"):
             with patch("termux_diffusion.hardware._detect_soc_name", return_value="SM8250"):
-                backend, ngl = resolve_device_backend("auto")
-                assert backend == "cpu"
-                assert ngl == 0
-
-
-def test_adreno_650_gpu_failfast_e003():
-    """Explicit GPU mode on Adreno 650 must Fail-Fast with E003."""
-    from termux_diffusion.exceptions import PlatformNotSupportedError
-    mock_ameva = MagicMock()
-    with patch("termux_diffusion.hardware._resolve_ameva_runtime", return_value=mock_ameva):
-        with patch("termux_diffusion.hardware._detect_gpu_name", return_value="Adreno (TM) 650"):
-            with patch("termux_diffusion.hardware._detect_soc_name", return_value="SM8250"):
-                with pytest.raises(PlatformNotSupportedError) as exc_info:
-                    resolve_device_backend("gpu")
-                assert "AMEVA-DIFFUSION-E003" in str(exc_info.value)
-                assert "storageBuffer8BitAccess" in str(exc_info.value)
+                with patch("termux_diffusion.hardware.detect_hardware_profile") as mock_prof:
+                    prof = MagicMock()
+                    prof.vulkan_available = True
+                    prof.recommended_backend = MagicMock(value="vulkan")
+                    prof.recommended_ngl = 99
+                    mock_prof.return_value = prof
+                    backend, ngl = resolve_device_backend("gpu")
+                    assert backend == "vulkan"
+                    assert ngl == 99
 
 
 def test_adreno_830_gpu_supported_with_vulkan_driver():

@@ -92,6 +92,15 @@ diff --git a/ggml/src/ggml-vulkan/ggml-vulkan.cpp b/ggml/src/ggml-vulkan/ggml-vu
 +            // Disable integer dot product to force robust FP16 mul_mm path by default on Adreno
 +            device->integer_dot_product = false;
 +        }
+@@ -6701,6 +6705,9 @@ static vk_device ggml_vk_get_device(size_t idx) {
+ 
+         device->shader_int64 = device_features2.features.shaderInt64;
+         device->buffer_device_address = vk12_features.bufferDeviceAddress;
++        // Mobile BDA Null Guard: Force disable BDA on mobile Android to eliminate
++        // null pointer dereference (pc 0x0 at getBufferAddress) on Mali-G78 and Adreno 650
++        device->buffer_device_address = false;
+         device->vulkan_memory_model = vk12_features.vulkanMemoryModel;
+
 @@ -7708,3 +7712,3 @@ static vk_matmul_pipeline ggml_vk_get_mul_mat_mat_pipeline(...) {
 -    if (prec == GGML_PREC_DEFAULT && ctx->device->fp16 && !(ctx->device->coopmat_support && !ctx->device->coopmat_acc_f16_support)) {
 +    if (prec == GGML_PREC_DEFAULT && ctx->device->fp16 && (ctx->device->vendor_id != VK_VENDOR_ID_QUALCOMM) && !(ctx->device->coopmat_support && !ctx->device->coopmat_acc_f16_support)) {

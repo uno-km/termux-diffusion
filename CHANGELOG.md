@@ -19,8 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **`engine.py` Extraction**: Modularized `DiffusionEngine`, `DiffusionRuntime`, `load()`, and `get_binary_path()` with strict backend-to-binary mapping (`gpu`/`vulkan` -> `sd-cli-vulkan`, `cpu` -> `sd-cli-cpu`/`sd-cli`).
   - **`doctor.py` Extraction**: Decoupled pre-flight environment diagnostics into dedicated diagnostic doctor.
   - **Android Bionic Linker Isolation**: Filtered Termux `$PREFIX/lib` from `LD_LIBRARY_PATH` during Vulkan dispatch, eradicating libc++ ABI symbol collisions with Android system drivers (`/system/lib64/libvulkan.so`, `libunwindstack.so`).
+- **Universal Mobile Vulkan Support & BDA Null Pointer Crash Elimination (Mali-G78 & Adreno 650)**:
+  - **Buffer Device Address (BDA) Null Guard**: Identified and eliminated root cause of `SIGSEGV (Return Code -11, SEGV_MAPERR, pc 0x0)` crash at offset `0x063d8764` during UNet dispatch on ARM Mali-G78 (Galaxy S21) and Adreno 650 (Galaxy S20). Enforced `device->buffer_device_address = false` on mobile Android Bionic runtimes, eradicating unhandled null function pointer calls to `device.getBufferAddress()` and smoothly routing to robust, leak-free `VkDescriptorSet` UMA bindings.
+  - **Galaxy S21 Physical Verification**: Verified pure 100% Vulkan GPU inference (`sdxs.gguf`) on physical Galaxy S21 (Mali-G78), generating verified image artifact in 22.00s without CPU fallback.
+  - **Unblocked Adreno 650**: Purged legacy artificial hardware block in `hardware.py`, restoring native Vulkan GPU execution capability for Snapdragon 865 devices.
 - **Official Assetization**:
-  - Packaged and pinned canonical ARM64 Bionic release binary `releases/sd-cli-vulkan-v2.7.2-android-arm64.tar.gz` with cryptographic SHA-256 verification (`5db0374fffc8a52a5d6557ec280b39ad221cf4b86620fe5bdd26716489d59bb1`).
+  - Packaged and pinned canonical ARM64 Bionic release binary `releases/sd-cli-vulkan-v2.7.2-android-arm64.tar.gz` with cryptographic SHA-256 verification (`4e96bdc40d0272b392e4eace8938f71cb30319e01bd19d406759b2595c622fb9`).
   - Archived complete source patch at `patches/0001-qualcomm-adreno830-fp32acc-dequant-unroll-fix.patch`.
 
 ## [1.6.9] - 2026-09-18

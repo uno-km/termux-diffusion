@@ -430,23 +430,11 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
                 "  pip install ameva-runtime\n"
                 "Documentation: https://uno-km.vercel.app/lib/diffusion/"
             )
-        soc_name = _detect_soc_name()
-        gpu_name = _detect_gpu_name()
-        if "650" in gpu_name or "8250" in soc_name:
-            raise PlatformNotSupportedError(
-                "[ERROR: AMEVA-DIFFUSION-E003] Vulkan GPU acceleration failed on Adreno 650.\n"
-                "Cause: Missing required Vulkan extension storageBuffer8BitAccess for FP16/INT8 diffusion.\n"
-                "Action Required: Use CPU inference: termux-diffusion generate --device cpu ..."
-            )
 
     if req == "auto":
         if ameva_mod is None:
             sys.stdout.write("[INFO] ameva-runtime is not installed. Defaulting to CPU backend.\n")
             sys.stdout.flush()
-            return "cpu", 0
-        soc_name = _detect_soc_name()
-        gpu_name = _detect_gpu_name()
-        if "650" in gpu_name or "8250" in soc_name:
             return "cpu", 0
 
     profile = detect_hardware_profile()

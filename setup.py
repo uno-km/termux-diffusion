@@ -11,7 +11,7 @@ if os.path.exists(readme_path):
 
 setup(
     name="termux-diffusion",
-    version="1.6.9",
+    version="1.8.0",
     description="On-device Stable Diffusion runtime utilizing device resources for Android Termux & Samsung Galaxy (Dual-Engine Python & Node.js)",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -33,7 +33,12 @@ setup(
     ],
     packages=find_packages(),
     package_data={
-        "termux_diffusion": ["py.typed", "data/*.json", "data/*.pub"],
+        "termux_diffusion": [
+            "py.typed",
+            "data/*.json",
+            "data/*.pub",
+            "data/prompt_cache/*",
+        ],
     },
     include_package_data=True,
     python_requires=">=3.8",

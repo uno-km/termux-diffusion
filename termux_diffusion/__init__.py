@@ -2,8 +2,10 @@ from ._version import __version__
 
 from .core import (
     GenerationResult,
+    ProgressInfo,
     async_generate,
     generate,
+    generate_stream,
     get_default_negative_prompt,
     get_quality_guard_negative_prompt,
     set_default_negative_prompt,
@@ -74,8 +76,10 @@ __license__ = "MIT"
 __all__ = [
     "__version__",
     "generate",
+    "generate_stream",
     "async_generate",
     "GenerationResult",
+    "ProgressInfo",
     "download_model",
     "resolve_model_path",
     "register_model",

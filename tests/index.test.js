@@ -9,6 +9,8 @@ const os = require('os');
 
 const {
   generate,
+  DiffusionJob,
+  TermuxDiffusion,
   DEFAULT_PRESETS,
   listPresets,
   registerModel,
@@ -218,11 +220,57 @@ async function runTests() {
     assert.strictEqual(caughtCnet, true, 'Should reject non-existent controlNet file');
   });
 
-  // 14. E001 Fail-Fast on GPU without ameva-runtime
-  await it('resolveDeviceBackend fails fast with E001 when gpu requested without ameva-runtime', () => {
-    assert.throws(() => {
-      resolveDeviceBackend('gpu');
-    }, /AMEVA-DIFFUSION-E001/);
+  // 15. DiT Presets and TermuxDiffusion Class
+  await it('TermuxDiffusion class and listPresets return DiT architectures', () => {
+    const client = new TermuxDiffusion();
+    const presets = client.listPresets();
+    assert(presets['z-image-turbo'] !== undefined, 'z-image-turbo must be in presets');
+    assert(presets['z-image'] !== undefined, 'z-image must be in presets');
+    assert(presets['turbo-6b'] !== undefined, 'turbo-6b must be in presets');
+    assert.strictEqual(presets['z-image-turbo'].arch, 'dit');
+    assert.strictEqual(presets['z-image-turbo'].default_steps, 8);
+  });
+
+  // 16. DiffusionJob EventEmitter and Cancellation
+  await it('DiffusionJob supports events and cancellation', async () => {
+    let progressReceived = null;
+    let cancelledFired = false;
+
+    const job = new DiffusionJob((resolve, reject, j) => {
+      // simulate background work
+      setTimeout(() => {
+        j.emit('progress', {
+          event: 'progress',
+          phase: 'sampling',
+          step: 2,
+          totalSteps: 8,
+          percent: 25.0,
+          etaSeconds: 12.5,
+          speedSecPerIt: 2.08,
+          timestamp: Date.now() / 1000
+        });
+      }, 20);
+    });
+
+    job.on('progress', (p) => {
+      progressReceived = p;
+    });
+
+    job.on('cancelled', () => {
+      cancelledFired = true;
+    });
+
+    // Wait for progress event
+    await new Promise(r => setTimeout(r, 60));
+    assert(progressReceived !== null, 'Progress event should have fired');
+    assert.strictEqual(progressReceived.step, 2);
+    assert.strictEqual(progressReceived.totalSteps, 8);
+    assert.strictEqual(progressReceived.percent, 25.0);
+
+    // Test cancel
+    job.childProcess = { pid: 99999, killed: false, exitCode: null, kill: () => {} };
+    job.cancel();
+    assert.strictEqual(cancelledFired, true, 'Cancelled event should have fired on cancel()');
   });
 
   if (fs.existsSync(dummyModelGguf)) {

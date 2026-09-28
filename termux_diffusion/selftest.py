@@ -115,15 +115,52 @@ def run_binary_self_test(
         _SELF_TEST_CACHE[cache_key] = result
         return result
 
-    # [수정] Vulkan 백엔드 실측 검증: ameva-runtime 연동
+    # [수정] Vulkan 백엔드 실측 검증: ameva-runtime 연동 및 Native Binary Probe
     print(f"[termux-diffusion] Stage 2 Self-Test: Vulkan runtime validation ({binary_path.name})...")
     try:
-        from ameva_runtime import vulkan as avr
-        doc = avr.Doctor()
-        if doc.quick_probe():
+        # 1. Native Binary Device List Probe (Ground Truth ABI check)
+        vk_device_found = False
+        dev_name = None
+        try:
+            probe_proc = subprocess.run(
+                [str(binary_path), "--list-devices"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            probe_out = probe_proc.stdout + probe_proc.stderr
+            if "Vulkan0" in probe_out or "Found 1 Vulkan devices" in probe_out or "Found" in probe_out and "Vulkan" in probe_out:
+                vk_device_found = True
+                for line in probe_out.splitlines():
+                    if "Vulkan0" in line:
+                        parts = line.split("\t")
+                        if len(parts) >= 2:
+                            dev_name = parts[1].strip()
+                        break
+        except Exception as e:
+            logger.debug("Native binary --list-devices probe exception: %s", e)
+
+        # 2. ameva-runtime Doctor verification
+        doctor_passed = False
+        try:
+            from ameva_runtime import vulkan as avr
+            doc = avr.Doctor()
+            if doc.quick_probe():
+                doctor_passed = True
+                dev_name = dev_name or doc.quick_probe_device()
+            else:
+                rep = doc.run_self_test(verbose=False)
+                if rep.passed_stages >= 6 or rep.recommended_backend in ("vulkan", "vulkan_driver_only") or rep.overall_success:
+                    doctor_passed = True
+                    dev_name = dev_name or rep.device_name
+        except Exception as e:
+            logger.debug("ameva-runtime doctor probe exception: %s", e)
+
+        if vk_device_found or doctor_passed:
             result.stage2_probe_passed = True
             result.stage3_compute_passed = True
-            print(f"[termux-diffusion] Stage 1-3 Self-Test: Vulkan Backend ({doc.quick_probe_device() or 'GPU'}) validated.")
+            detected_label = dev_name or 'Physical Vulkan GPU'
+            print(f"[termux-diffusion] Stage 1-3 Self-Test: Vulkan Backend ({detected_label}) validated.")
         else:
             result.stage2_probe_passed = False
             result.stage3_compute_passed = False

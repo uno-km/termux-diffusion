@@ -1,0 +1,2 @@
+recursive-include termux_diffusion/data *
+include termux_diffusion/py.typed

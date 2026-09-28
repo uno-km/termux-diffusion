@@ -1,0 +1,10 @@
+{
+  "prompt": "A cinematic photo of a neon cybernetic tiger walking in Seoul street at night",
+  "hash": "108a7149c4e70550",
+  "text_encoder": "Qwen3-4B-Instruct-2507-Q2_K.gguf",
+  "target_model": "z_image_turbo-Q2_K.gguf",
+  "created_at": "2026-09-28T09:15:00Z",
+  "verified_devices": ["SM-G991N", "SM-A356N"],
+  "status": "verified",
+  "version": "1.7.0"
+}

@@ -426,7 +426,30 @@ def provision_engine(
     os.replace(temp_bin, target_bin)
 
     print(f"[termux-diffusion] Engine provisioned successfully at: {target_bin}")
+    install_auxiliary_assets()
     return target_bin.resolve()
+
+
+def install_auxiliary_assets() -> None:
+    """Assetize and deploy pre-cached prompt embeddings and auxiliary models into user cache."""
+    cache_root = get_default_cache_dir()
+    prompt_cache_target = cache_root / "prompt_cache"
+    prompt_cache_target.mkdir(parents=True, exist_ok=True)
+
+    bundled_prompts = Path(__file__).parent / "data" / "prompt_cache"
+    if bundled_prompts.is_dir():
+        copied_count = 0
+        for asset in bundled_prompts.iterdir():
+            if asset.is_file():
+                dest = prompt_cache_target / asset.name
+                if not dest.exists():
+                    shutil.copy2(asset, dest)
+                    copied_count += 1
+                    logger.info("[termux-diffusion] Assetized prompt cache entry: %s", asset.name)
+        if copied_count > 0:
+            print(f"[termux-diffusion] Deployed {copied_count} bundled prompt cache asset(s).")
+
+    print(f"[termux-diffusion] Prompt cache assets initialized at: {prompt_cache_target}")
 
 
 # Re-export diagnostic utilities from .doctor for backward compatibility

@@ -1,6 +1,42 @@
 /**
- * TypeScript Type Definitions for termux-diffusion v1.1.0
+ * TypeScript Type Definitions for termux-diffusion v1.8.0
+ * Pure CPU & Mobile Vulkan GPU On-Device Stable Diffusion / DiT Runtime for Android Termux
  */
+
+import { EventEmitter } from 'events';
+
+export type ProgressPhase =
+  | 'init'
+  | 'loading_model'
+  | 'encoding_prompt'
+  | 'sampling'
+  | 'decoding_vae'
+  | 'complete'
+  | 'error';
+
+export interface ProgressEvent {
+  event: 'progress' | 'phase' | 'complete';
+  phase: ProgressPhase;
+  step: number;
+  totalSteps: number;
+  percent: number;
+  etaSeconds?: number | null;
+  speedSecPerIt?: number | null;
+  gpuBusy?: number | null;
+  rssMb?: number | null;
+  outputPath?: string | null;
+  elapsedSeconds?: number | null;
+  timestamp: number;
+}
+
+export interface DiffusionJob extends EventEmitter, PromiseLike<GenerationResult> {
+  on(event: 'progress', listener: (data: ProgressEvent) => void): this;
+  on(event: 'phase', listener: (phase: ProgressPhase) => void): this;
+  on(event: 'done', listener: (result: GenerationResult) => void): this;
+  on(event: 'error', listener: (err: Error) => void): this;
+  wait(): Promise<GenerationResult>;
+  cancel(): void;
+}
 
 export interface ModelPresetInfo {
   repo_id: string;
@@ -10,6 +46,11 @@ export interface ModelPresetInfo {
   size_mb: number;
   default_steps: number;
   default_cfg: number;
+  default_sampler?: string;
+  default_schedule?: string;
+  default_device?: string;
+  default_vae_tiling?: boolean;
+  is_dit?: boolean;
   sha256?: string | null;
 }
 
@@ -67,20 +108,52 @@ export interface MemorySafetyResult {
 
 export interface GenerateOptions {
   prompt: string;
-  model?: 'realistic' | 'speed' | 'sdxs' | 'turbo' | 'anime' | string;
+  model?: 'realistic' | 'speed' | 'sdxs' | 'turbo' | 'anime' | 'z-image-turbo' | 'z-image' | 'turbo-6b' | string;
+  preset?: 'realistic' | 'speed' | 'sdxs' | 'turbo' | 'anime' | 'z-image-turbo' | 'z-image' | 'turbo-6b' | string;
   device?: 'cpu' | 'gpu' | 'opencl' | 'vulkan' | 'auto' | string;
   negativePrompt?: string;
   steps?: number;
   cfgScale?: number;
+  guidance?: number;
   width?: number;
   height?: number;
   seed?: number;
   threads?: number;
   output?: string;
+  samplingMethod?: string;
+  schedule?: string;
+  vaeTiling?: boolean;
+  initImg?: string;
+  strength?: number;
+  loraDir?: string;
+  clipSkip?: number;
+  controlNet?: string;
+  controlImage?: string;
+  controlStrength?: number;
+  taesd?: string | boolean;
+  llm?: string;
+  diffusionModel?: string;
+  vae?: string;
+  clipL?: string;
+  diffusionFa?: boolean;
+  offloadToCpu?: boolean;
+  clipOnCpu?: boolean;
+  vaeOnCpu?: boolean;
+  mmap?: boolean;
+  maxVram?: string;
+  streamLayers?: boolean;
+  paramsBackend?: string;
+  vaeFormat?: 'auto' | 'flux' | 'sd3' | 'flux2' | 'wan' | string;
+  strictVulkan?: boolean;
+  noCache?: boolean;
   exportGallery?: boolean;
+  wakeLock?: boolean;
   lowRamGuard?: boolean;
-  strictMemory?: boolean;
   autoProvision?: boolean;
+  progress?: boolean;
+  jsonProgress?: boolean;
+  progressFile?: string;
+  onProgress?: (event: ProgressEvent) => void;
   signal?: AbortSignal;
   timeout?: number;
 }
@@ -109,6 +182,12 @@ export interface RegisterModelOptions {
   sha256?: string;
 }
 
+export class TermuxDiffusion {
+  constructor(config?: Partial<GenerateOptions>);
+  generate(options: GenerateOptions | string): DiffusionJob;
+  listPresets(): Record<string, ModelPresetInfo>;
+}
+
 export const DEFAULT_PRESETS: Record<string, ModelPresetInfo>;
 
 export function setCacheDir(customPath: string): string;
@@ -120,9 +199,9 @@ export function listCachedModels(cacheDir?: string): CachedModelInfo[];
 export function clearCache(cacheDir?: string, modelName?: string): number;
 export function downloadModel(modelNameOrUrl: string, options?: { cacheDir?: string; force?: boolean }): Promise<string>;
 export function resolveModelPath(modelNameOrPath: string, cacheDir?: string): Promise<string>;
-export function locateSdCli(): string | null;
+export function locateSdCli(backend?: string): string | null;
 export function exportToAndroidGallery(sourcePath: string, destinationName?: string): string;
-export function generate(options: GenerateOptions | string): Promise<GenerationResult>;
+export function generate(options: GenerateOptions | string): DiffusionJob;
 export function detectHardwareProfile(): HardwareProfile;
 export function detectNpuCapabilities(): NPUProfile;
 export function resolveDeviceBackend(requestedDevice?: string): { effectiveDevice: string; nglLayers: number };

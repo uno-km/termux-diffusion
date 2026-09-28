@@ -104,9 +104,15 @@ def run_doctor() -> bool:
     print(f"   Active Compute Pipeline: {hw.recommended_backend.value.upper()} "
           f"(Offload Layers: {hw.recommended_ngl})")
 
-    # 9. Android 12+ Background Stability Guard (Phantom Process Killer)
+    # 9. Prompt Cache & Auxiliary Assets Status
+    from .platform import get_default_cache_dir
+    cache_dir = get_default_cache_dir() / "prompt_cache"
+    cache_count = len(list(cache_dir.glob("*"))) if cache_dir.is_dir() else 0
+    print(f"9. Auxiliary Assets & Prompt Cache: {cache_count} cached entries at {cache_dir} [OK]")
+
+    # 10. Android 12+ Background Stability Guard (Phantom Process Killer)
     if is_termux:
-        print("9. Android 12+ Background Guard:")
+        print("10. Android 12+ Background Guard:")
         print("   -> Tip: If generation crashes when Termux is in background, enable")
         print("          'Developer Options > Disable child process restrictions'")
         print("          or run: adb shell \"/system/bin/device_config put activity_manager max_phantom_processes 2147483647\"")

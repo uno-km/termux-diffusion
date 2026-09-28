@@ -9,10 +9,35 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { spawn, spawnSync } = require('child_process');
+const { EventEmitter } = require('events');
 const https = require('https');
 const crypto = require('crypto');
 
 const DEFAULT_PRESETS = {
+  'z-image-turbo': {
+    repo_id: 'mradermacher/z_image_turbo-GGUF',
+    filename: 'z_image_turbo-Q2_K.gguf',
+    alias: 'z_image_turbo-Q2_K.gguf',
+    description: 'Z-Image Turbo 6B DiT (Q2_K) - Cutting-edge 4-8 step fast Diffusion Transformer',
+    size_mb: 2410,
+    default_steps: 8,
+    default_cfg: 1.0,
+    default_sampler: 'euler',
+    default_device: 'vulkan',
+    default_vae_tiling: true,
+    is_dit: true,
+    arch: 'dit',
+    default_llm: 'unsloth/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q2_K.gguf',
+    default_vae: 'z_image_ae.safetensors',
+    default_taesd: 'taef1.safetensors',
+    default_vae_format: 'flux'
+  },
+  'z-image': {
+    alias: 'z-image-turbo'
+  },
+  'turbo-6b': {
+    alias: 'z-image-turbo'
+  },
   realistic: {
     repo_id: 'second-state/Realistic_Vision_V6.0_B1-GGUF',
     filename: 'realisticVisionV60B1_v51HyperVAE-Q4_k.gguf',
@@ -1216,7 +1241,112 @@ function resolveShimPath() {
   return null;
 }
 
-async function generate(options) {
+function safeKillProcess(proc, timeoutMs = 2000) {
+  if (!proc || proc.killed || proc.exitCode !== null) return;
+  const pid = proc.pid;
+  if (!pid) return;
+  console.warn(`[termux-diffusion] Initiating child process termination (PID: ${pid})...`);
+
+  try {
+    // Step 1: Attempt graceful SIGTERM (to process group if POSIX)
+    if (process.platform !== 'win32') {
+      try {
+        process.kill(-pid, 'SIGTERM');
+      } catch (_) {
+        proc.kill('SIGTERM');
+      }
+    } else {
+      proc.kill('SIGTERM');
+    }
+
+    // Step 2: Escalate to SIGKILL if still running
+    const forceKillTimer = setTimeout(() => {
+      if (proc.exitCode === null && !proc.killed) {
+        console.warn(`[termux-diffusion] Child process (PID: ${pid}) did not exit within ${timeoutMs}ms, escalating to SIGKILL...`);
+        try {
+          if (process.platform !== 'win32') {
+            try {
+              process.kill(-pid, 'SIGKILL');
+            } catch (_) {
+              proc.kill('SIGKILL');
+            }
+          } else {
+            proc.kill('SIGKILL');
+          }
+        } catch (err) {
+          console.error(`[termux-diffusion] Error sending SIGKILL to PID ${pid}:`, err.message);
+        }
+      }
+    }, timeoutMs);
+
+    if (forceKillTimer.unref) forceKillTimer.unref();
+  } catch (err) {
+    console.error(`[termux-diffusion] Error during child process termination (PID: ${pid}):`, err.message);
+  }
+}
+
+class DiffusionJob extends EventEmitter {
+  constructor(executor) {
+    super();
+    this.childProcess = null;
+    // Default no-op error handler to prevent unhandled 'error' crash
+    // when user awaits the job without explicitly attaching a .on('error') listener.
+    this.on('error', () => {});
+    this._promise = new Promise((resolve, reject) => {
+      this._resolve = resolve;
+      this._reject = reject;
+      if (executor) {
+        try {
+          executor(resolve, reject, this);
+        } catch (err) {
+          reject(err);
+        }
+      }
+    });
+  }
+
+  then(onFulfilled, onRejected) {
+    return this._promise.then(onFulfilled, onRejected);
+  }
+
+  catch(onRejected) {
+    return this._promise.catch(onRejected);
+  }
+
+  finally(onFinally) {
+    return this._promise.finally(onFinally);
+  }
+
+  async wait() {
+    return await this._promise;
+  }
+
+  cancel() {
+    if (this.childProcess) {
+      safeKillProcess(this.childProcess);
+      this.emit('cancelled');
+    }
+  }
+}
+
+class TermuxDiffusion {
+  constructor(config = {}) {
+    this.config = config;
+  }
+
+  generate(options) {
+    const merged = Object.assign({}, this.config, typeof options === 'string' ? { prompt: options } : options);
+    return generate(merged);
+  }
+
+  listPresets() {
+    return listPresets();
+  }
+}
+
+const PROGRESS_RE = /(?:\|[=>\s#]+\|\s*)?(?:step\s*)?(\d+)\s*\/\s*(\d+)(?:\s*-\s*([\d\.]+)\s*(s\/it|it\/s))?/i;
+
+function generate(options) {
   if (typeof options === 'string') {
     options = { prompt: options };
   }
@@ -1228,8 +1358,23 @@ async function generate(options) {
     throw new Error('Inference aborted by signal');
   }
 
-  const prompt = options.prompt;
-  const sanitizedPrompt = String(prompt).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
+  return new DiffusionJob(async (resolve, reject, job) => {
+    let wakeLockAcquired = false;
+    const cleanupWakeLock = () => {
+      if (wakeLockAcquired && isAndroidTermux()) {
+        try {
+          spawnSync('termux-wake-unlock', [], { timeout: 1000 });
+        } catch (e) {
+          if (process.env.DEBUG) {
+            console.debug('[termux-diffusion] WakeLock release note:', e.message);
+          }
+        }
+      }
+    };
+
+    try {
+      const prompt = options.prompt;
+      const sanitizedPrompt = String(prompt).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
   const model = options.model || 'realistic';
   const rawDevice = options.device || 'cpu';
   const effectiveNegative = options.negativePrompt !== undefined
@@ -1404,7 +1549,6 @@ async function generate(options) {
   }
 
   const cmdArgs = [
-    '-m', modelPath,
     '-p', sanitizedPrompt,
     '-W', String(width),
     '-H', String(height),
@@ -1413,11 +1557,79 @@ async function generate(options) {
     '--cfg-scale', String(options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0)),
     '-o', outPath
   ];
+
+  const diffusionModelOpt = options.diffusionModel || options.diffusion_model;
+  if (diffusionModelOpt && String(diffusionModelOpt).trim()) {
+    cmdArgs.push('--diffusion-model', await resolveModelPath(String(diffusionModelOpt).trim()));
+  } else if (presets[model] && presets[model].is_dit) {
+    cmdArgs.push('--diffusion-model', modelPath);
+  } else {
+    cmdArgs.push('-m', modelPath);
+  }
+
+  const llmOpt = options.llm;
+  if (llmOpt && String(llmOpt).trim()) {
+    cmdArgs.push('--llm', await resolveModelPath(String(llmOpt).trim()));
+  } else if (presets[model] && presets[model].default_llm) {
+    cmdArgs.push('--llm', await resolveModelPath(presets[model].default_llm));
+  }
+
+  const vaeOpt = options.vae;
+  if (effectiveTaesdPath) {
+    cmdArgs.push('--taesd', effectiveTaesdPath);
+  } else if (presets[model] && presets[model].default_taesd && !vaeOpt) {
+    // If model preset has default_taesd and user didn't specify vae, try resolve taesd
+    try {
+      const autoTaesd = await resolveModelPath(presets[model].default_taesd);
+      if (fs.existsSync(autoTaesd)) {
+        cmdArgs.push('--taesd', autoTaesd);
+      }
+    } catch (_) {}
+  } else if (vaeOpt && String(vaeOpt).trim()) {
+    cmdArgs.push('--vae', await resolveModelPath(String(vaeOpt).trim()));
+  } else if (presets[model] && presets[model].default_vae) {
+    try {
+      const autoVae = await resolveModelPath(presets[model].default_vae);
+      if (fs.existsSync(autoVae)) {
+        cmdArgs.push('--vae', autoVae);
+      }
+    } catch (_) {}
+  }
+
+  const vaeFormat = options.vaeFormat || options.vae_format || (presets[model] ? presets[model].default_vae_format : null);
+  if (vaeFormat && String(vaeFormat).trim()) {
+    cmdArgs.push('--vae-format', String(vaeFormat).trim());
+  }
+
+  if (options.clipL || options.clip_l) {
+    cmdArgs.push('--clip_l', await resolveModelPath(String(options.clipL || options.clip_l).trim()));
+  }
+
+  if (options.offloadToCpu || options.offload_to_cpu) cmdArgs.push('--offload-to-cpu');
+  if (options.clipOnCpu || options.clip_on_cpu) cmdArgs.push('--clip-on-cpu');
+  if (options.vaeOnCpu || options.vae_on_cpu) cmdArgs.push('--vae-on-cpu');
+  if (options.mmap !== false) cmdArgs.push('--mmap');
+  if (options.diffusionFa || options.diffusion_fa) cmdArgs.push('--diffusion-fa');
+  if (options.guidance !== undefined && options.guidance !== null) cmdArgs.push('--guidance', String(options.guidance));
+
   if (effectiveNegative) {
     const sanitizedNeg = String(effectiveNegative).replace(/\x00/g, '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
     if (sanitizedNeg) cmdArgs.push('-n', sanitizedNeg);
   }
   if (seed >= 0) cmdArgs.push('--seed', String(seed));
+
+  const customBackend = options.backend;
+  if (customBackend && String(customBackend).trim()) {
+    cmdArgs.push('--backend', String(customBackend).trim());
+  } else if (effectiveDevice === 'vulkan' || effectiveDevice === 'gpu') {
+    const bClip = (options.clipOnCpu || options.clip_on_cpu) ? 'cpu' : 'vulkan0';
+    const bVae = (options.vaeOnCpu || options.vae_on_cpu) ? 'cpu' : 'vulkan0';
+    cmdArgs.push('--backend', `clip=${bClip},diffusion=vulkan0,vae=${bVae}`);
+  }
+
+  if (options.maxVram || options.max_vram) cmdArgs.push('--max-vram', String(options.maxVram || options.max_vram));
+  if (options.streamLayers || options.stream_layers) cmdArgs.push('--stream-layers');
+  if (options.paramsBackend || options.params_backend) cmdArgs.push('--params-backend', String(options.paramsBackend || options.params_backend));
 
   if (effectiveSampler) cmdArgs.push('--sampling-method', effectiveSampler);
   if (effectiveSchedule && effectiveSchedule !== 'default') cmdArgs.push('--schedule', effectiveSchedule);
@@ -1433,7 +1645,6 @@ async function generate(options) {
     if (effectiveCimgPath) cmdArgs.push('--control-image', effectiveCimgPath);
     cmdArgs.push('--control-strength', String(effectiveCstrength));
   }
-  if (effectiveTaesdPath) cmdArgs.push('--taesd', effectiveTaesdPath);
 
   const gpuArgs = getSdCliGpuArgs(effectiveDevice, nglLayers);
   cmdArgs.push(...gpuArgs);
@@ -1441,7 +1652,6 @@ async function generate(options) {
   console.log(`[Render] [termux-diffusion] Rendering with '${model}' (${steps} steps, ${threads} threads, backend: ${effectiveDevice})...`);
   const startTime = Date.now();
 
-  let wakeLockAcquired = false;
   if (isAndroidTermux()) {
     try {
       spawnSync('termux-wake-lock', [], { timeout: 1000 });
@@ -1453,187 +1663,189 @@ async function generate(options) {
     }
   }
 
-  function safeKillProcess(proc, timeoutMs = 2000) {
-    if (!proc || proc.killed || proc.exitCode !== null) return;
-    const pid = proc.pid;
-    if (!pid) return;
-    console.warn(`[termux-diffusion] Initiating child process termination (PID: ${pid})...`);
-
-    try {
-      // Step 1: Attempt graceful SIGTERM (to process group if POSIX)
-      if (process.platform !== 'win32') {
-        try {
-          process.kill(-pid, 'SIGTERM');
-        } catch (_) {
-          proc.kill('SIGTERM');
+  const env = Object.assign({}, process.env);
+    if (effectiveDevice === 'vulkan' || effectiveDevice === 'gpu') {
+      const shimPath = resolveShimPath();
+      if (shimPath) {
+        const curPreload = env.LD_PRELOAD ? env.LD_PRELOAD.trim() : '';
+        if (!curPreload.includes(shimPath)) {
+          env.LD_PRELOAD = curPreload ? `${shimPath}:${curPreload}` : shimPath;
         }
-      } else {
-        proc.kill('SIGTERM');
       }
-
-      // Step 2: Escalate to SIGKILL if still running
-      const forceKillTimer = setTimeout(() => {
-        if (proc.exitCode === null && !proc.killed) {
-          console.warn(`[termux-diffusion] Child process (PID: ${pid}) did not exit within ${timeoutMs}ms, escalating to SIGKILL...`);
-          try {
-            if (process.platform !== 'win32') {
-              try {
-                process.kill(-pid, 'SIGKILL');
-              } catch (_) {
-                proc.kill('SIGKILL');
-              }
-            } else {
-              proc.kill('SIGKILL');
-            }
-          } catch (err) {
-            console.error(`[termux-diffusion] Error sending SIGKILL to PID ${pid}:`, err.message);
-          }
-        }
-      }, timeoutMs);
-
-      if (forceKillTimer.unref) forceKillTimer.unref();
-    } catch (err) {
-      console.error(`[termux-diffusion] Error during child process termination (PID: ${pid}):`, err.message);
     }
-  }
 
-  try {
-    await new Promise((resolve, reject) => {
-      const env = Object.assign({}, process.env);
-      if (effectiveDevice === 'vulkan' || effectiveDevice === 'gpu') {
-        const shimPath = resolveShimPath();
-        if (shimPath) {
-          const curPreload = env.LD_PRELOAD ? env.LD_PRELOAD.trim() : '';
-          if (!curPreload.includes(shimPath)) {
-            env.LD_PRELOAD = curPreload ? `${shimPath}:${curPreload}` : shimPath;
-          }
-        }
-      }
+    const spawnOpts = { stdio: ['ignore', 'pipe', 'pipe'], env };
+    if (process.platform !== 'win32') spawnOpts.detached = true;
+    const proc = spawn(sdCli, cmdArgs, spawnOpts);
+    job.childProcess = proc;
+    let stderrBuffer = '';
 
-      const spawnOpts = { stdio: ['ignore', 'pipe', 'pipe'], env };
-      if (process.platform !== 'win32') spawnOpts.detached = true;
-      const proc = spawn(sdCli, cmdArgs, spawnOpts);
-      let stderrBuffer = '';
-
-      let onAbort = null;
-      if (options.signal) {
-        if (options.signal.aborted) {
-          safeKillProcess(proc);
-          return reject(new Error('Inference aborted by signal'));
-        }
-        onAbort = () => {
-          safeKillProcess(proc);
-          reject(new Error('Inference aborted by signal'));
-        };
-        options.signal.addEventListener('abort', onAbort, { once: true });
-      }
-
-      proc.stdout.on('data', (d) => {
-        const str = d.toString();
-        if (str.toLowerCase().includes('step') || str.includes('%')) {
-          process.stdout.write(`  [Step] ${str.trim()}\n`);
-        }
-      });
-
-      // Drain stderr stream continuously to prevent 64KB OS pipe buffer deadlock while capping memory buffer to 10KB
-      proc.stderr.on('data', (d) => {
-        const str = d.toString();
-        stderrBuffer += str;
-        if (stderrBuffer.length > 10240) {
-          stderrBuffer = stderrBuffer.slice(-10240);
-        }
-        if (process.env.DEBUG) {
-          process.stderr.write(str);
-        }
-      });
-
-      // Cleanup child process on host process termination without calling process.exit()
-      const onHostExit = () => {
+    let onAbort = null;
+    if (options.signal) {
+      if (options.signal.aborted) {
         safeKillProcess(proc);
-      };
-      process.once('exit', onHostExit);
-
-      const timer = setTimeout(() => {
+        cleanupWakeLock();
+        const err = new Error('Inference aborted by signal');
+        job.emit('error', err);
+        return reject(err);
+      }
+      onAbort = () => {
         safeKillProcess(proc);
-        reject(new Error(`Inference timed out after ${timeout}ms`));
-      }, timeout);
-
-      proc.on('close', (code) => {
-        clearTimeout(timer);
-        process.removeListener('exit', onHostExit);
-        if (onAbort && options.signal) {
-          options.signal.removeEventListener('abort', onAbort);
-        }
-        if (code === 0 && fs.existsSync(outPath)) {
-          resolve();
-        } else {
-          const detail = stderrBuffer.trim() ? `\nDetails: ${stderrBuffer.trim().slice(-500)}` : '';
-          reject(new Error(`Engine failed with exit code ${code}.${detail}`));
-        }
-      });
-
-      proc.on('error', (err) => {
-        clearTimeout(timer);
-        process.removeListener('exit', onHostExit);
-        if (onAbort && options.signal) {
-          options.signal.removeEventListener('abort', onAbort);
-        }
+        cleanupWakeLock();
+        const err = new Error('Inference aborted by signal');
+        job.emit('error', err);
         reject(err);
-      });
-    });
-  } finally {
-    // Release WakeLock safely
-    if (wakeLockAcquired && isAndroidTermux()) {
-      try {
-        spawnSync('termux-wake-unlock', [], { timeout: 1000 });
-      } catch (e) {
-        if (process.env.DEBUG) {
-          console.debug('[termux-diffusion] WakeLock release note:', e.message);
+      };
+      options.signal.addEventListener('abort', onAbort, { once: true });
+    }
+
+    let stdoutRemainder = '';
+    proc.stdout.on('data', (d) => {
+      const str = stdoutRemainder + d.toString();
+      const segments = str.split(/[\r\n]+/);
+      stdoutRemainder = segments.pop();
+
+      for (const seg of segments) {
+        const cleaned = seg.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '').trim();
+        if (!cleaned) continue;
+
+        const m = cleaned.match(PROGRESS_RE);
+        if (m) {
+          const curStep = parseInt(m[1], 10);
+          const totSteps = parseInt(m[2], 10);
+          const speedVal = m[3] ? parseFloat(m[3]) : null;
+          const unit = m[4];
+          let speedSec = null;
+          if (unit === 's/it') speedSec = speedVal;
+          else if (unit === 'it/s' && speedVal > 0) speedSec = 1.0 / speedVal;
+          const etaSec = speedSec != null ? Math.round((totSteps - curStep) * speedSec * 10) / 10 : null;
+          const pct = totSteps > 0 ? Math.round((curStep / totSteps) * 1000) / 10 : 0.0;
+
+          const progressEvt = {
+            event: 'progress',
+            phase: 'sampling',
+            step: curStep,
+            totalSteps: totSteps,
+            percent: pct,
+            etaSeconds: etaSec,
+            speedSecPerIt: speedSec,
+            timestamp: Date.now() / 1000
+          };
+          job.emit('progress', progressEvt);
+          if (typeof options.onProgress === 'function') {
+            try { options.onProgress(progressEvt); } catch (_) {}
+          }
+        } else {
+          if (cleaned.toLowerCase().includes('step') || cleaned.includes('%')) {
+            process.stdout.write(`  [Step] ${cleaned}\n`);
+          }
         }
       }
-    }
-  }
+    });
 
-  const elapsedSec = (Date.now() - startTime) / 1000;
-  let galleryPath = null;
-  if (options.exportGallery !== false) {
-    try {
-      galleryPath = exportToAndroidGallery(outPath);
-    } catch (e) {
-      console.warn('[termux-diffusion] Gallery export note:', e.message);
-    }
-  }
+    // Drain stderr stream continuously to prevent 64KB OS pipe buffer deadlock while capping memory buffer to 10KB
+    proc.stderr.on('data', (d) => {
+      const str = d.toString();
+      stderrBuffer += str;
+      if (stderrBuffer.length > 10240) {
+        stderrBuffer = stderrBuffer.slice(-10240);
+      }
+      if (process.env.DEBUG) {
+        process.stderr.write(str);
+      }
+    });
 
-  console.log(`[Done] [termux-diffusion] Image generated in ${elapsedSec.toFixed(1)}s -> ${outPath}`);
-  if (galleryPath) {
-    console.log(`[Gallery] [Samsung Gallery] Synchronized to: ${galleryPath}`);
-  }
+    // Cleanup child process on host process termination without calling process.exit()
+    const onHostExit = () => {
+      safeKillProcess(proc);
+      cleanupWakeLock();
+    };
+    process.once('exit', onHostExit);
 
-  return {
-    path: outPath,
-    galleryPath: galleryPath,
-    prompt: prompt,
-    model: model,
-    device: effectiveDevice,
-    steps: steps,
-    cfgScale: options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0),
-    elapsedSec: elapsedSec,
-    samplingMethod: effectiveSampler,
-    schedule: effectiveSchedule,
-    vaeTiling: !!vaeTiling,
-    initImg: effectiveInitPath,
-    strength: effectiveStrength,
-    loraDir: effectiveLoraPath,
-    clipSkip: effectiveClipSkip,
-    controlNet: effectiveCnetPath,
-    controlImage: effectiveCimgPath,
-    controlStrength: effectiveCstrength,
-    taesd: effectiveTaesdPath
-  };
+    const timer = setTimeout(() => {
+      safeKillProcess(proc);
+      cleanupWakeLock();
+      const err = new Error(`Inference timed out after ${timeout}ms`);
+      job.emit('error', err);
+      reject(err);
+    }, timeout);
+
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      cleanupWakeLock();
+      process.removeListener('exit', onHostExit);
+      if (onAbort && options.signal) {
+        options.signal.removeEventListener('abort', onAbort);
+      }
+      if (code === 0 && fs.existsSync(outPath)) {
+        const elapsedSec = (Date.now() - startTime) / 1000;
+        let galleryPath = null;
+        if (options.exportGallery !== false) {
+          try {
+            galleryPath = exportToAndroidGallery(outPath);
+          } catch (e) {
+            console.warn('[termux-diffusion] Gallery export note:', e.message);
+          }
+        }
+
+        console.log(`[Done] [termux-diffusion] Image generated in ${elapsedSec.toFixed(1)}s -> ${outPath}`);
+        if (galleryPath) {
+          console.log(`[Gallery] [Samsung Gallery] Synchronized to: ${galleryPath}`);
+        }
+
+        const result = {
+          path: outPath,
+          galleryPath: galleryPath,
+          prompt: prompt,
+          model: model,
+          device: effectiveDevice,
+          steps: steps,
+          cfgScale: options.cfgScale || (presets[model] ? presets[model].default_cfg : 4.0),
+          elapsedSec: elapsedSec,
+          samplingMethod: effectiveSampler,
+          schedule: effectiveSchedule,
+          vaeTiling: !!vaeTiling,
+          initImg: effectiveInitPath,
+          strength: effectiveStrength,
+          loraDir: effectiveLoraPath,
+          clipSkip: effectiveClipSkip,
+          controlNet: effectiveCnetPath,
+          controlImage: effectiveCimgPath,
+          controlStrength: effectiveCstrength,
+          taesd: effectiveTaesdPath
+        };
+        job.emit('done', result);
+        resolve(result);
+      } else {
+        const detail = stderrBuffer.trim() ? `\nDetails: ${stderrBuffer.trim().slice(-500)}` : '';
+        const err = new Error(`Engine failed with exit code ${code}.${detail}`);
+        job.emit('error', err);
+        reject(err);
+      }
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      cleanupWakeLock();
+      process.removeListener('exit', onHostExit);
+      if (onAbort && options.signal) {
+        options.signal.removeEventListener('abort', onAbort);
+      }
+      job.emit('error', err);
+      reject(err);
+    });
+  } catch (err) {
+    cleanupWakeLock();
+    job.emit('error', err);
+    reject(err);
+  }
+});
 }
 
 module.exports = {
   generate,
+  DiffusionJob,
+  TermuxDiffusion,
   downloadModel,
   resolveModelPath,
   registerModel,

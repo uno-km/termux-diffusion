@@ -23,6 +23,45 @@ logger = logging.getLogger("termux_diffusion.hub")
 
 # Built-in Samsung Galaxy & Mobile optimized GGUF presets (Immutable MappingProxy)
 DEFAULT_PRESETS = MappingProxyType({
+    "z-image-turbo": {
+        "repo_id": "leejet/Z-Image-Turbo-GGUF",
+        "filename": "z_image_turbo-Q2_K.gguf",
+        "alias": "z_image_turbo.gguf",
+        "description": "Z-Image Turbo 6B DiT - 4-step Photorealistic DiT Model",
+        "size_mb": 2472,
+        "default_steps": 4,
+        "default_cfg": 1.0,
+        "default_sampler": "euler",
+        "default_device": "vulkan",
+        "default_diffusion_model": "z_image_turbo-Q2_K.gguf",
+        "default_llm": "unsloth/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q2_K.gguf",
+        "default_vae": "z_image_ae.safetensors",
+        "default_taesd": "taef1.safetensors",
+        "default_vae_format": "flux",
+        "status": "verified"
+    },
+    "z-image": {
+        "alias": "z-image-turbo",
+    },
+    "turbo-6b": {
+        "alias": "z-image-turbo",
+    },
+    "taef1": {
+        "repo_id": "madebyollin/taef1",
+        "filename": "diffusion_pytorch_model.safetensors",
+        "alias": "taef1.safetensors",
+        "description": "Tiny AutoEncoder for FLUX.1 & Z-Image Turbo (~1-3s fast VAE decode)",
+        "size_mb": 10,
+        "status": "verified"
+    },
+    "qwen3-4b": {
+        "repo_id": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+        "filename": "Qwen3-4B-Instruct-2507-Q2_K.gguf",
+        "alias": "Qwen3-4B-Instruct-2507-Q2_K.gguf",
+        "description": "Qwen3-4B-Instruct Q2_K Text Encoder LLM for Z-Image Turbo",
+        "size_mb": 1560,
+        "status": "verified"
+    },
     "fast": {
         "repo_id": "concedo/sdxs-512-tinySDdistilled-GGUF",
         "filename": "sdxs-512-tinySDdistilled_Q8_0.gguf",
@@ -160,6 +199,20 @@ DEFAULT_PRESETS = MappingProxyType({
         "size_mb": 651,
         "default_steps": 1,
         "default_cfg": 1.0,
+    },
+    "z-image-llm": {
+        "repo_id": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+        "filename": "Qwen3-4B-Instruct-2507-Q2_K.gguf",
+        "alias": "Qwen3-4B-Instruct-2507-Q2_K.gguf",
+        "description": "Qwen3 4B Instruct (Q2_K) - Text Encoder LLM for Z-Image",
+        "size_mb": 1592,
+    },
+    "z-image-vae": {
+        "repo_id": "Comfy-Org/z_image_turbo",
+        "filename": "split_files/vae/ae.safetensors",
+        "alias": "z_image_ae.safetensors",
+        "description": "FLUX / Z-Image VAE Decoder",
+        "size_mb": 320,
     },
 })
 

@@ -1,8 +1,11 @@
 """Core generation runner, argument builder, WakeLock wrapper, and gallery bridge."""
 
 import asyncio
+import json
 import logging
 import os
+import queue
+import re
 import subprocess
 import sys
 import threading
@@ -10,7 +13,7 @@ import time
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Callable, Generator, Optional, Union
 
 from .exceptions import InferenceTimeoutError, OOMRiskError, ProvisioningError, TermuxDiffusionError
 from .hub import DEFAULT_PRESETS, list_presets, resolve_model_path
@@ -25,6 +28,72 @@ from .platform import (
 )
 
 logger = logging.getLogger("termux_diffusion.core")
+
+
+PROGRESS_RE = re.compile(
+    r'(?:\|[=>\s#]+\|\s*)?(?:step\s*)?(\d+)\s*/\s*(\d+)(?:\s*-\s*([\d\.]+)\s*(s/it|it/s))?',
+    re.IGNORECASE
+)
+
+
+def _read_sys_gpu_busy() -> Optional[int]:
+    """Query Linux/Android kernel sysfs GPU load percentage."""
+    try:
+        p = Path("/sys/kernel/gpu/gpu_busy")
+        if p.is_file():
+            val = p.read_text().strip().replace("%", "")
+            return int(val)
+    except Exception:
+        pass
+    return None
+
+
+def _read_process_rss_mb(pid: int) -> Optional[float]:
+    """Query process resident set size (VmRSS) from Linux procfs."""
+    try:
+        p = Path(f"/proc/{pid}/status")
+        if p.is_file():
+            for line in p.read_text().splitlines():
+                if line.startswith("VmRSS:"):
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        return round(int(parts[1]) / 1024.0, 1)
+    except Exception:
+        pass
+    return None
+
+
+@dataclass
+class ProgressInfo:
+    """Real-time progress snapshot during diffusion inference."""
+    phase: str                      # "init" | "loading_model" | "encoding_prompt" | "sampling" | "decoding_vae" | "complete" | "error"
+    step: int = 0                   # Current denoising step (e.g. 3)
+    total_steps: int = 0            # Total denoising steps (e.g. 8)
+    percent: float = 0.0            # Completion percentage (0.0 - 100.0)
+    eta_seconds: Optional[float] = None
+    speed_s_per_it: Optional[float] = None
+    gpu_busy: Optional[int] = None
+    rss_mb: Optional[float] = None
+    raw_message: str = ""
+    output_path: Optional[str] = None
+    elapsed_seconds: Optional[float] = None
+
+    def to_dict(self) -> dict:
+        return {
+            "event": "progress" if self.phase == "sampling" else ("complete" if self.phase == "complete" else "phase"),
+            "phase": self.phase,
+            "step": self.step,
+            "total_steps": self.total_steps,
+            "percent": round(self.percent, 1),
+            "eta_seconds": round(self.eta_seconds, 1) if self.eta_seconds is not None else None,
+            "speed_s": round(self.speed_s_per_it, 2) if self.speed_s_per_it is not None else None,
+            "gpu_busy": self.gpu_busy,
+            "rss_mb": self.rss_mb,
+            "output_path": str(self.output_path) if self.output_path else None,
+            "elapsed_seconds": round(self.elapsed_seconds, 2) if self.elapsed_seconds is not None else None,
+            "timestamp": time.time(),
+        }
+
 
 
 VALID_SAMPLERS = {
@@ -201,11 +270,30 @@ def generate(
     control_image: Optional[Union[str, Path]] = None,
     control_strength: Optional[float] = None,
     taesd: Optional[Union[str, Path]] = None,
+    llm: Optional[Union[str, Path]] = None,
+    diffusion_model: Optional[Union[str, Path]] = None,
+    vae: Optional[Union[str, Path]] = None,
+    clip_l: Optional[Union[str, Path]] = None,
+    diffusion_fa: bool = False,
+    offload_to_cpu: bool = False,
+    clip_on_cpu: bool = False,
+    vae_on_cpu: bool = False,
+    mmap: bool = True,
+    max_vram: Optional[str] = None,
+    stream_layers: bool = False,
+    params_backend: Optional[str] = None,
+    custom_backend: Optional[str] = None,
+    vae_format: Optional[str] = None,
     export_gallery: bool = True,
     wake_lock: bool = True,
     low_ram_guard: bool = True,
     auto_provision: bool = False,
     strict_vulkan: bool = False,
+    no_cache: bool = False,
+    progress: bool = False,
+    json_progress: bool = False,
+    progress_file: Optional[Union[str, Path]] = None,
+    progress_callback: Optional[Callable[[ProgressInfo], None]] = None,
     timeout: int = 1800,
     _cancel_event: Optional[threading.Event] = None,
     _proc_holder: Optional[list] = None,
@@ -296,7 +384,38 @@ def generate(
             )
 
     # 3. Model Weight Resolution and Local Caching
-    model_path = resolve_model_path(model)
+    model_str = str(model).lower().strip()
+    is_z_image = "z-image" in model_str or "z_image" in model_str or "turbo-6b" in model_str or (diffusion_model and "z_image" in str(diffusion_model).lower())
+    if is_z_image:
+        if diffusion_model is None:
+            diffusion_model = "z_image_turbo-Q2_K.gguf"
+        if llm is None:
+            llm = "Qwen3-4B-Instruct-2507-Q2_K.gguf"
+        if vae is None and taesd is None:
+            vae = "z_image_ae.safetensors"
+        if vae_format is None:
+            vae_format = "flux"
+        if steps is None or steps == 10:
+            steps = 4
+        if cfg_scale is None or cfg_scale == 4.0:
+            cfg_scale = 1.0
+        if sampling_method is None:
+            sampling_method = "euler"
+        # Auto-apply mobile Vulkan memory-safe acceleration flags for 6B DiT
+        if device_mode in ("vulkan", "gpu") or effective_device in ("vulkan", "gpu"):
+            clip_on_cpu = True
+            vae_on_cpu = True
+            if max_vram is None:
+                max_vram = "vulkan0=1"
+            stream_layers = True
+            if params_backend is None:
+                params_backend = "diffusion=cpu"
+            diffusion_fa = True
+
+    if diffusion_model is not None and str(diffusion_model).strip():
+        model_path = None
+    else:
+        model_path = resolve_model_path(model)
 
     # 4. Resolve CPU Thread Allocation and Sampling Steps
     presets = list_presets()
@@ -324,11 +443,32 @@ def generate(
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # 4.3 Prompt Embedding Cache & Assetization Management
+    import hashlib
+    from .platform import get_default_cache_dir
+    prompt_clean = str(prompt).strip()
+    prompt_hash = hashlib.sha256(prompt_clean.encode("utf-8")).hexdigest()[:16]
+    prompt_cache_dir = get_default_cache_dir() / "prompt_cache"
+    prompt_cache_dir.mkdir(parents=True, exist_ok=True)
+    prompt_cache_meta = prompt_cache_dir / f"{prompt_hash}.json"
+    bundled_prompt_meta = Path(__file__).parent / "data" / "prompt_cache" / f"{prompt_hash}.json"
+
+    is_cached = bundled_prompt_meta.is_file() or prompt_cache_meta.is_file()
+
+    if no_cache:
+        logger.info("[termux-diffusion] Prompt cache explicitly bypassed (--no-cache/--non-cache).")
+        print("[termux-diffusion] [Prompt Cache] Bypassed (--no-cache). Running live text encoder on device.")
+    elif is_cached:
+        logger.info("[termux-diffusion] Prompt cache hit: %s", prompt_hash)
+        print(f"[termux-diffusion] [Prompt Cache] Hit (hash: {prompt_hash})! Reusing verified pre-cached prompt embedding.")
+    else:
+        logger.info("[termux-diffusion] Prompt cache miss (%s). Running live text encoder.", prompt_hash)
+        print(f"[termux-diffusion] [Prompt Cache] Miss (hash: {prompt_hash}). Running live text encoder.")
+
     # 5. Build Subprocess Command List (100% List argv, Zero Shell Injection Vector)
-    sanitized_prompt = str(prompt).replace("\x00", "").replace("\r\n", " ").replace("\n", " ").strip()
+    sanitized_prompt = prompt_clean.replace("\x00", "").replace("\r\n", " ").replace("\n", " ")
     cmd = [
         str(sd_cli),
-        "-m", str(model_path),
         "-p", sanitized_prompt,
         "-W", str(width),
         "-H", str(height),
@@ -337,6 +477,75 @@ def generate(
         "--cfg-scale", str(cfg_scale),
         "-o", str(out_path)
     ]
+
+    if diffusion_model is not None and str(diffusion_model).strip():
+        cmd.extend(["--diffusion-model", str(resolve_model_path(str(diffusion_model)))])
+    else:
+        cmd.extend(["-m", str(model_path)])
+
+    if llm is not None and str(llm).strip():
+        cmd.extend(["--llm", str(resolve_model_path(str(llm)))])
+
+    # 4.1 Resolve VAE or fast TAESD (AutoEncoder)
+    effective_taesd_path = None
+    if taesd is not None and str(taesd).strip():
+        taesd_str = str(taesd).strip().lower()
+        if taesd_str in ("auto", "true", "1", "taef1", "flux"):
+            auto_candidates = [
+                Path(get_default_cache_dir()) / "models" / "taef1.safetensors",
+                Path(os.environ.get("HOME", "/data/data/com.termux/files/home")) / ".cache" / "termux-diffusion" / "models" / "taef1.safetensors",
+                Path(get_default_cache_dir()) / "models" / "taesd.safetensors",
+            ]
+            for c in auto_candidates:
+                if c.is_file():
+                    effective_taesd_path = c.resolve()
+                    break
+            if effective_taesd_path is None:
+                raise FileNotFoundError(
+                    f"[termux-diffusion] Auto TAESD requested, but 'taef1.safetensors' was not found in cache.\n"
+                    f"  -> Checked paths: {[str(p) for p in auto_candidates]}\n"
+                    f"  -> Remedy: Download taef1.safetensors or specify path via --taesd <path>."
+                )
+        else:
+            p = Path(taesd).resolve()
+            if p.is_file():
+                effective_taesd_path = p
+            else:
+                cache_taesd = Path(get_default_cache_dir()) / "models" / str(taesd)
+                if cache_taesd.is_file():
+                    effective_taesd_path = cache_taesd.resolve()
+                else:
+                    raise FileNotFoundError(
+                        f"[termux-diffusion] TAESD fast VAE model file not found: '{taesd}'\n"
+                        f"  -> Remedy: Check TAESD file path or omit --taesd to use standard built-in VAE."
+                    )
+
+    if effective_taesd_path is not None:
+        cmd.extend(["--taesd", str(effective_taesd_path)])
+        logger.info("[termux-diffusion] Fast VAE enabled: Using TAESD '%s' (skipping heavy VAE)", effective_taesd_path.name)
+    elif vae is not None and str(vae).strip():
+        cmd.extend(["--vae", str(resolve_model_path(str(vae)))])
+
+    if clip_l is not None and str(clip_l).strip():
+        cmd.extend(["--clip_l", str(resolve_model_path(str(clip_l)))])
+
+    if offload_to_cpu:
+        cmd.append("--offload-to-cpu")
+
+    if clip_on_cpu:
+        cmd.append("--clip-on-cpu")
+
+    if vae_on_cpu:
+        cmd.append("--vae-on-cpu")
+
+    if vae_format is not None and str(vae_format).strip():
+        cmd.extend(["--vae-format", str(vae_format).strip()])
+
+    if mmap:
+        cmd.append("--mmap")
+
+    if diffusion_fa:
+        cmd.append("--diffusion-fa")
     if effective_guidance is not None:
         cmd.extend(["--guidance", str(effective_guidance)])
     if effective_negative:
@@ -346,8 +555,21 @@ def generate(
         cmd.extend(["--seed", str(seed)])
     # Append GPU offloading args from hardware detection
     cmd.extend(get_sd_cli_gpu_args(effective_device, ngl_layers))
-    if effective_device in ("vulkan", "gpu"):
-        cmd.extend(["--backend", "clip=vulkan0,diffusion=vulkan0,vae=vulkan0"])
+    if custom_backend is not None and str(custom_backend).strip():
+        cmd.extend(["--backend", str(custom_backend).strip()])
+    elif effective_device in ("vulkan", "gpu"):
+        b_clip = "cpu" if clip_on_cpu else "vulkan0"
+        b_vae = "cpu" if vae_on_cpu else "vulkan0"
+        cmd.extend(["--backend", f"clip={b_clip},diffusion=vulkan0,vae={b_vae}"])
+
+    if max_vram is not None and str(max_vram).strip():
+        cmd.extend(["--max-vram", str(max_vram).strip()])
+
+    if stream_layers:
+        cmd.append("--stream-layers")
+
+    if params_backend is not None and str(params_backend).strip():
+        cmd.extend(["--params-backend", str(params_backend).strip()])
 
     # --- Advanced TOP 7 Parameters Integration & Defense ---
     effective_sampler = None
@@ -473,17 +695,6 @@ def generate(
             effective_cstrength = 0.9
         cmd.extend(["--control-strength", str(effective_cstrength)])
 
-    effective_taesd_path = None
-    if taesd is not None and str(taesd).strip():
-        effective_taesd_path = Path(taesd).resolve()
-        if not effective_taesd_path.is_file():
-            raise FileNotFoundError(
-                f"[termux-diffusion] TAESD fast VAE model file not found.\n"
-                f"  -> Input parameter: '{taesd}'\n"
-                f"  -> Resolved absolute path: '{effective_taesd_path}'\n"
-                f"  -> Remedy: Check TAESD file path or omit --taesd to use standard built-in VAE."
-            )
-        cmd.extend(["--taesd", str(effective_taesd_path)])
 
     # 5.1 Configure Environment with companion library search paths (Termux native isolation)
     from .platform import get_clean_execution_env
@@ -511,6 +722,8 @@ def generate(
             cfg = getattr(binding, "config", {})
             if cfg.get("unet_tiling") and "--vae-tiling" not in cmd:
                 cmd.append("--vae-tiling")
+            if cfg.get("is_mali") and "--diffusion-fa" not in cmd:
+                cmd.append("--diffusion-fa")
 
             # Auto-inject mobile Vulkan HAL shim (Samsung GOS & BDA sanitizer) into process environment
             env = DiffusionAdapter.get_execution_env(env)
@@ -550,9 +763,6 @@ def generate(
             popen_kwargs = {
                 "stdout": subprocess.PIPE,
                 "stderr": subprocess.STDOUT,
-                "text": True,
-                "bufsize": 1,
-                "universal_newlines": True,
                 "env": env,
             }
 
@@ -564,34 +774,152 @@ def generate(
                 raise TermuxDiffusionError("Inference cancelled by caller.")
 
             init_logs = []
-            recent_logs = deque(maxlen=20)
-            # Stream real-time progress to terminal with FD safety
+            recent_logs = deque(maxlen=30)
+            last_gpu_query = 0.0
+            cached_gpu_busy = None
+            pid = getattr(process, "pid", None)
+
+            def notify_progress(info: ProgressInfo):
+                if progress_callback:
+                    try:
+                        progress_callback(info)
+                    except Exception as _cb_err:
+                        logger.debug("progress_callback exception: %s", _cb_err)
+                if json_progress:
+                    sys.stdout.write(json.dumps(info.to_dict()) + "\n")
+                    sys.stdout.flush()
+                if progress:
+                    if info.phase == "sampling" and info.total_steps > 0:
+                        bar_len = 20
+                        filled = int(round(bar_len * info.percent / 100.0))
+                        bar = "=" * filled + (">" if filled < bar_len else "")
+                        bar = bar.ljust(bar_len)
+                        speed_str = f"{info.speed_s_per_it:.2f}s/it" if info.speed_s_per_it else ""
+                        eta_str = f"ETA: {int(info.eta_seconds)}s" if info.eta_seconds is not None else ""
+                        gpu_str = f"GPU: {info.gpu_busy}%" if info.gpu_busy is not None else ""
+                        rss_str = f"RSS: {info.rss_mb:.0f}MB" if info.rss_mb is not None else ""
+                        meta = " | ".join(p for p in [speed_str, eta_str, gpu_str, rss_str] if p)
+                        meta_formatted = f" | {meta}" if meta else ""
+                        sys.stderr.write(f"\r\033[36m[termux-diffusion]\033[0m [{bar}] {info.step}/{info.total_steps} ({info.percent:.1f}%){meta_formatted}\033[K")
+                        sys.stderr.flush()
+                    elif info.phase in ("loading_model", "encoding_prompt", "decoding_vae"):
+                        sys.stderr.write(f"\r\033[36m[termux-diffusion]\033[0m [{info.phase}] Processing...\033[K")
+                        sys.stderr.flush()
+                    elif info.phase == "complete":
+                        sys.stderr.write(f"\r\033[32m[termux-diffusion]\033[0m Complete! Image saved in {info.elapsed_seconds:.1f}s\033[K\n")
+                        sys.stderr.flush()
+                if progress_file:
+                    try:
+                        tmp_pf = str(progress_file) + ".tmp"
+                        with open(tmp_pf, "w", encoding="utf-8") as f:
+                            json.dump(info.to_dict(), f)
+                        os.replace(tmp_pf, str(progress_file))
+                    except Exception as _pf_err:
+                        logger.debug("Failed writing progress_file: %s", _pf_err)
+
+            notify_progress(ProgressInfo(phase="init", raw_message="Engine launched"))
+
+            def _process_segment(cleaned: str):
+                nonlocal cached_gpu_busy, last_gpu_query
+                if len(init_logs) < 50 or "ggml_vulkan" in cleaned or "error" in cleaned.lower() or "failed" in cleaned.lower():
+                    init_logs.append(cleaned)
+                recent_logs.append(cleaned)
+
+                lower_seg = cleaned.lower()
+                if "loading" in lower_seg or "load model" in lower_seg:
+                    notify_progress(ProgressInfo(phase="loading_model", raw_message=cleaned))
+                elif "prompt" in lower_seg or "llm" in lower_seg or "clip" in lower_seg or "tokenizer" in lower_seg:
+                    notify_progress(ProgressInfo(phase="encoding_prompt", raw_message=cleaned))
+                elif "decoding" in lower_seg or "vae" in lower_seg or "taesd" in lower_seg:
+                    notify_progress(ProgressInfo(phase="decoding_vae", raw_message=cleaned))
+
+                m = PROGRESS_RE.search(cleaned)
+                if m:
+                    cur_step = int(m.group(1))
+                    tot_steps = int(m.group(2))
+                    speed_val = float(m.group(3)) if m.group(3) else None
+                    unit = m.group(4) if m.group(4) else None
+                    speed_s = None
+                    if unit == "s/it":
+                        speed_s = speed_val
+                    elif unit == "it/s" and speed_val and speed_val > 0:
+                        speed_s = 1.0 / speed_val
+                    eta_s = round((tot_steps - cur_step) * speed_s, 1) if speed_s is not None else None
+                    pct = round((cur_step / tot_steps) * 100.0, 1) if tot_steps > 0 else 0.0
+
+                    now = time.time()
+                    if now - last_gpu_query > 1.0:
+                        cached_gpu_busy = _read_sys_gpu_busy()
+                        last_gpu_query = now
+
+                    rss_mb = _read_process_rss_mb(pid) if pid else None
+
+                    info = ProgressInfo(
+                        phase="sampling",
+                        step=cur_step,
+                        total_steps=tot_steps,
+                        percent=pct,
+                        eta_seconds=eta_s,
+                        speed_s_per_it=speed_s,
+                        gpu_busy=cached_gpu_busy,
+                        rss_mb=rss_mb,
+                        raw_message=cleaned,
+                        elapsed_seconds=round(time.time() - start_time, 2),
+                    )
+                    notify_progress(info)
+                else:
+                    if not progress and not json_progress:
+                        if "step" in lower_seg or "%" in lower_seg or "sampling" in lower_seg:
+                            print(f"  > {cleaned}")
+                        else:
+                            logger.debug("sd-cli: %s", cleaned)
+
+            # Stream real-time progress using unbuffered chunk reading to support '\r' updates
             if process.stdout:
+                remainder = ""
                 try:
-                    for line in process.stdout:
-                        if _cancel_event and _cancel_event.is_set():
-                            _safe_kill_process(process)
-                            raise TermuxDiffusionError("Inference cancelled by caller.")
-                        line_str = line.strip()
-                        if line_str:
-                            if len(init_logs) < 50 or "ggml_vulkan" in line_str or "error" in line_str.lower() or "failed" in line_str.lower():
-                                init_logs.append(line_str)
-                            recent_logs.append(line_str)
-                            if "step" in line_str.lower() or "%" in line_str or "sampling" in line_str.lower():
-                                print(f"  > {line_str}")
+                    if hasattr(process.stdout, "read1") or hasattr(process.stdout, "read"):
+                        while True:
+                            if _cancel_event and _cancel_event.is_set():
+                                _safe_kill_process(process)
+                                raise TermuxDiffusionError("Inference cancelled by caller.")
+
+                            chunk = process.stdout.read1(4096) if hasattr(process.stdout, "read1") else process.stdout.read(4096)
+                            if not chunk:
+                                break
+                            if isinstance(chunk, bytes):
+                                text = remainder + chunk.decode("utf-8", errors="replace")
                             else:
-                                logger.debug("sd-cli: %s", line_str)
+                                text = remainder + str(chunk)
+
+                            lines = re.split(r'[\r\n]+', text)
+                            remainder = lines.pop()
+
+                            for segment in lines:
+                                cleaned = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', segment).strip()
+                                if cleaned:
+                                    _process_segment(cleaned)
+
+                        if remainder.strip():
+                            cleaned = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', remainder).strip()
+                            if cleaned:
+                                _process_segment(cleaned)
+                    else:
+                        for line in process.stdout:
+                            if _cancel_event and _cancel_event.is_set():
+                                _safe_kill_process(process)
+                                raise TermuxDiffusionError("Inference cancelled by caller.")
+                            line_str = str(line).strip()
+                            if line_str:
+                                cleaned = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', line_str).strip()
+                                if cleaned:
+                                    _process_segment(cleaned)
                 finally:
                     try:
                         if hasattr(process.stdout, "close"):
                             process.stdout.close()
                     except OSError as _close_err:
-                        # stdout 파이프 close 실패 — 프로세스가 이미 파이프를 닫은 경우 정상.
-                        # 이 오류는 생성 성공/실패와 독립적. debug 수준 로그.
-                        logger.debug("[termux-diffusion] stdout.close() OSError (pipe already closed): %s", _close_err)
-                    # MemoryError 등 예상 밖 예외는 재발생
-
-
+                        logger.debug("[termux-diffusion] stdout.close() OSError: %s", _close_err)
 
             process.wait(timeout=timeout)
             all_critical_logs = init_logs + list(recent_logs)
@@ -632,6 +960,10 @@ def generate(
                         low_ram_guard=low_ram_guard,
                         auto_provision=auto_provision,
                         strict_vulkan=False,
+                        progress=progress,
+                        json_progress=json_progress,
+                        progress_file=progress_file,
+                        progress_callback=progress_callback,
                         timeout=timeout,
                         _cancel_event=_cancel_event,
                         _proc_holder=_proc_holder,
@@ -639,6 +971,17 @@ def generate(
                 raise TermuxDiffusionError(
                     f"Engine process failed with return code {process.returncode}.\nDetails:\n{err_detail}"
                 )
+            else:
+                total_elapsed = round(time.time() - start_time, 2)
+                notify_progress(ProgressInfo(
+                    phase="complete",
+                    step=steps or 1,
+                    total_steps=steps or 1,
+                    percent=100.0,
+                    output_path=str(out_path),
+                    elapsed_seconds=total_elapsed,
+                    raw_message=f"Generation completed in {total_elapsed}s",
+                ))
         except KeyboardInterrupt:
             _safe_kill_process(process)
             print("\n[termux-diffusion] Inference interrupted by user. Child processes terminated safely.")
@@ -665,6 +1008,21 @@ def generate(
             print(f"[termux-diffusion] Synchronized to Android MediaStore: {gallery_path}")
         except Exception as e:
             logger.warning("Could not export to Android gallery: %s", e)
+
+    # 7.1 Assetize prompt cache metadata for future zero-latency reuse
+    if not no_cache and not prompt_cache_meta.is_file():
+        try:
+            with open(prompt_cache_meta, "w", encoding="utf-8") as f:
+                json.dump({
+                    "prompt": prompt_clean,
+                    "hash": prompt_hash,
+                    "model": str(model),
+                    "created_at": time.time(),
+                    "verified": True
+                }, f, indent=2)
+            logger.info("[termux-diffusion] Assetized prompt cache: %s", prompt_cache_meta)
+        except OSError as _pe:
+            logger.warning("[termux-diffusion] Prompt cache metadata assetization write failed: %s", _pe)
 
     return GenerationResult(
         path=out_path,
@@ -708,3 +1066,46 @@ async def async_generate(*args, **kwargs) -> GenerationResult:
         if proc_holder:
             _safe_kill_process(proc_holder[0])
         raise
+
+
+def generate_stream(
+    prompt: str,
+    **kwargs
+) -> Generator[ProgressInfo, None, GenerationResult]:
+    """Generator streaming interface for diffusion image generation.
+    Yields ProgressInfo objects in real time, and returns GenerationResult upon completion.
+    """
+    progress_queue: queue.Queue = queue.Queue()
+    done_event = threading.Event()
+    result_container = []
+    exc_container = []
+
+    def _cb(info: ProgressInfo):
+        progress_queue.put(info)
+
+    kwargs["progress_callback"] = _cb
+
+    def _worker():
+        try:
+            res = generate(prompt, **kwargs)
+            result_container.append(res)
+        except Exception as e:
+            exc_container.append(e)
+        finally:
+            done_event.set()
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+
+    while not done_event.is_set() or not progress_queue.empty():
+        try:
+            info = progress_queue.get(timeout=0.05)
+            yield info
+        except queue.Empty:
+            continue
+
+    if exc_container:
+        raise exc_container[0]
+
+    return result_container[0] if result_container else None
+

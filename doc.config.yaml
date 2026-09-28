@@ -82,7 +82,7 @@ benchmarks_body: "<div class=\"alert alert-tip\">\n  <span class=\"alert-title\"
   \ (Vulkan FP16)</td>\n      <td>Stable LPDDR5 Buffer (~1.9 GB)</td>\n      <td>100% (Zero-OOM, Full MediaStore Sync)</td>\n\
   \    </tr>\n  </tbody>\n</table>\n\n<div class=\"alert alert-note\">\n  <span class=\"alert-title\">\U0001F52C Academic\
   \ Whitepaper & Research Lab Reference</span>\n  <p>For complete theoretical formulations, shader dispatch analysis, and\
-  \ micro-kernel memory traces, visit the <a href=\"https://uno-km.vercel.app/labs/\" target=\"_blank\"><strong>AMEVA Edge\
+  \ micro-kernel memory traces, visit the <a href=\"https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32\" target=\"_blank\"><strong>AMEVA Edge\
   \ Systems Lab (AESL) Research Portal</strong></a> and view the official <a href=\"https://github.com/uno-km/termux-diffusion/blob/main/docs/research/s21_z_image_turbo_vulkan_research_report.md\"\
   \ target=\"_blank\"><strong>Galaxy S21 Z-Image Turbo Vulkan Research Report</strong></a>.</p>\n</div>\n"
 advanced_parameters_body: "<div class=\"alert alert-tip\">\n  <span class=\"alert-title\">\U0001F680 Advanced Parameter Control\
@@ -167,7 +167,7 @@ readme_content: "# Termux-Diffusion\n\n[![PyPI](https://img.shields.io/pypi/v/te
   \ noise.\n* **Zero-Crash Stability**: 100% completion achieved with zero Out-of-Memory (LMK) aborts and zero thermal throttling\
   \ termination.\n\n### \U0001F52C Academic Research & Lab Milestone Report\n* **Full Technical Research Report**: [Galaxy\
   \ S21 Z-Image Turbo Vulkan Research Report](docs/research/s21_z_image_turbo_vulkan_research_report.md)\n* **AMEVA Edge Systems\
-  \ Lab (AESL)**: [https://uno-km.vercel.app/labs/](https://uno-km.vercel.app/labs/)\n\n---\n\n## \U0001F4BB 3-Channel Practical\
+  \ Lab (AESL)**: [https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)\n\n---\n\n## \U0001F4BB 3-Channel Practical\
   \ User Manual: CLI, PIP, NPM\n\n`termux-diffusion` delivers 100% feature parity across **Terminal CLI**, **Python SDK (PyPI)**,\
   \ and **Node.js SDK (NPM)**.\n\n### 1. Installation\n\n* **Python SDK (PyPI)**:\n  ```bash\n  pip install termux-diffusion\n\
   \  termux-diffusion install\n  ```\n\n* **Node.js / TypeScript SDK & CLI (NPM)**:\n  ```bash\n  npm install -g termux-diffusion\n\
@@ -238,7 +238,7 @@ readme_pypi_content: "# Termux-Diffusion (Python)\n\n[![PyPI](https://img.shield
   \ Stability**: 100% completion achieved with zero Out-of-Memory (LMK) aborts and zero thermal throttling termination.\n\n\
   ### \U0001F52C Academic Research & Lab Report Reference\n* **Full Technical Research Report**: [Galaxy S21 Z-Image Turbo\
   \ Vulkan Research Report](https://github.com/uno-km/termux-diffusion/blob/main/docs/research/s21_z_image_turbo_vulkan_research_report.md)\n\
-  * **AMEVA Edge Systems Lab (AESL)**: [https://uno-km.vercel.app/labs/](https://uno-km.vercel.app/labs/)\n\n---\n\n## \U0001F4BB\
+  * **Academic Research Paper**: [AMEVA Labs | Sovereign On-Device AI Research, Newsletter & Discussion](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)\n\n---\n\n## \U0001F4BB\
   \ Python SDK Installation & Practical User Manual\n\n### 1. Installation & Provisioning\n```bash\npkg update && pkg install\
   \ -y python clang termux-api\npip install termux-diffusion\ntermux-diffusion install\n```\n\n### 2. Python API Practical\
   \ Code Example\n\n```python\nimport termux_diffusion as td\n\n# 1. Official Z-Image Turbo 6.0B DiT Synthesis via Python\
@@ -292,7 +292,7 @@ readme_npm_content: "# Termux-Diffusion (Node.js & TypeScript)\n\n[![npm](https:
   \ Stability**: 100% completion achieved with zero Out-of-Memory (LMK) aborts and zero thermal throttling termination.\n\n\
   ### \U0001F52C Academic Research & Lab Report Reference\n* **Full Technical Research Report**: [Galaxy S21 Z-Image Turbo\
   \ Vulkan Research Report](https://github.com/uno-km/termux-diffusion/blob/main/docs/research/s21_z_image_turbo_vulkan_research_report.md)\n\
-  * **AMEVA Edge Systems Lab (AESL)**: [https://uno-km.vercel.app/labs/](https://uno-km.vercel.app/labs/)\n\n---\n\n## \U0001F4BB\
+  * **Academic Research Paper**: [AMEVA Labs | Sovereign On-Device AI Research, Newsletter & Discussion](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)\n\n---\n\n## \U0001F4BB\
   \ Node.js / TypeScript SDK Installation & Practical User Manual\n\n### 1. Installation & Provisioning\n```bash\npkg update\
   \ && pkg install -y nodejs clang termux-api\nnpm install -g termux-diffusion\nnpx termux-diffusion install\n```\n\n### 2.\
   \ TypeScript / Node.js API Practical Code Example\n\n```typescript\nimport { generate, TermuxDiffusion } from \"termux-diffusion\"\

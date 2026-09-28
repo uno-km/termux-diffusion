@@ -44,7 +44,7 @@
 
 ### 🔬 Academic Research & Lab Report Reference
 * **Full Technical Research Report**: [Galaxy S21 Z-Image Turbo Vulkan Research Report](https://github.com/uno-km/termux-diffusion/blob/main/docs/research/s21_z_image_turbo_vulkan_research_report.md)
-* **AMEVA Edge Systems Lab (AESL)**: [https://uno-km.vercel.app/labs/](https://uno-km.vercel.app/labs/)
+* **Academic Research Paper**: [AMEVA Labs | Sovereign On-Device AI Research, Newsletter & Discussion](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)
 
 ---
 

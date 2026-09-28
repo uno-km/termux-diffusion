@@ -77,7 +77,7 @@
 
 ### 🔬 Academic Research & Lab Milestone Report
 * **Full Technical Research Report**: [Galaxy S21 Z-Image Turbo Vulkan Research Report](docs/research/s21_z_image_turbo_vulkan_research_report.md)
-* **AMEVA Edge Systems Lab (AESL)**: [https://uno-km.vercel.app/labs/](https://uno-km.vercel.app/labs/)
+* **AMEVA Edge Systems Lab (AESL)**: [https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)
 
 ---
 

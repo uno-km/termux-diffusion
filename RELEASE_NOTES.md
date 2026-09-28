@@ -1,4 +1,4 @@
-# Release Notes - termux-diffusion v1.8.0
+﻿# Release Notes - termux-diffusion v1.8.0
 
 **Release Tag**: `v1.8.0`  
 **Distribution Channels**: PyPI (`termux-diffusion`), NPM (`termux-diffusion`), GitHub Releases  
@@ -85,7 +85,7 @@ sd-cli-vulkan \
 
 ### 🔬 Academic Research & Whitepaper Reference
 The complete experimental findings, memory architecture trade-offs, and micro-kernel benchmark analysis are documented in:
-* **AMEVA Labs Research Portal**: [https://uno-km.vercel.app/labs/](https://uno-km.vercel.app/labs/)
+* **AMEVA Labs Research Portal**: [https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)
 * **Official Research Whitepaper**: [`docs/research/s21_z_image_turbo_vulkan_research_report.md`](docs/research/s21_z_image_turbo_vulkan_research_report.md)
 
 ---

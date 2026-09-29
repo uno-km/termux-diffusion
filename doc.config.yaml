@@ -1,7 +1,7 @@
-﻿name: Termux-Diffusion
+name: Termux-Diffusion
 package_name_pypi: termux-diffusion
 package_name_npm: termux-diffusion
-version: v1.8.0
+version: v1.8.1
 release_name: Official Z-Image Turbo (6.0B DiT) & Sovereign Acceleration Release
 license: Apache-2.0
 platform: Android ARM64 (Bionic libc / Vulkan / NEON)

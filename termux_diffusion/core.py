@@ -280,9 +280,14 @@ def get_model_file_size(model_name_or_path: Union[str, Path, None]) -> int:
 def resolve_vram_and_streaming_policy(
     user_max_vram: Optional[str],
     user_stream_layers: bool,
-    model_bytes: int
+    model_bytes: int,
+    llm_bytes: int = 0,
+    vae_bytes: int = 0,
 ) -> Tuple[Optional[str], bool, str]:
     """Resolves VRAM budget and streaming mode with explicit user override priority.
+
+    Computes total co-resident memory (DiT + LLM text encoder + VAE) to prevent
+    underestimating DRAM pressure on mobile devices with strict LMKD policies.
 
     Returns:
         (effective_max_vram, effective_stream_layers, reason_description)
@@ -296,23 +301,25 @@ def resolve_vram_and_streaming_policy(
 
     # 2. Query Deterministic Physical Memory from Linux Kernel
     mem_total_gb, mem_avail_gb = get_kernel_physical_memory_gb()
-    model_gb = model_bytes / (1024 ** 3)
-    required_safe_ram = model_gb + 1.2  # Model weights + VRAM buffers + OS Framework Safety Margin
+    total_co_resident_bytes = model_bytes + llm_bytes + vae_bytes
+    total_co_resident_gb = total_co_resident_bytes / (1024 ** 3)
+    required_safe_ram = total_co_resident_gb + 1.2  # Total weights + VRAM scratch buffers + OS Safety Margin
 
     # [Tier 1: Flagship Full In-VRAM Residency]
-    # Requires sufficient unpinned physical DRAM to hold entire model in non-swappable DMA-BUF
+    # Requires sufficient unpinned physical DRAM to hold all active models and graphics buffers
     if mem_avail_gb >= required_safe_ram:
         return None, False, f"Tier 1 Flagship Auto-Scale: Avail {mem_avail_gb}GB >= Safe {required_safe_ram:.1f}GB (RAM {mem_total_gb}GB) -> Full In-VRAM Residency"
 
-    # [Tier 2: Balanced Chunk Buffer]
-    # Slices execution into 1.5GB VRAM chunks, preventing DMA-BUF physical RAM exhaustion
-    elif mem_avail_gb >= 1.6 or mem_total_gb >= 5.4:
-        return "vulkan0=1.5", False, f"Tier 2 Balanced Auto-Scale: Avail {mem_avail_gb}GB (RAM {mem_total_gb}GB) -> 1.5GB Chunk VRAM Buffer"
+    # [Tier 2: Balanced Chunk Buffer (No Layer Streaming)]
+    # Eligible only if available physical DRAM can safely absorb co-resident weights + chunk scratch buffers (~4.5GB+)
+    elif mem_avail_gb >= 4.5 or (mem_avail_gb >= total_co_resident_gb * 0.75 and mem_total_gb >= 9.0):
+        return "vulkan0=1.5", False, f"Tier 2 Balanced Auto-Scale: Avail {mem_avail_gb}GB (RAM {mem_total_gb}GB, Co-res {total_co_resident_gb:.1f}GB) -> 1.5GB Chunk VRAM Buffer"
 
     # [Tier 3: Constrained Lifeboat Streaming]
-    # Maximum memory safety for devices under heavy memory pressure
+    # Strictly enforced on memory-constrained devices (e.g. S21 8GB with 3.1GB avail, A35 6GB with 2.0GB avail)
+    # to prevent Android lmkd SIGKILL when heavy LLM and DiT models are co-resident.
     else:
-        return "vulkan0=1", True, f"Tier 3 Constrained Auto-Scale: Avail {mem_avail_gb}GB (RAM {mem_total_gb}GB) -> 1MB Layer-Streaming Lifeboat"
+        return "vulkan0=1", True, f"Tier 3 Constrained Auto-Scale: Avail {mem_avail_gb}GB < Co-res Safe {required_safe_ram:.1f}GB (RAM {mem_total_gb}GB) -> 1MB Layer-Streaming Lifeboat"
 
 
 def generate(
@@ -481,12 +488,16 @@ def generate(
             vae_on_cpu = True
             diffusion_fa = True
 
-            # Autonomous Hardware-Aware VRAM Scaling
+            # Autonomous Hardware-Aware VRAM Scaling (Co-resident Multi-Component Aware)
             model_size = get_model_file_size(diffusion_model or model)
+            llm_size = get_model_file_size(llm) if llm else 0
+            vae_size = get_model_file_size(vae) if vae else (get_model_file_size(taesd) if taesd else 0)
             max_vram, stream_layers, policy_reason = resolve_vram_and_streaming_policy(
                 user_max_vram=max_vram,
                 user_stream_layers=stream_layers,
                 model_bytes=model_size,
+                llm_bytes=llm_size,
+                vae_bytes=vae_size,
             )
             if params_backend is None and stream_layers:
                 params_backend = "diffusion=cpu"

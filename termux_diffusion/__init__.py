@@ -9,6 +9,7 @@ from .core import (
     get_default_negative_prompt,
     get_quality_guard_negative_prompt,
     set_default_negative_prompt,
+    resolve_vram_and_streaming_policy,
 )
 from .exceptions import (
     AmevaTermuxError,
@@ -55,9 +56,11 @@ from .platform import (
 from .hardware import (
     ComputeBackend,
     HardwareProfile,
+    TermuxExecutionGuard,
     detect_hardware_profile,
     detect_hardware,
     format_hardware_report,
+    get_kernel_physical_memory_gb,
     resolve_device_backend,
     resolve_device,
 )
@@ -105,6 +108,9 @@ __all__ = [
     "get_galaxy_gallery_dir",
     "export_to_android_gallery",
     "TermuxWakeLock",
+    "TermuxExecutionGuard",
+    "get_kernel_physical_memory_gb",
+    "resolve_vram_and_streaming_policy",
     "HardwareProfile",
     "detect_hardware",
     "resolve_device",

@@ -76,8 +76,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     gen_parser.add_argument("--vae-on-cpu", action="store_true", default=False, help="Keep VAE decoder on CPU to preserve GPU VRAM")
     gen_parser.add_argument("--mmap", action="store_true", default=True, help="Memory-map model weights (default: True)")
     gen_parser.add_argument("--no-mmap", action="store_false", dest="mmap", help="Disable memory-mapping")
-    gen_parser.add_argument("--max-vram", type=str, default=None, help="Maximum VRAM budget (e.g. 'vulkan0=1' or '1') for graph-cut streaming")
-    gen_parser.add_argument("--stream-layers", action="store_true", default=False, help="Enable layer residency prefetch streaming on top of --max-vram")
+    gen_parser.add_argument("--max-vram", type=str, default=None, help="Maximum VRAM budget in GiB (e.g. '0' for full in-VRAM residency, '1' or 'vulkan0=1' for 1GiB lifeboat streaming, '1.5' for balanced chunk buffer). Auto-scales deterministically by kernel RAM tier if omitted.")
+    gen_parser.add_argument("--stream-layers", action="store_true", default=False, help="Enable layer residency prefetch streaming on top of --max-vram (Tier 3 fallback; disabled in Tier 1/2)")
     gen_parser.add_argument("--params-backend", type=str, default=None, help="Parameter backend assignment (e.g. 'diffusion=cpu' or 'disk')")
     gen_parser.add_argument("--runtime-backend", type=str, default=None, dest="runtime_backend", help="Custom runtime backend assignment (e.g. 'clip=cpu,vae=cpu,diffusion=vulkan0')")
     gen_parser.add_argument("--vae-format", type=str, default=None, help="VAE latent format override (auto, flux, sd3, flux2, wan)")
@@ -132,7 +132,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         width = args.width
         height = args.height
         sampler = args.sampler
-        device = args.device
+        device = args.device or "cpu"
         vae_tiling = args.vae_tiling
 
         if args.preset:
@@ -155,7 +155,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                     height = p_cfg["default_height"]
                 if sampler is None:
                     sampler = p_cfg.get("default_sampler")
-                if device == "cpu" and "default_device" in p_cfg:
+                if device in ("auto", "cpu") and "default_device" in p_cfg:
                     device = p_cfg["default_device"]
                 if not vae_tiling and p_cfg.get("default_vae_tiling"):
                     vae_tiling = True

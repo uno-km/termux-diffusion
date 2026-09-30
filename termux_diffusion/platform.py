@@ -404,38 +404,75 @@ class TermuxWakeLock:
         self._acquired = False
 
     def acquire(self) -> bool:
-        """Acquire CPU WakeLock via Termux API."""
+        """Acquire CPU WakeLock via Termux API or direct Android Service Intent."""
         if not self.enabled or not is_android_termux():
             return False
-        wake_lock_bin = shutil.which("termux-wake-lock")
-        if wake_lock_bin:
+
+        # Boost process niceness to highest priority
+        try:
+            os.nice(-20)
+            logger.info("[TermuxWakeLock] Process niceness boosted to highest priority (-20)")
+        except Exception:
+            try:
+                os.nice(-10)
+            except Exception:
+                pass
+
+        wake_lock_bin = shutil.which("termux-wake-lock") or "/data/data/com.termux/files/usr/bin/termux-wake-lock"
+        if os.path.exists(wake_lock_bin):
             try:
                 res = subprocess.run([wake_lock_bin], capture_output=True, timeout=3.0, check=False)
                 self._acquired = (res.returncode == 0)
                 if self._acquired:
-                    logger.debug("Acquired Termux CPU WakeLock.")
+                    logger.info("[TermuxWakeLock] Acquired Termux CPU WakeLock via binary.")
                 return self._acquired
             except Exception as e:
-                if not self.fail_silently:
-                    raise
-                logger.debug("Exception while acquiring WakeLock: %s", e)
+                logger.debug("Exception while acquiring WakeLock via binary: %s", e)
+
+        # Robust fallback: invoke TermuxService wake_lock intent directly
+        try:
+            res = subprocess.run(
+                ["am", "startservice", "--user", "0", "-a", "com.termux.service_wake_lock", "com.termux/.app.TermuxService"],
+                capture_output=True, timeout=3.0, check=False
+            )
+            self._acquired = (res.returncode == 0)
+            if self._acquired:
+                logger.info("[TermuxWakeLock] Acquired Termux CPU WakeLock via TermuxService Intent.")
+            return self._acquired
+        except Exception as e:
+            if not self.fail_silently:
+                raise
+            logger.debug("Exception while acquiring WakeLock via Intent: %s", e)
         return False
 
     def release(self) -> bool:
-        """Release CPU WakeLock."""
+        """Release CPU WakeLock via Termux API or direct Android Service Intent."""
         if self._acquired:
-            wake_unlock_bin = shutil.which("termux-wake-unlock")
-            if wake_unlock_bin:
+            wake_unlock_bin = shutil.which("termux-wake-unlock") or "/data/data/com.termux/files/usr/bin/termux-wake-unlock"
+            if os.path.exists(wake_unlock_bin):
                 try:
                     res = subprocess.run([wake_unlock_bin], capture_output=True, timeout=3.0, check=False)
                     self._acquired = False
                     if res.returncode == 0:
-                        logger.debug("Released Termux CPU WakeLock.")
+                        logger.info("[TermuxWakeLock] Released Termux CPU WakeLock via binary.")
                     return (res.returncode == 0)
                 except Exception as e:
-                    if not self.fail_silently:
-                        raise
-                    logger.debug("Exception while releasing WakeLock: %s", e)
+                    logger.debug("Exception while releasing WakeLock via binary: %s", e)
+
+            # Robust fallback: invoke TermuxService wake_unlock intent directly
+            try:
+                res = subprocess.run(
+                    ["am", "startservice", "--user", "0", "-a", "com.termux.service_wake_unlock", "com.termux/.app.TermuxService"],
+                    capture_output=True, timeout=3.0, check=False
+                )
+                self._acquired = False
+                if res.returncode == 0:
+                    logger.info("[TermuxWakeLock] Released Termux CPU WakeLock via TermuxService Intent.")
+                return (res.returncode == 0)
+            except Exception as e:
+                if not self.fail_silently:
+                    raise
+                logger.debug("Exception while releasing WakeLock via Intent: %s", e)
             self._acquired = False
         return False
 
@@ -445,3 +482,4 @@ class TermuxWakeLock:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.release()
+

@@ -9,6 +9,7 @@ import logging
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -335,8 +336,33 @@ def detect_hardware_profile() -> HardwareProfile:
     
     # Recommend optimal backend: Vulkan > OpenCL > CPU NEON
     if profile.vulkan_available:
-        profile.recommended_backend = ComputeBackend.VULKAN
-        profile.recommended_ngl = 99
+        # Check Qualcomm Adreno 600 series lacking VK_KHR_8bit_storage (e.g. Snapdragon 865 / SM8250 / Adreno 650)
+        is_adreno_650 = (
+            "650" in str(profile.gpu_name).lower()
+            or "sm8250" in str(profile.soc_name).lower()
+            or "kona" in str(profile.soc_name).lower()
+            or "snapdragon 865" in str(profile.soc_name).lower()
+        )
+        # Check integer dot product capability on ARM Mali GPUs (e.g. Exynos 1280 / Mali-G68 lacking VK_KHR_shader_integer_dot_product)
+        is_mali = (
+            "mali" in str(profile.gpu_name).lower()
+            or "s5e8825" in str(profile.soc_name).lower()
+            or "exynos 1280" in str(profile.soc_name).lower()
+        )
+        if is_adreno_650:
+            if profile.opencl_available:
+                profile.recommended_backend = ComputeBackend.OPENCL
+                profile.recommended_ngl = 32
+            else:
+                profile.recommended_backend = ComputeBackend.CPU_NEON
+                profile.recommended_ngl = 0
+        elif is_mali and not profile.has_dotprod:
+            # Under auto mode, Mali without int_dot routes to CPU NEON to avoid descriptor pool exhaustion / shader faults
+            profile.recommended_backend = ComputeBackend.CPU_NEON
+            profile.recommended_ngl = 0
+        else:
+            profile.recommended_backend = ComputeBackend.VULKAN
+            profile.recommended_ngl = 99
     elif profile.opencl_available:
         profile.recommended_backend = ComputeBackend.OPENCL
         profile.recommended_ngl = 32
@@ -417,10 +443,23 @@ def _resolve_ameva_runtime() -> Optional[Any]:
 
 
 def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
-    """Resolve the user's device= argument to an actual backend and ngl count."""
+    """Resolve the user's device= argument to an actual backend and ngl count.
+    
+    Zero-Silent-Fallback & Strict Option Rules:
+    - 'cpu': User explicitly requested CPU. 100% pure ARM NEON execution without touching GPU.
+    - 'vulkan' / 'gpu': Explicit GPU mode. Halts immediately with Fail-Fast if GPU driver missing.
+    - 'opencl': Explicit OpenCL mode. Halts immediately if OpenCL missing.
+    - 'auto': Evaluates hardware capabilities (int_dot on Mali, Vulkan driver).
+    """
     req = requested_device.lower().strip()
+
+    # Rule 1: Strict CPU Priority - If user explicitly passed CPU, NEVER touch GPU or fail-fast probes
+    if req == "cpu":
+        return "cpu", 0
+
     ameva_mod = _resolve_ameva_runtime()
 
+    # Rule 2: Explicit GPU / Vulkan Mode
     if req in ("vulkan", "gpu"):
         if ameva_mod is None:
             raise PlatformNotSupportedError(
@@ -477,9 +516,6 @@ def resolve_device_backend(requested_device: str) -> Tuple[str, int]:
             "but no accessible OpenCL driver (.so) was found on this system. "
             "Execution halted strictly without silent fallback to prevent unexpected CPU execution."
         )
-    
-    if req == "cpu":
-        return "cpu", 0
 
     raise ValueError(f"Unknown computing device '{requested_device}'. Supported: 'auto', 'cpu', 'vulkan', 'opencl'.")
 
@@ -573,8 +609,17 @@ class ProfileGatingManager:
                 return prof
         return None
 
-    def validate_execution(self, preset_or_model: str, device: str) -> Tuple[bool, Optional[str]]:
-        """Validate if the requested model/preset and device backend are safe for current hardware."""
+    def validate_execution(self, preset_or_model: str, device: str, user_explicit: bool = False) -> Tuple[bool, Optional[str]]:
+        """Validate if the requested model/preset and device backend are safe for current hardware.
+        
+        Strict User Policy:
+        If user explicitly requested GPU execution (user_explicit=True), bypass safety gating
+        and let the native engine execute directly, failing fast if the hardware driver crashes.
+        """
+        if user_explicit:
+            logger.info("Explicit GPU device requested by user. Bypassing safety gating check for '%s'.", preset_or_model)
+            return True, None
+
         device_clean = device.lower().strip()
         if device_clean not in ("vulkan", "gpu"):
             return True, None
@@ -679,4 +724,110 @@ def bind_hardware(engine: Any, requested_device: str = "auto", **kwargs) -> Opti
     if hasattr(engine, "device"):
         setattr(engine, "device", device)
     return engine
+
+
+def get_kernel_physical_memory_gb() -> Tuple[float, float]:
+    """Retrieve deterministic physical memory metrics (MemTotal, MemAvailable) in GiB.
+
+    Directly parses Linux kernel /proc/meminfo to avoid string heuristics.
+    Falls back to psutil or conservative defaults if /proc/meminfo is inaccessible.
+    """
+    mem_total_bytes = 0
+    mem_avail_bytes = 0
+    meminfo_path = Path("/proc/meminfo")
+
+    if meminfo_path.exists():
+        try:
+            with open(meminfo_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("MemTotal:"):
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            mem_total_bytes = int(parts[1]) * 1024
+                    elif line.startswith("MemAvailable:"):
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            mem_avail_bytes = int(parts[1]) * 1024
+                    if mem_total_bytes > 0 and mem_avail_bytes > 0:
+                        break
+        except Exception as e:
+            logger.warning("Failed to parse /proc/meminfo: %s", e)
+
+    if mem_total_bytes == 0:
+        try:
+            import psutil
+            vm = psutil.virtual_memory()
+            mem_total_bytes = vm.total
+            mem_avail_bytes = vm.available
+        except Exception:
+            # Conservative fallback
+            mem_total_bytes = 4 * (1024 ** 3)
+            mem_avail_bytes = 2 * (1024 ** 3)
+
+    return round(mem_total_bytes / (1024 ** 3), 2), round(mem_avail_bytes / (1024 ** 3), 2)
+
+
+class TermuxExecutionGuard:
+    """Execution context guard that manages Android partial wake locks and scheduling niceness.
+
+    Prevents CPU sleep / Doze throttling during model inference and restores state cleanly.
+    """
+    def __init__(self, enable_wake_lock: bool = True, boost_priority: bool = True):
+        self.is_termux_env = is_termux() or os.path.exists("/data/data/com.termux")
+        self.enable_wake_lock = enable_wake_lock
+        self.boost_priority = boost_priority
+        self.wake_lock_acquired = False
+
+    def __enter__(self):
+        if self.is_termux_env:
+            if self.boost_priority:
+                try:
+                    os.nice(-20)
+                    logger.info("[TermuxGuard] Process niceness boosted to highest priority (-20)")
+                except Exception:
+                    try:
+                        os.nice(-10)
+                    except Exception:
+                        pass
+
+            if self.enable_wake_lock:
+                wake_bin = shutil.which("termux-wake-lock") or "/data/data/com.termux/files/usr/bin/termux-wake-lock"
+                if os.path.exists(wake_bin):
+                    try:
+                        subprocess.run([wake_bin], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        self.wake_lock_acquired = True
+                        logger.info("[TermuxGuard] Android PARTIAL_WAKE_LOCK acquired via termux-wake-lock")
+                    except Exception as e:
+                        logger.warning("[TermuxGuard] Could not invoke termux-wake-lock: %s", e)
+                else:
+                    try:
+                        subprocess.run(
+                            ["am", "startservice", "--user", "0", "-a", "com.termux.service_wake_lock", "com.termux/.app.TermuxService"],
+                            check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                        )
+                        self.wake_lock_acquired = True
+                        logger.info("[TermuxGuard] Android PARTIAL_WAKE_LOCK acquired via TermuxService Intent")
+                    except Exception as e:
+                        logger.warning("[TermuxGuard] Could not start TermuxService wake_lock: %s", e)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.is_termux_env and self.wake_lock_acquired:
+            wake_unlock = shutil.which("termux-wake-unlock") or "/data/data/com.termux/files/usr/bin/termux-wake-unlock"
+            if os.path.exists(wake_unlock):
+                try:
+                    subprocess.run([wake_unlock], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    logger.info("[TermuxGuard] Android PARTIAL_WAKE_LOCK released cleanly")
+                except Exception:
+                    pass
+            else:
+                try:
+                    subprocess.run(
+                        ["am", "startservice", "--user", "0", "-a", "com.termux.service_wake_unlock", "com.termux/.app.TermuxService"],
+                        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    )
+                    logger.info("[TermuxGuard] Android PARTIAL_WAKE_LOCK released via TermuxService Intent")
+                except Exception:
+                    pass
+
 

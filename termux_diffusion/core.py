@@ -13,7 +13,7 @@ import time
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Generator, Optional, Union
+from typing import Callable, Generator, Optional, Tuple, Union
 
 from .exceptions import InferenceTimeoutError, OOMRiskError, ProvisioningError, TermuxDiffusionError
 from .hub import DEFAULT_PRESETS, list_presets, resolve_model_path
@@ -25,6 +25,10 @@ from .platform import (
     export_to_android_gallery,
     get_galaxy_gallery_dir,
     get_optimal_thread_count,
+)
+from .hardware import (
+    TermuxExecutionGuard,
+    get_kernel_physical_memory_gb,
 )
 
 logger = logging.getLogger("termux_diffusion.core")
@@ -246,6 +250,71 @@ def get_quality_guard_negative_prompt() -> str:
     return DEFAULT_QUALITY_GUARD_NEGATIVE_PROMPT
 
 
+def get_model_file_size(model_name_or_path: Union[str, Path, None]) -> int:
+    """Resolve file size in bytes for a model path or model preset."""
+    if not model_name_or_path:
+        return 0
+    raw_str = str(model_name_or_path).strip()
+    expanded = Path(os.path.expanduser(raw_str))
+    if expanded.is_file():
+        try:
+            return expanded.stat().st_size
+        except OSError:
+            pass
+    try:
+        resolved = resolve_model_path(raw_str)
+        if resolved and Path(resolved).is_file():
+            return Path(resolved).stat().st_size
+    except Exception:
+        pass
+    from .platform import get_default_cache_dir
+    cache_p = Path(get_default_cache_dir()) / "models" / expanded.name
+    if cache_p.is_file():
+        try:
+            return cache_p.stat().st_size
+        except OSError:
+            pass
+    return int(3.5 * (1024 ** 3))
+
+
+def resolve_vram_and_streaming_policy(
+    user_max_vram: Optional[str],
+    user_stream_layers: bool,
+    model_bytes: int
+) -> Tuple[Optional[str], bool, str]:
+    """Resolves VRAM budget and streaming mode with explicit user override priority.
+
+    Returns:
+        (effective_max_vram, effective_stream_layers, reason_description)
+    """
+    # 1. User Explicit Override Priority
+    if user_max_vram is not None or user_stream_layers:
+        val = str(user_max_vram).strip() if user_max_vram is not None else None
+        if val in ("0", "none", "disable", "unlimited", "vulkan0=0"):
+            return None, False, "User explicit: Full In-VRAM residency (graph splitting disabled)"
+        return val, user_stream_layers, f"User explicit override: max_vram={val}, stream={user_stream_layers}"
+
+    # 2. Query Deterministic Physical Memory from Linux Kernel
+    mem_total_gb, mem_avail_gb = get_kernel_physical_memory_gb()
+    model_gb = model_bytes / (1024 ** 3)
+    required_safe_ram = model_gb + 1.2  # Model weights + VRAM buffers + OS Framework Safety Margin
+
+    # [Tier 1: Flagship Full In-VRAM Residency]
+    # Requires sufficient unpinned physical DRAM to hold entire model in non-swappable DMA-BUF
+    if mem_avail_gb >= required_safe_ram:
+        return None, False, f"Tier 1 Flagship Auto-Scale: Avail {mem_avail_gb}GB >= Safe {required_safe_ram:.1f}GB (RAM {mem_total_gb}GB) -> Full In-VRAM Residency"
+
+    # [Tier 2: Balanced Chunk Buffer]
+    # Slices execution into 1.5GB VRAM chunks, preventing DMA-BUF physical RAM exhaustion
+    elif mem_avail_gb >= 1.6 or mem_total_gb >= 5.4:
+        return "vulkan0=1.5", False, f"Tier 2 Balanced Auto-Scale: Avail {mem_avail_gb}GB (RAM {mem_total_gb}GB) -> 1.5GB Chunk VRAM Buffer"
+
+    # [Tier 3: Constrained Lifeboat Streaming]
+    # Maximum memory safety for devices under heavy memory pressure
+    else:
+        return "vulkan0=1", True, f"Tier 3 Constrained Auto-Scale: Avail {mem_avail_gb}GB (RAM {mem_total_gb}GB) -> 1MB Layer-Streaming Lifeboat"
+
+
 def generate(
     prompt: str,
     model: str = "realistic",
@@ -345,7 +414,8 @@ def generate(
 
     # 0. Runtime Profile & Model Gating Validation (Zero Test Illusion)
     gating_mgr = get_profile_gating_manager()
-    is_safe, gate_reason = gating_mgr.validate_execution(model, effective_device)
+    user_explicit_gpu = device_mode in ("vulkan", "gpu")
+    is_safe, gate_reason = gating_mgr.validate_execution(model, effective_device, user_explicit=user_explicit_gpu)
     if not is_safe:
         from .exceptions import PlatformNotSupportedError
         raise PlatformNotSupportedError(
@@ -392,7 +462,11 @@ def generate(
         if llm is None:
             llm = "Qwen3-4B-Instruct-2507-Q2_K.gguf"
         if vae is None and taesd is None:
-            vae = "z_image_ae.safetensors"
+            taef1_candidate = Path(get_default_cache_dir()) / "models" / "taef1.safetensors"
+            if taef1_candidate.is_file():
+                taesd = "taef1.safetensors"
+            else:
+                vae = "z_image_ae.safetensors"
         if vae_format is None:
             vae_format = "flux"
         if steps is None or steps == 10:
@@ -405,12 +479,18 @@ def generate(
         if device_mode in ("vulkan", "gpu") or effective_device in ("vulkan", "gpu"):
             clip_on_cpu = True
             vae_on_cpu = True
-            if max_vram is None:
-                max_vram = "vulkan0=1"
-            stream_layers = True
-            if params_backend is None:
-                params_backend = "diffusion=cpu"
             diffusion_fa = True
+
+            # Autonomous Hardware-Aware VRAM Scaling
+            model_size = get_model_file_size(diffusion_model or model)
+            max_vram, stream_layers, policy_reason = resolve_vram_and_streaming_policy(
+                user_max_vram=max_vram,
+                user_stream_layers=stream_layers,
+                model_bytes=model_size,
+            )
+            if params_backend is None and stream_layers:
+                params_backend = "diffusion=cpu"
+            logger.info("[termux-diffusion] [VRAM Policy] %s", policy_reason)
 
     if diffusion_model is not None and str(diffusion_model).strip():
         model_path = None
@@ -562,7 +642,7 @@ def generate(
         b_vae = "cpu" if vae_on_cpu else "vulkan0"
         cmd.extend(["--backend", f"clip={b_clip},diffusion=vulkan0,vae={b_vae}"])
 
-    if max_vram is not None and str(max_vram).strip():
+    if max_vram is not None and str(max_vram).strip() not in ("", "0", "none", "disable", "unlimited", "vulkan0=0"):
         cmd.extend(["--max-vram", str(max_vram).strip()])
 
     if stream_layers:
@@ -756,8 +836,8 @@ def generate(
 
     start_time = time.time()
 
-    # 6. Execute with WakeLock protection
-    with TermuxWakeLock(enabled=wake_lock):
+    # 6. Execute with TermuxExecutionGuard (Android WakeLock + Niceness priority protection)
+    with TermuxExecutionGuard(enable_wake_lock=wake_lock, boost_priority=True):
         process = None
         try:
             popen_kwargs = {

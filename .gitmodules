@@ -1,3 +1,5 @@
 [submodule "thirdparty/stable-diffusion.cpp"]
 	path = thirdparty/stable-diffusion.cpp
 	url = https://github.com/leejet/stable-diffusion.cpp.git
+	ignore = dirty
+

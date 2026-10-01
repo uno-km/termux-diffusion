@@ -1,4 +1,4 @@
-﻿# Release Notes - termux-diffusion v1.8.0
+# Release Notes - termux-diffusion v1.8.0
 
 **Release Tag**: `v1.8.0`  
 **Distribution Channels**: PyPI (`termux-diffusion`), NPM (`termux-diffusion`), GitHub Releases  
@@ -45,7 +45,7 @@
 
 ### 🔬 Academic Research & Lab Report Reference
 * **Full Technical Research Report**: [Galaxy S21 Z-Image Turbo Vulkan Research Report](https://github.com/uno-km/termux-diffusion/blob/main/docs/research/s21_z_image_turbo_vulkan_research_report.md)
-* **Academic Research Paper**: [AMEVA Labs | Sovereign On-Device AI Research, Newsletter & Discussion](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=32)
+* **Academic Research Paper**: [AMEVA Labs | Sovereign On-Device AI Research, Newsletter & Discussion](https://uno-km.vercel.app/labs/index.html?menu=research-papers&post=33)
 
 ---
 

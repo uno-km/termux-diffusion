@@ -499,8 +499,8 @@ def generate(
                 llm_bytes=llm_size,
                 vae_bytes=vae_size,
             )
-            if params_backend is None and stream_layers:
-                params_backend = "diffusion=cpu"
+            if params_backend is None:
+                params_backend = "diffusion=cpu,clip=disk" if stream_layers else "clip=disk"
             logger.info("[termux-diffusion] [VRAM Policy] %s", policy_reason)
 
     if diffusion_model is not None and str(diffusion_model).strip():

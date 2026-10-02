@@ -91,6 +91,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     # install command
     inst_parser = subparsers.add_parser("install", help="Provision native Bionic CPU engine (sd-cli-cpu & libomp.so)")
     inst_parser.add_argument("-f", "--force", action="store_true", default=False, help="Force re-installation")
+    inst_parser.add_argument("--dedicate", action="store_true", default=False, help="Smart inspection mode: preserve AMEVA runtime symlink, auto-upgrade legacy binaries")
 
     # doctor command
     subparsers.add_parser("doctor", help="Run 7-tier pre-flight diagnostic checks")
@@ -229,7 +230,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             return ExitCode.BUILD_ERROR
 
     elif args.command == "install":
-        provision_engine(force=args.force)
+        provision_engine(force=args.force, dedicate=getattr(args, "dedicate", False))
         return 0
 
     elif args.command == "doctor":

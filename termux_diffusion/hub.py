@@ -355,6 +355,13 @@ def resolve_model_path(model_name_or_path: str, cache_dir: Optional[Union[str, P
     if direct_path.is_file():
         return direct_path.resolve()
 
+    # Shared common cache (~/.cache/termux-ai/models)
+    shared_dir = Path(os.environ.get("XDG_CACHE_HOME") or (Path.home() / ".cache")) / "termux-ai" / "models"
+    if shared_dir.is_dir():
+        shared_file = shared_dir / model_name_or_path
+        if shared_file.is_file():
+            return shared_file.resolve()
+
     # Direct filename in cache
     in_cache_path = target_dir / model_name_or_path
     if in_cache_path.is_file():
@@ -364,6 +371,8 @@ def resolve_model_path(model_name_or_path: str, cache_dir: Optional[Union[str, P
     presets = list_presets()
     if model_name_or_path in presets:
         alias = presets[model_name_or_path]["alias"]
+        if shared_dir.is_dir() and (shared_dir / alias).is_file():
+            return (shared_dir / alias).resolve()
         alias_path = target_dir / alias
         if alias_path.is_file():
             return alias_path.resolve()

@@ -125,7 +125,23 @@ def activate_binary(bin_dir: Path, target_name: str) -> Path:
 
 
 
-def fetch_prebuilt_binary(install_mode: str = "prebuilt-first") -> Optional[Path]:
+def is_valid_elf(path: Path) -> bool:
+    """Verifies that the target path is a valid ELF executable/library via magic bytes."""
+    try:
+        p = path.resolve() if path.is_symlink() else path
+        if not p.is_file():
+            return False
+        with open(p, "rb") as f:
+            return f.read(4) == b"\x7fELF"
+    except (OSError, PermissionError):
+        return False
+
+
+def fetch_prebuilt_binary(
+    install_mode: str = "prebuilt-first",
+    force: bool = False,
+    dedicate: bool = False,
+) -> Optional[Path]:
     """Try acquiring prebuilt Bionic ARM64 CPU baseline binary with integrity verification and self-test."""
     if not (is_android_termux() and is_arm64()):
         return None
@@ -141,16 +157,39 @@ def fetch_prebuilt_binary(install_mode: str = "prebuilt-first") -> Optional[Path
         lib_dir = get_engine_lib_dir()
         omp_so = lib_dir / "libomp.so"
 
+        # Dedicated triage mode
+        if dedicate:
+            active_link = bin_dir / "sd-cli"
+            if active_link.is_symlink():
+                target = str(active_link.resolve())
+                if ".local/share/ameva" in target:
+                    print("[termux-diffusion] [DEDICATE] AMEVA Runtime managed engine detected. Preserving co-existence (<0.002s).")
+                    return active_link
+
+        # If force, clear existing binaries to guarantee fresh acquisition
+        if force:
+            if cpu_bin.is_file():
+                cpu_bin.unlink(missing_ok=True)
+            if omp_so.is_file():
+                omp_so.unlink(missing_ok=True)
+
+        # "있어? 넘어가" - Skip if verified ELF binary already exists
+        if not force and cpu_bin.is_file() and is_valid_elf(cpu_bin):
+            if omp_so.is_file() and is_valid_elf(omp_so):
+                active = activate_binary(bin_dir, "sd-cli-cpu")
+                print("[termux-diffusion] [OK] Verified native CPU engine already present. Skipping download (<0.002s).")
+                return active
+
         print("[termux-diffusion] Attempting Prebuilt CPU Baseline Engine installation...")
         try:
             # 1. Ensure OpenMP companion library (libomp.so)
-            if not omp_so.is_file() or omp_so.stat().st_size < 100000:
+            if force or not omp_so.is_file() or not is_valid_elf(omp_so):
                 omp_urls = get_candidate_prebuilt_urls("libomp-android-arm64.so")
                 print("[termux-diffusion] Provisioning OpenMP parallel runtime (libomp.so)...")
                 for o_url in omp_urls:
                     try:
                         atomic_download_file(o_url, omp_so)
-                        if omp_so.is_file() and omp_so.stat().st_size > 100000:
+                        if omp_so.is_file() and is_valid_elf(omp_so):
                             break
                     except Exception as o_err:
                         logger.debug("OpenMP download candidate failed from %s: %s", o_url, o_err)
@@ -162,7 +201,7 @@ def fetch_prebuilt_binary(install_mode: str = "prebuilt-first") -> Optional[Path
                     pass
 
             # 2. Ensure sd-cli-cpu binary
-            if not cpu_bin.is_file():
+            if force or not cpu_bin.is_file() or not is_valid_elf(cpu_bin):
                 candidate_urls = get_candidate_prebuilt_urls("sd-cli-cpu-android-arm64.tar.gz")
                 staging_dir = get_default_cache_dir() / ".staging-diffusion-cpu"
                 staging_dir.mkdir(parents=True, exist_ok=True)
@@ -190,14 +229,14 @@ def fetch_prebuilt_binary(install_mode: str = "prebuilt-first") -> Optional[Path
                     tar_dest.unlink(missing_ok=True)
 
                     for cand in staging_dir.rglob("sd-cli*"):
-                        if cand.is_file():
+                        if cand.is_file() and is_valid_elf(cand):
                             shutil.copy2(cand, cpu_bin)
                             cpu_bin.chmod(0o755)
                             break
 
                     shutil.rmtree(staging_dir, ignore_errors=True)
 
-            if cpu_bin.is_file() and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
+            if cpu_bin.is_file() and is_valid_elf(cpu_bin) and run_binary_self_test(cpu_bin, expected_backend="cpu").stage1_load_passed:
                 active = activate_binary(bin_dir, "sd-cli-cpu")
                 print("[termux-diffusion] Fast-Track: Prebuilt CPU Baseline binary validated and activated.")
                 return active
@@ -214,14 +253,15 @@ def provision_engine(
     install_mode: str = "prebuilt-first",
     jobs: Optional[int] = None,
     make_jobs: Optional[int] = None,
-    backend: str = "cpu"
+    backend: str = "cpu",
+    dedicate: bool = False,
 ) -> Path:
     """Download, verify, or compile stable-diffusion.cpp into ~/.cache/termux-diffusion/bin/sd-cli."""
     bin_dir = get_engine_bin_dir()
 
     # Prebuilt-First Pipeline (Pure CPU Baseline Engine)
-    if not force or install_mode in ("prebuilt-first", "prebuilt-only"):
-        prebuilt = fetch_prebuilt_binary(install_mode=install_mode)
+    if install_mode in ("prebuilt-first", "prebuilt-only"):
+        prebuilt = fetch_prebuilt_binary(install_mode=install_mode, force=force, dedicate=dedicate)
         if prebuilt:
             return prebuilt
 
